@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Puzzle } from 'lucide-react';
 
 const AboutSection = () => {
   return (
@@ -16,7 +15,11 @@ const AboutSection = () => {
           <div className="w-full md:w-1/2 order-2 md:order-1">
             <div className="p-6">
               <h3 className="text-2xl font-bold mb-4 flex items-center">
-                <Puzzle className="mr-2 h-6 w-6 text-primary" />
+                <img 
+                  src="/lovable-uploads/5eb41409-f9b8-4c4e-aa67-023981c375c2.png" 
+                  alt="Match Tiles" 
+                  className="mr-2 h-8 w-8"
+                />
                 Match Story
               </h3>
               <p className="text-gray-700 mb-6">
