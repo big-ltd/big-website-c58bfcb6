@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
   return (
@@ -13,13 +12,10 @@ const HeroSection = () => {
         <div className="flex flex-col lg:flex-row items-center">
           <div className="w-full lg:w-1/2 mb-12 lg:mb-0 animate-fade-in">
             <h1 className="title-text mb-6 text-white">
-              About <span className="gradient-text">Big</span>
+              About <span className="text-white bg-gradient-primary bg-clip-text">Big</span>
             </h1>
             <p className="subtitle-text mb-8 max-w-xl text-gray-300">
-              Based in Cyprus, Big creates engaging experiences and the fandoms they inspire.
-            </p>
-            <p className="subtitle-text mb-8 max-w-xl text-gray-300">
-              We love bringing games to life and giving players what they crave. With passion, creativity, and the right tools, we turn ideas into something big.
+              Big is a mobile game developer and publisher based in Cyprus. We are all about creating games that players love and that inspire fandom. We believe that the freedom to pursue our passions—while staying attuned to what players want—makes game development truly rewarding.
             </p>
           </div>
           <div className="w-full lg:w-1/2 animate-fade-in-slow">

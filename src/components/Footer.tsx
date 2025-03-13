@@ -15,9 +15,6 @@ const Footer = () => {
                 className="h-12" 
               />
             </div>
-            <p className="text-gray-400 mb-6">
-              We are a leading digital solutions provider committed to helping businesses thrive in the digital age.
-            </p>
             <div className="flex space-x-4">
               <a href="#" className="bg-gray-800 p-2 rounded-full hover:bg-primary/80 transition-colors">
                 <Facebook className="h-5 w-5" />
