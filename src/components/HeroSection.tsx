@@ -15,28 +15,20 @@ const HeroSection = () => {
           </div>
         </div>
         
-        <div className="flex flex-col lg:flex-row items-center">
-          <div className="w-full lg:w-1/2 mb-12 lg:mb-0 animate-fade-in">
+        <div className="flex flex-col lg:flex-row items-center gap-12">
+          <div className="w-full lg:w-1/2 animate-fade-in">
             <p className="subtitle-text mb-8 max-w-xl text-gray-300">
               Big is a mobile game developer and publisher based in Cyprus. We are all about creating games that players love and that inspire fandom. We believe that the freedom to pursue our passions—while staying attuned to what players want—makes game development truly rewarding.
             </p>
           </div>
           <div className="w-full lg:w-1/2 animate-fade-in-slow">
-            <div className="relative">
-              <div className="bg-gradient-primary p-1 rounded-2xl shadow-xl">
-                <div className="bg-gray-800 rounded-xl overflow-hidden">
-                  <img 
-                    src="/lovable-uploads/63308921-38b2-4e2c-8b5e-2fefa4ca6fc7.png" 
-                    alt="Match Story Game" 
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-              </div>
-              <div className="absolute -bottom-6 -right-6 bg-white rounded-lg shadow-lg p-4 max-w-xs animate-float">
-                <div className="flex items-center space-x-3">
-                  <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-                  <p className="font-medium">Featured Game</p>
-                </div>
+            <div className="bg-gradient-primary p-1 rounded-2xl shadow-xl">
+              <div className="bg-gray-800 rounded-xl overflow-hidden">
+                <img 
+                  src="/lovable-uploads/63308921-38b2-4e2c-8b5e-2fefa4ca6fc7.png" 
+                  alt="Match Story Game" 
+                  className="w-full h-auto object-cover"
+                />
               </div>
             </div>
           </div>

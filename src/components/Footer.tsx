@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { Facebook, Twitter, Instagram, Linkedin, ChevronRight, Send } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           <div>
             <div className="mb-6">
               <img 
@@ -41,21 +42,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Services
-                </a>
-              </li>
-              <li>
                 <a href="#team" className="text-gray-400 hover:text-white transition-colors flex items-center">
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Our Team
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Careers
                 </a>
               </li>
               <li>
@@ -66,59 +55,6 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
-          <div>
-            <h4 className="font-bold text-lg mb-6">Services</h4>
-            <ul className="space-y-3">
-              <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Web Development
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Mobile Applications
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Cloud Solutions
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  UI/UX Design
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Data Analytics
-                </a>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-bold text-lg mb-6">Newsletter</h4>
-            <p className="text-gray-400 mb-4">
-              Subscribe to our newsletter to receive updates and news.
-            </p>
-            <div className="flex">
-              <input 
-                type="email" 
-                placeholder="Your email" 
-                className="bg-gray-800 text-gray-300 px-4 py-2 rounded-l-md focus:outline-none flex-grow"
-              />
-              <button className="bg-gradient-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-r-md transition-colors">
-                <Send className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
         </div>
         
         <div className="border-t border-gray-800 pt-8">
@@ -127,15 +63,12 @@ const Footer = () => {
               &copy; {new Date().getFullYear()} BIG LTD. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
+              <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
+              </Link>
+              <Link to="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
                 Terms of Service
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
         </div>
