@@ -11,9 +11,7 @@ const HeroSection = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center">
           <div className="w-full lg:w-1/2 mb-12 lg:mb-0 animate-fade-in">
-            <h1 className="title-text mb-6 text-white">
-              About <span className="text-white bg-gradient-primary bg-clip-text">Big</span>
-            </h1>
+            <h2 className="text-3xl font-bold mb-6 text-white">About</h2>
             <p className="subtitle-text mb-8 max-w-xl text-gray-300">
               Big is a mobile game developer and publisher based in Cyprus. We are all about creating games that players love and that inspire fandom. We believe that the freedom to pursue our passions—while staying attuned to what players want—makes game development truly rewarding.
             </p>
