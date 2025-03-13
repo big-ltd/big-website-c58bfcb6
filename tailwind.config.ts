@@ -123,7 +123,7 @@ export default {
 				'float': 'float 3s ease-in-out infinite'
 			},
 			backgroundImage: {
-				'gradient-primary': 'linear-gradient(90deg, #8B5CF6 0%, #0EA5E9 100%)',
+				'gradient-primary': 'linear-gradient(135deg, #5E3BA5 0%, #361E75 100%)',
 				'gradient-secondary': 'linear-gradient(90deg, #0EA5E9 0%, #10B981 100%)',
 			}
 		}

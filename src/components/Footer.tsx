@@ -117,7 +117,7 @@ const Footer = () => {
                 placeholder="Your email" 
                 className="bg-gray-800 text-gray-300 px-4 py-2 rounded-l-md focus:outline-none flex-grow"
               />
-              <button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-md transition-colors">
+              <button className="bg-gradient-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-r-md transition-colors">
                 <Send className="h-5 w-5" />
               </button>
             </div>

@@ -70,7 +70,7 @@ const FeaturesSection = () => {
                 <span className="text-muted-foreground">Transparent communication</span>
               </div>
             </div>
-            <Button className="group">
+            <Button className="group bg-gradient-primary hover:opacity-90">
               <span>Learn More</span>
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>

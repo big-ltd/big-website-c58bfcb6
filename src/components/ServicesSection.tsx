@@ -8,31 +8,31 @@ const services = [
     title: 'Web Development',
     description: 'Custom web applications built with the latest technologies to meet your specific needs.',
     icon: Code,
-    gradient: 'from-purple-500 to-blue-500',
+    gradient: 'from-[#5E3BA5] to-[#361E75]',
   },
   {
     title: 'Mobile Applications',
     description: 'Native and cross-platform mobile apps that deliver seamless user experiences.',
     icon: Smartphone,
-    gradient: 'from-blue-500 to-cyan-500',
+    gradient: 'from-[#5E3BA5] to-[#361E75]',
   },
   {
     title: 'Cloud Solutions',
     description: 'Scalable and secure cloud infrastructure for your business applications.',
     icon: Server,
-    gradient: 'from-cyan-500 to-emerald-500',
+    gradient: 'from-[#5E3BA5] to-[#361E75]',
   },
   {
     title: 'UI/UX Design',
     description: 'Intuitive and engaging user interfaces designed for optimal user experience.',
     icon: Palette,
-    gradient: 'from-emerald-500 to-yellow-500',
+    gradient: 'from-[#5E3BA5] to-[#361E75]',
   },
   {
     title: 'Data Analytics',
     description: 'Gain valuable insights from your data to make informed business decisions.',
     icon: BarChart3,
-    gradient: 'from-yellow-500 to-orange-500',
+    gradient: 'from-[#5E3BA5] to-[#361E75]',
   },
 ];
 
