@@ -8,7 +8,7 @@ const AboutSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
-            <span className="text-primary font-bold">Our Games</span>
+            <span className="text-primary font-medium">Our Games</span>
           </div>
         </div>
 

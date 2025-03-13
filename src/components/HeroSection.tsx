@@ -10,8 +10,8 @@ const HeroSection = () => {
       
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
-          <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
-            <span className="text-primary font-medium">About</span>
+          <div className="inline-block mb-4 px-4 py-1 bg-primary/20 rounded-full">
+            <span className="text-primary-foreground font-bold text-lg">About</span>
           </div>
         </div>
         
