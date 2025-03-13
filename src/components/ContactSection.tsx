@@ -22,7 +22,7 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <h4 className="text-base font-medium mb-1">Our Office</h4>
-                  <p className="text-muted-foreground">123 Business Street, New York, NY 10001, United States</p>
+                  <p className="text-muted-foreground">Kypranoros 13, 1061 Nicosia, Cyprus</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -31,7 +31,7 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <h4 className="text-base font-medium mb-1">Phone</h4>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                  <p className="text-muted-foreground">(+357) 25 123994</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -40,7 +40,7 @@ const ContactSection = () => {
                 </div>
                 <div>
                   <h4 className="text-base font-medium mb-1">Email</h4>
-                  <p className="text-muted-foreground">info@bigltd.com</p>
+                  <p className="text-muted-foreground">contact@big-ltd.com</p>
                 </div>
               </div>
             </div>
