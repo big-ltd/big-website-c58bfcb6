@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,7 +24,7 @@ const NavBar = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offsetPosition = element.offsetTop - 100;
+      const offsetPosition = element.offsetTop - 50;
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
