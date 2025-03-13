@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Facebook, Twitter, Instagram, Linkedin, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -16,19 +16,8 @@ const Footer = () => {
                 className="h-12" 
               />
             </div>
-            <div className="flex space-x-4">
-              <a href="#" className="bg-gray-800 p-2 rounded-full hover:bg-primary/80 transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="bg-gray-800 p-2 rounded-full hover:bg-primary/80 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="bg-gray-800 p-2 rounded-full hover:bg-primary/80 transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="bg-gray-800 p-2 rounded-full hover:bg-primary/80 transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </a>
+            <div className="italic text-gray-300 border-l-4 border-primary/60 pl-4 py-2">
+              "Love is the one thing that transcends time and space." – Interstellar
             </div>
           </div>
           
