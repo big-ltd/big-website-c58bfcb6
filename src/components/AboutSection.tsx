@@ -30,15 +30,13 @@ const AboutSection = () => {
           </div>
           
           <div className="w-full md:w-1/2 order-1 md:order-2">
-            <div className="relative rounded-xl overflow-hidden shadow-md max-w-md mx-auto">
-              <AspectRatio ratio={9/16} className="bg-muted">
-                <img 
-                  src="/lovable-uploads/d9132b9d-a28d-475a-8a9c-ecd09e2d95b6.png" 
-                  alt="Match Story" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-              </AspectRatio>
+            <div className="relative rounded-xl overflow-hidden shadow-md max-w-[280px] mx-auto">
+              <img 
+                src="/lovable-uploads/d9132b9d-a28d-475a-8a9c-ecd09e2d95b6.png" 
+                alt="Match Story" 
+                className="w-full h-auto object-contain"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
           </div>
         </div>
