@@ -31,7 +31,7 @@ const AboutSection = () => {
           <div className="w-full md:w-1/2 order-1 md:order-2">
             <div className="relative rounded-xl overflow-hidden shadow-md">
               <img 
-                src="/lovable-uploads/e205a588-61a4-49d5-9a03-afd18860f6da.png" 
+                src="/lovable-uploads/d9132b9d-a28d-475a-8a9c-ecd09e2d95b6.png" 
                 alt="Match Story" 
                 className="w-full h-auto object-cover"
               />
