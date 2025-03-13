@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const AboutSection = () => {
   return (
@@ -16,7 +17,7 @@ const AboutSection = () => {
             <div className="p-6">
               <h3 className="text-2xl font-bold mb-4 flex items-center">
                 <img 
-                  src="/lovable-uploads/5eb41409-f9b8-4c4e-aa67-023981c375c2.png" 
+                  src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
                   alt="Match Tiles" 
                   className="mr-2 h-8 w-8"
                 />
@@ -29,13 +30,15 @@ const AboutSection = () => {
           </div>
           
           <div className="w-full md:w-1/2 order-1 md:order-2">
-            <div className="relative rounded-xl overflow-hidden shadow-md">
-              <img 
-                src="/lovable-uploads/d9132b9d-a28d-475a-8a9c-ecd09e2d95b6.png" 
-                alt="Match Story" 
-                className="w-full h-auto object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            <div className="relative rounded-xl overflow-hidden shadow-md max-w-md mx-auto">
+              <AspectRatio ratio={9/16} className="bg-muted">
+                <img 
+                  src="/lovable-uploads/d9132b9d-a28d-475a-8a9c-ecd09e2d95b6.png" 
+                  alt="Match Story" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              </AspectRatio>
             </div>
           </div>
         </div>
