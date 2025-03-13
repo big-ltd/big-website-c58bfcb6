@@ -17,9 +17,9 @@ const AboutSection = () => {
             <div className="p-6">
               <h3 className="text-2xl font-bold mb-4 flex items-center">
                 <img 
-                  src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
+                  src="/lovable-uploads/19b593e8-7f17-40ea-9749-27b79f8b8bd1.png" 
                   alt="Match Tiles" 
-                  className="mr-2 h-8 w-8"
+                  className="mr-3 h-12 w-12" 
                 />
                 Match Story
               </h3>
