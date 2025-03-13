@@ -42,9 +42,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#team" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="#games" className="text-gray-400 hover:text-white transition-colors flex items-center">
                   <ChevronRight className="h-4 w-4 mr-1" />
-                  Our Team
+                  Our Games
                 </a>
               </li>
               <li>
