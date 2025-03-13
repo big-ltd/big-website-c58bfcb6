@@ -27,14 +27,24 @@ const AboutSection = () => {
                 Match Story is an addictive yet relaxing puzzle game. Tap-to-match tiles to progress through chapters and unveil secrets.
               </p>
               <div className="flex flex-wrap items-center gap-4 mt-4">
-                <a href="#" className="transition-transform hover:scale-105">
+                <a 
+                  href="https://apps.apple.com/cy/app/match-story/id6499223049" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="transition-transform hover:scale-105"
+                >
                   <img 
                     src="/lovable-uploads/039f9dfa-68ee-409b-b3fc-46db2bb54596.png" 
                     alt="Download on the App Store" 
                     className="h-12" 
                   />
                 </a>
-                <a href="#" className="transition-transform hover:scale-105">
+                <a 
+                  href="https://play.google.com/store/apps/details?id=com.big.MatchStory" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="transition-transform hover:scale-105"
+                >
                   <img 
                     src="/lovable-uploads/bce95719-3c2d-41ff-a1ea-2d87c8a07993.png" 
                     alt="Get it on Google Play" 
