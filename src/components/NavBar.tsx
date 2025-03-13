@@ -33,7 +33,7 @@ const NavBar = () => {
   return (
     <header className={cn(
       'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-      scrolled ? 'bg-gray-950/95 backdrop-blur-md shadow-sm' : 'bg-gray-950/90'
+      scrolled ? 'bg-gradient-primary shadow-sm' : 'bg-gradient-primary'
     )}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
@@ -91,7 +91,7 @@ const NavBar = () => {
 
       {/* Mobile menu */}
       <div className={cn(
-        "absolute top-full left-0 right-0 bg-gray-950 shadow-md md:hidden transition-all duration-300 overflow-hidden",
+        "absolute top-full left-0 right-0 bg-gradient-primary shadow-md md:hidden transition-all duration-300 overflow-hidden",
         isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
       )}>
         <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">

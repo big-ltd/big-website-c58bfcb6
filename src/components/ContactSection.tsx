@@ -9,11 +9,10 @@ const ContactSection = () => {
   return (
     <section id="contact" className="section bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="title-text mb-4">Get In <span className="gradient-text">Touch</span></h2>
-          <p className="subtitle-text max-w-2xl mx-auto">
-            Have a question or want to work with us? We'd love to hear from you. Fill out the form below and we'll get back to you shortly.
-          </p>
+        <div className="text-center mb-8">
+          <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
+            <span className="text-primary font-medium">Contact</span>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -45,8 +44,8 @@ const ContactSection = () => {
             </form>
           </div>
           
-          <div className="flex flex-col justify-between">
-            <div className="mb-8">
+          <div className="flex flex-col justify-center">
+            <div>
               <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
               <div className="space-y-6">
                 <div className="flex items-start">
@@ -77,23 +76,6 @@ const ContactSection = () => {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h4 className="font-bold mb-2">Business Hours</h4>
-              <ul className="space-y-2">
-                <li className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Monday - Friday:</span>
-                  <span>9:00 AM - 6:00 PM</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Saturday:</span>
-                  <span>10:00 AM - 4:00 PM</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Sunday:</span>
-                  <span>Closed</span>
-                </li>
-              </ul>
             </div>
           </div>
         </div>

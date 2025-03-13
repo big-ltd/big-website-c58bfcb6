@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
@@ -16,24 +15,12 @@ const HeroSection = () => {
             <h1 className="title-text mb-6 text-white">
               About <span className="gradient-text">Big</span>
             </h1>
-            <p className="subtitle-text mb-8 max-w-lg text-gray-300">
+            <p className="subtitle-text mb-8 max-w-xl text-gray-300">
               Based in Cyprus, Big creates engaging experiences and the fandoms they inspire.
             </p>
-            <p className="subtitle-text mb-8 max-w-lg text-gray-300">
+            <p className="subtitle-text mb-8 max-w-xl text-gray-300">
               We love bringing games to life and giving players what they crave. With passion, creativity, and the right tools, we turn ideas into something big.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                variant="outline" 
-                className="border-2 py-6 px-8 text-lg text-white border-white/20 hover:bg-white/10"
-                onClick={() => {
-                  document.getElementById('games')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                See Our Games
-                <ArrowDown className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
           </div>
           <div className="w-full lg:w-1/2 animate-fade-in-slow">
             <div className="relative">

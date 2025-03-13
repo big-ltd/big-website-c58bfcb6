@@ -30,18 +30,10 @@ const AboutSection = () => {
   return (
     <section id="games" className="section bg-gray-50 py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
             <span className="text-primary font-medium">Our Games</span>
           </div>
-          <h2 className="title-text mb-6">
-            Crafting <span className="gradient-text">Memorable</span> Gaming Experiences
-          </h2>
-          <p className="subtitle-text max-w-2xl mx-auto">
-            We create games that captivate players and build lasting communities. 
-            Our titles combine engaging gameplay with rich storytelling to deliver 
-            unforgettable experiences.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
