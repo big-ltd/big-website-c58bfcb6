@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Puzzle } from 'lucide-react';
 
 const AboutSection = () => {
   return (
@@ -14,7 +15,10 @@ const AboutSection = () => {
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="w-full md:w-1/2 order-2 md:order-1">
             <div className="p-6">
-              <h3 className="text-2xl font-bold mb-4">Match Story</h3>
+              <h3 className="text-2xl font-bold mb-4 flex items-center">
+                <Puzzle className="mr-2 h-6 w-6 text-primary" />
+                Match Story
+              </h3>
               <p className="text-gray-700 mb-6">
                 Match Story is an addictive yet relaxing puzzle game. Tap-to-match tiles to progress through chapters and unveil secrets.
               </p>
@@ -24,7 +28,7 @@ const AboutSection = () => {
           <div className="w-full md:w-1/2 order-1 md:order-2">
             <div className="relative rounded-xl overflow-hidden shadow-md">
               <img 
-                src="/lovable-uploads/63308921-38b2-4e2c-8b5e-2fefa4ca6fc7.png" 
+                src="/lovable-uploads/e205a588-61a4-49d5-9a03-afd18860f6da.png" 
                 alt="Match Story" 
                 className="w-full h-auto object-cover"
               />
