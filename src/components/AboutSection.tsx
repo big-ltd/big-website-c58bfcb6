@@ -46,10 +46,10 @@ const AboutSection = () => {
           </div>
           
           <div className="w-full md:w-1/2 order-1 md:order-2">
-            <div className="relative rounded-xl overflow-hidden shadow-md max-w-[280px] mx-auto">
+            <div className="relative rounded-xl overflow-hidden shadow-md max-w-[320px] mx-auto">
               <img 
-                src="/lovable-uploads/d9132b9d-a28d-475a-8a9c-ecd09e2d95b6.png" 
-                alt="Match Story" 
+                src="/lovable-uploads/8ae4f57d-3b33-4f87-add0-e9df9b145635.png" 
+                alt="Match Story Characters" 
                 className="w-full h-auto object-contain"
               />
             </div>
