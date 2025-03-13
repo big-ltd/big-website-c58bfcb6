@@ -19,7 +19,7 @@ const AboutSection = () => {
                 <img 
                   src="/lovable-uploads/19b593e8-7f17-40ea-9749-27b79f8b8bd1.png" 
                   alt="Match Tiles" 
-                  className="mr-3 h-12 w-12" 
+                  className="mr-4 h-24 w-24" 
                 />
                 Match Story
               </h3>
