@@ -94,6 +94,11 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Add scroll margin for section elements to account for fixed navbar */
+  section[id] {
+    scroll-margin-top: 100px;
+  }
 }
 
 @layer components {

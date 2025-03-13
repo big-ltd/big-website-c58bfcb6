@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,13 +20,20 @@ const NavBar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offsetPosition = element.offsetTop - 100;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+    if (isOpen) setIsOpen(false);
   };
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    if (isOpen) setIsOpen(false);
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
@@ -45,7 +51,6 @@ const NavBar = () => {
             />
           </a>
 
-          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             <a 
               href="#about" 
@@ -79,7 +84,6 @@ const NavBar = () => {
             </a>
           </nav>
 
-          {/* Mobile menu button */}
           <button 
             className="md:hidden text-white focus:outline-none"
             onClick={toggleMenu}
@@ -89,7 +93,6 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <div className={cn(
         "absolute top-full left-0 right-0 bg-gradient-primary shadow-md md:hidden transition-all duration-300 overflow-hidden",
         isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
