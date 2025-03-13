@@ -36,7 +36,6 @@ const AboutSection = () => {
                 alt="Match Story" 
                 className="w-full h-auto object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
           </div>
         </div>
