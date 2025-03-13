@@ -35,16 +35,16 @@ const HeroSection = () => {
               <div className="bg-gradient-primary p-1 rounded-2xl shadow-xl">
                 <div className="bg-gray-800 rounded-xl overflow-hidden">
                   <img 
-                    src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-                    alt="Team collaboration" 
-                    className="w-full h-auto object-cover opacity-90"
+                    src="/lovable-uploads/63308921-38b2-4e2c-8b5e-2fefa4ca6fc7.png" 
+                    alt="Match Story Game" 
+                    className="w-full h-auto object-cover"
                   />
                 </div>
               </div>
               <div className="absolute -bottom-6 -right-6 bg-white rounded-lg shadow-lg p-4 max-w-xs animate-float">
                 <div className="flex items-center space-x-3">
                   <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-                  <p className="font-medium">98% Client satisfaction</p>
+                  <p className="font-medium">Featured Game Development</p>
                 </div>
               </div>
             </div>
