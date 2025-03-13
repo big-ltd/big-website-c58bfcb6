@@ -25,7 +25,7 @@ const HeroSection = () => {
             <div className="bg-gradient-primary p-1 rounded-2xl shadow-xl">
               <div className="bg-gray-800 rounded-xl overflow-hidden">
                 <img 
-                  src="/lovable-uploads/63308921-38b2-4e2c-8b5e-2fefa4ca6fc7.png" 
+                  src="/lovable-uploads/8ae4f57d-3b33-4f87-add0-e9df9b145635.png" 
                   alt="Match Story Game" 
                   className="w-full h-auto object-cover"
                 />
