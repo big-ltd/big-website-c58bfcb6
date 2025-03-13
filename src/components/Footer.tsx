@@ -8,7 +8,13 @@ const Footer = () => {
       <div className="container mx-auto px-4 pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           <div>
-            <h3 className="font-bold text-xl mb-6 gradient-text">BIG LTD</h3>
+            <div className="mb-6">
+              <img 
+                src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
+                alt="BIG Logo" 
+                className="h-12" 
+              />
+            </div>
             <p className="text-gray-400 mb-6">
               We are a leading digital solutions provider committed to helping businesses thrive in the digital age.
             </p>

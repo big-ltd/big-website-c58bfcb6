@@ -33,7 +33,11 @@ const NavBar = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <a href="#" className="flex items-center space-x-2">
-            <span className="font-bold text-xl gradient-text">BIG LTD</span>
+            <img 
+              src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
+              alt="BIG Logo" 
+              className="h-12" 
+            />
           </a>
 
           {/* Desktop Nav */}
