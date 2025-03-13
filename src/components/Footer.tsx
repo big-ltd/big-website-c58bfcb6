@@ -7,13 +7,13 @@ const Footer = () => {
   const [quote, setQuote] = useState<string>("");
   
   const quotes = [
-    ""Love is the one thing that transcends time and space." – Interstellar",
-    ""Every choice you have ever made has led you to this moment." – The Matrix Reloaded",
-    ""Your focus determines your reality." – Star Wars: The Phantom Menace",
-    ""The dream is real." – Inception",
-    ""All those moments will be lost in time, like tears in rain." – Blade Runner",
-    ""We are only here briefly, and in this moment, I want to allow myself joy." – Her",
-    ""For every shadow, no matter how deep, is threatened by morning light." – The Fountain"
+    "\"Love is the one thing that transcends time and space.\" – Interstellar",
+    "\"Every choice you have ever made has led you to this moment.\" – The Matrix Reloaded",
+    "\"Your focus determines your reality.\" – Star Wars: The Phantom Menace",
+    "\"The dream is real.\" – Inception",
+    "\"All those moments will be lost in time, like tears in rain.\" – Blade Runner",
+    "\"We are only here briefly, and in this moment, I want to allow myself joy.\" – Her",
+    "\"For every shadow, no matter how deep, is threatened by morning light.\" – The Fountain"
   ];
   
   useEffect(() => {
