@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import fs from 'fs-extra';
+import type { ResolvedConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -17,7 +18,7 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     {
       name: 'copy-htaccess',
-      configResolved(config) {
+      configResolved(config: ResolvedConfig) {
         console.log('Build outDir:', config.build.outDir);
       },
       buildStart() {
