@@ -28,7 +28,7 @@ const Privacy = () => {
           
           <p className="text-gray-300 mb-4">BIG's services include</p>
           <ul className="list-disc pl-6 mb-4 text-gray-300">
-            <li>Company website (https://www.big.yo);</li>
+            <li>Company website (https://www.big-ltd.com);</li>
             <li>Match Story mobile application on iOS and Android.</li>
           </ul>
           
