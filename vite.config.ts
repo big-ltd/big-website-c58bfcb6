@@ -24,53 +24,51 @@ export default defineConfig(({ mode }) => ({
       buildStart() {
         console.log('Starting build process, will copy .htaccess file');
       },
-      closeBundle: async () => {
+      writeBundle: async () => {
         try {
-          console.log('Attempting to copy .htaccess file in closeBundle hook');
+          console.log('Attempting to copy .htaccess file in writeBundle hook');
           
-          // Check if public folder exists
-          if (!(await fs.pathExists('public'))) {
-            console.error('❌ Public folder not found');
-            return;
-          }
-          
-          // List files in public folder for debugging
-          const publicFiles = await fs.readdir('public');
-          console.log('Files in public folder:', publicFiles);
-          
-          // Make sure the .htaccess file exists in the public folder
           if (await fs.pathExists('public/.htaccess')) {
-            // Make sure dist folder exists
+            // Ensure dist directory exists
             if (!(await fs.pathExists('dist'))) {
               await fs.mkdir('dist');
               console.log('✅ Created dist folder');
             }
             
-            // Use fs.writeFile instead of copy to ensure the file is created
-            const htaccessContent = await fs.readFile('public/.htaccess', 'utf8');
-            await fs.writeFile('dist/.htaccess', htaccessContent);
-            console.log('✅ .htaccess file written to dist folder');
+            // Copy the file directly
+            await fs.copyFile('public/.htaccess', 'dist/.htaccess');
+            console.log('✅ .htaccess file copied to dist folder using copyFile');
             
-            // Verify the file was written
+            // Verify the file exists and set permissions
             if (await fs.pathExists('dist/.htaccess')) {
               console.log('✅ Verified .htaccess exists in dist folder');
               
-              // List files in dist folder to confirm
-              const distFiles = await fs.readdir('dist');
-              console.log('Files in dist folder after copying:', distFiles);
-              
-              // Try to make the file visible by changing permissions
+              // Change permissions to ensure visibility
               try {
                 await fs.chmod('dist/.htaccess', 0o644);
-                console.log('✅ Changed permissions on .htaccess file');
+                console.log('✅ Changed permissions on .htaccess file to 644');
+                
+                // Double check
+                const stats = await fs.stat('dist/.htaccess');
+                console.log('File stats:', stats);
               } catch (chmodError) {
                 console.error('Error changing permissions:', chmodError);
               }
+              
+              // List files in dist for verification
+              const distFiles = await fs.readdir('dist', { withFileTypes: true });
+              console.log('Files in dist folder (including hidden):', 
+                distFiles.map(dirent => ({
+                  name: dirent.name,
+                  isFile: dirent.isFile(),
+                  isDirectory: dirent.isDirectory()
+                }))
+              );
             } else {
-              console.error('❌ .htaccess was not written to dist folder');
+              console.error('❌ .htaccess was not found in dist folder after copy');
             }
           } else {
-            console.error('❌ .htaccess file not found in public folder');
+            console.error('❌ Source .htaccess file not found in public folder');
           }
         } catch (error) {
           console.error('Error handling .htaccess file:', error);
@@ -82,14 +80,16 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
-          // Make sure .htaccess is treated as an asset and copied
+          // Check if this is the .htaccess file
           if (assetInfo.name === '.htaccess') {
             return '.htaccess';
           }
           return 'assets/[name]-[hash][extname]';
         }
       }
-    }
+    },
+    // Explicitly tell Vite not to clean the output directory
+    emptyOutDir: false
   },
   resolve: {
     alias: {
