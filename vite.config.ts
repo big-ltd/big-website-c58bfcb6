@@ -17,10 +17,19 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     {
       name: 'copy-htaccess',
-      closeBundle: async () => {
-        // Copy .htaccess file to dist folder
-        await fs.copy('public/.htaccess', 'dist/.htaccess');
-        console.log('✅ .htaccess file copied to dist folder');
+      writeBundle: async () => {
+        try {
+          // Make sure the .htaccess file exists in the public folder
+          if (await fs.pathExists('public/.htaccess')) {
+            // Copy .htaccess file to dist folder
+            await fs.copy('public/.htaccess', 'dist/.htaccess');
+            console.log('✅ .htaccess file copied to dist folder');
+          } else {
+            console.error('❌ .htaccess file not found in public folder');
+          }
+        } catch (error) {
+          console.error('Error copying .htaccess file:', error);
+        }
       }
     }
   ].filter(Boolean),
