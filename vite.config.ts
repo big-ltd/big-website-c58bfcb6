@@ -28,50 +28,79 @@ export default defineConfig(({ mode }) => ({
         try {
           console.log('Attempting to copy .htaccess file in writeBundle hook');
           
+          // First check if we can read the source file content
           if (await fs.pathExists('public/.htaccess')) {
-            // Ensure dist directory exists
-            if (!(await fs.pathExists('dist'))) {
-              await fs.mkdir('dist');
-              console.log('✅ Created dist folder');
-            }
-            
-            // Copy the file directly
-            await fs.copyFile('public/.htaccess', 'dist/.htaccess');
-            console.log('✅ .htaccess file copied to dist folder using copyFile');
-            
-            // Verify the file exists and set permissions
-            if (await fs.pathExists('dist/.htaccess')) {
-              console.log('✅ Verified .htaccess exists in dist folder');
+            try {
+              // Read content to verify file is readable
+              const content = await fs.readFile('public/.htaccess', 'utf8');
+              console.log('.htaccess content length:', content.length);
+              console.log('First few characters:', content.substring(0, 30));
               
-              // Change permissions to ensure visibility
-              try {
-                await fs.chmod('dist/.htaccess', 0o644);
-                console.log('✅ Changed permissions on .htaccess file to 644');
+              // Ensure dist directory exists
+              if (!(await fs.pathExists('dist'))) {
+                await fs.mkdir('dist');
+                console.log('✅ Created dist folder');
+              }
+              
+              // Write the file directly with the content we read
+              await fs.writeFile('dist/.htaccess', content, { mode: 0o644 });
+              console.log('✅ .htaccess file written directly to dist folder');
+              
+              // Verify the file exists
+              if (await fs.pathExists('dist/.htaccess')) {
+                console.log('✅ Verified .htaccess exists in dist folder');
+                
+                // Read the content back to verify it's correct
+                const writtenContent = await fs.readFile('dist/.htaccess', 'utf8');
+                console.log('Written content matches:', writtenContent === content);
                 
                 // Double check
                 const stats = await fs.stat('dist/.htaccess');
                 console.log('File stats:', stats);
-              } catch (chmodError) {
-                console.error('Error changing permissions:', chmodError);
+                
+                // List files in dist including hidden files
+                console.log('Listing dist directory with ls -la via exec:');
+                const { exec } = require('child_process');
+                exec('ls -la dist', (error: any, stdout: string, stderr: string) => {
+                  if (error) {
+                    console.error(`exec error: ${error}`);
+                    return;
+                  }
+                  console.log(`stdout: ${stdout}`);
+                  if (stderr) console.error(`stderr: ${stderr}`);
+                });
+              } else {
+                console.error('❌ .htaccess was not found in dist folder after write');
               }
-              
-              // List files in dist for verification
-              const distFiles = await fs.readdir('dist', { withFileTypes: true });
-              console.log('Files in dist folder (including hidden):', 
-                distFiles.map(dirent => ({
-                  name: dirent.name,
-                  isFile: dirent.isFile(),
-                  isDirectory: dirent.isDirectory()
-                }))
-              );
-            } else {
-              console.error('❌ .htaccess was not found in dist folder after copy');
+            } catch (readError) {
+              console.error('Error reading source .htaccess file:', readError);
             }
           } else {
             console.error('❌ Source .htaccess file not found in public folder');
           }
         } catch (error) {
           console.error('Error handling .htaccess file:', error);
+        }
+      },
+      closeBundle: async () => {
+        // Add a second attempt in closeBundle as well
+        console.log('Second attempt in closeBundle hook');
+        if (await fs.pathExists('public/.htaccess') && await fs.pathExists('dist')) {
+          try {
+            // Directly copy the file again
+            await fs.copyFile('public/.htaccess', 'dist/.htaccess');
+            console.log('✅ Second copy attempt completed');
+            
+            // Set permissions explicitly
+            await fs.chmod('dist/.htaccess', 0o644);
+            
+            // Verify if it exists
+            if (await fs.pathExists('dist/.htaccess')) {
+              console.log('✅ Final verification successful');
+            }
+          } catch (error) {
+            console.error('Error in second copy attempt:', error);
+          }
         }
       }
     }
