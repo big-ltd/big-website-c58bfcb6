@@ -23,9 +23,9 @@ export default defineConfig(({ mode }) => ({
       buildStart() {
         console.log('Starting build process, will copy .htaccess file');
       },
-      writeBundle: async () => {
+      closeBundle: async () => {
         try {
-          console.log('Attempting to copy .htaccess file');
+          console.log('Attempting to copy .htaccess file in closeBundle hook');
           
           // Check if public folder exists
           if (!(await fs.pathExists('public'))) {
@@ -45,25 +45,51 @@ export default defineConfig(({ mode }) => ({
               console.log('✅ Created dist folder');
             }
             
-            // Copy .htaccess file to dist folder
-            await fs.copy('public/.htaccess', 'dist/.htaccess', { overwrite: true });
-            console.log('✅ .htaccess file copied to dist folder');
+            // Use fs.writeFile instead of copy to ensure the file is created
+            const htaccessContent = await fs.readFile('public/.htaccess', 'utf8');
+            await fs.writeFile('dist/.htaccess', htaccessContent);
+            console.log('✅ .htaccess file written to dist folder');
             
-            // Verify the file was copied
+            // Verify the file was written
             if (await fs.pathExists('dist/.htaccess')) {
               console.log('✅ Verified .htaccess exists in dist folder');
+              
+              // List files in dist folder to confirm
+              const distFiles = await fs.readdir('dist');
+              console.log('Files in dist folder after copying:', distFiles);
+              
+              // Try to make the file visible by changing permissions
+              try {
+                await fs.chmod('dist/.htaccess', 0o644);
+                console.log('✅ Changed permissions on .htaccess file');
+              } catch (chmodError) {
+                console.error('Error changing permissions:', chmodError);
+              }
             } else {
-              console.error('❌ .htaccess was not copied to dist folder');
+              console.error('❌ .htaccess was not written to dist folder');
             }
           } else {
             console.error('❌ .htaccess file not found in public folder');
           }
         } catch (error) {
-          console.error('Error copying .htaccess file:', error);
+          console.error('Error handling .htaccess file:', error);
         }
       }
     }
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          // Make sure .htaccess is treated as an asset and copied
+          if (assetInfo.name === '.htaccess') {
+            return '.htaccess';
+          }
+          return 'assets/[name]-[hash][extname]';
+        }
+      }
+    }
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
