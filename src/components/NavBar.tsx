@@ -74,6 +74,16 @@ const NavBar = () => {
               Games
             </a>
             <a 
+              href="#careers" 
+              className="text-white/80 hover:text-white transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection('careers');
+              }}
+            >
+              Careers
+            </a>
+            <a 
               href="#contact" 
               className="text-white/80 hover:text-white transition-colors"
               onClick={(e) => {
@@ -118,6 +128,16 @@ const NavBar = () => {
             }}
           >
             Games
+          </a>
+          <a 
+            href="#careers" 
+            className="py-2 text-white/80 hover:text-white" 
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('careers');
+            }}
+          >
+            Careers
           </a>
           <a 
             href="#contact" 
