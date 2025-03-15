@@ -3,7 +3,7 @@ import React from 'react';
 
 const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden bg-gray-900">
+    <section className="relative overflow-hidden bg-gray-900 pt-24 md:pt-28">
       {/* Full image without cropping */}
       <div className="w-full">
         <img 
