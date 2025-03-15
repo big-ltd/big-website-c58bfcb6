@@ -3,7 +3,7 @@ import React from 'react';
 
 const CareersSection = () => {
   return (
-    <section id="careers" className="bg-gray-50 py-10 md:py-14">
+    <section id="careers" className="bg-gray-50 pt-10 md:pt-14">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
           <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
