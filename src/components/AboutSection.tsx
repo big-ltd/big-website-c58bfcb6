@@ -12,8 +12,11 @@ const AboutSection = () => {
           </div>
           
           <div className="w-full max-w-3xl mx-auto animate-fade-in">
+            <p className="subtitle-text mb-4 text-gray-700 text-center text-xl md:text-2xl">
+              Big is a mobile game developer and publisher based in Cyprus.
+            </p>
             <p className="subtitle-text mb-6 text-gray-700 text-center text-xl md:text-2xl">
-              Big is a mobile game developer and publisher based in Cyprus. We are all about creating games that players love and that inspire fandom. We believe that the freedom to pursue our passions—while staying attuned to what players want—makes game development truly rewarding.
+              Our mission is to create games that players love and that inspire fandom. We believe that the freedom to pursue our passions, while staying attuned to what players want — makes game development truly rewarding.
             </p>
           </div>
         </div>
