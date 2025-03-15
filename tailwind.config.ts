@@ -22,6 +22,7 @@ export default {
 			fontFamily: {
 				sans: ['Nunito', 'system-ui', 'sans-serif'],
 				heading: ['Nunito', 'system-ui', 'sans-serif'],
+				serif: ['Playfair Display', 'Georgia', 'serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

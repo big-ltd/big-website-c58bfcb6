@@ -33,7 +33,7 @@ const Footer = () => {
                 className="h-16" 
               />
             </div>
-            <div className="italic text-gray-300 border-l-4 border-primary/60 pl-4 py-2">
+            <div className="italic text-gray-300 border-l-4 border-primary/60 pl-4 py-2 font-serif">
               {quote}
             </div>
           </div>
@@ -50,7 +50,7 @@ const Footer = () => {
               <li>
                 <a href="#games" className="text-gray-400 hover:text-white transition-colors flex items-center">
                   <ChevronRight className="h-4 w-4 mr-1" />
-                  Our Games
+                  Games
                 </a>
               </li>
               <li>
