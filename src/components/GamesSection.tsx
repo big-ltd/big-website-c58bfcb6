@@ -8,6 +8,11 @@ const GamesSection = () => {
         <div className="text-center mb-12">
           <h2 className="title-text mb-4">Our Games</h2>
         </div>
+        
+        {/* Game content will go here */}
+        <div className="game-content">
+          {/* Future game cards or descriptions will be placed here */}
+        </div>
       </div>
     </section>
   );
