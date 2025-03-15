@@ -117,4 +117,9 @@
   .section {
     @apply py-16 md:py-24;
   }
+  
+  /* Override mb-8 to have 1rem margin bottom */
+  .mb-8 {
+    margin-bottom: 1rem !important;
+  }
 }
