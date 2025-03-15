@@ -4,18 +4,18 @@ import { MapPin, Phone, Mail } from 'lucide-react';
 
 const ContactSection = () => {
   return (
-    <section id="contact" className="section bg-gray-50 py-16">
+    <section id="contact" className="bg-gray-50 py-10 md:py-14">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
+        <div className="text-center mb-6">
+          <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
             <span className="text-primary font-medium">Contact</span>
           </div>
         </div>
         
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-sm p-8">
-            <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
-            <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="text-2xl font-bold mb-5">Contact Information</h3>
+            <div className="space-y-5">
               <div className="flex items-start">
                 <div className="mr-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                   <MapPin className="h-5 w-5 text-primary" />

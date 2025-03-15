@@ -23,14 +23,14 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+      <div className="container mx-auto px-4 pt-12 pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div>
-            <div className="mb-6">
+            <div className="mb-5">
               <img 
                 src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
                 alt="BIG Logo" 
-                className="h-12" 
+                className="h-16" 
               />
             </div>
             <div className="italic text-gray-300 border-l-4 border-primary/60 pl-4 py-2">
@@ -39,7 +39,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-bold text-lg mb-6">Company</h4>
+            <h4 className="font-bold text-lg mb-5">Company</h4>
             <ul className="space-y-3">
               <li>
                 <a href="#about" className="text-gray-400 hover:text-white transition-colors flex items-center">
@@ -69,7 +69,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-gray-800 pt-8">
+        <div className="border-t border-gray-800 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
               &copy; {new Date().getFullYear()} B.I.G - Berry Interactive Games LTD. All rights reserved.

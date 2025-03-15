@@ -48,14 +48,14 @@ const NavBar = () => {
             <img 
               src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
               alt="BIG Logo" 
-              className="h-12" 
+              className="h-16 md:h-20" 
             />
           </a>
 
           <nav className="hidden md:flex items-center space-x-8">
             <a 
               href="#about" 
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors text-lg"
               onClick={(e) => {
                 e.preventDefault();
                 scrollToSection('about');
@@ -65,7 +65,7 @@ const NavBar = () => {
             </a>
             <a 
               href="#games" 
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors text-lg"
               onClick={(e) => {
                 e.preventDefault();
                 scrollToSection('games');
@@ -75,7 +75,7 @@ const NavBar = () => {
             </a>
             <a 
               href="#careers" 
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors text-lg"
               onClick={(e) => {
                 e.preventDefault();
                 scrollToSection('careers');
@@ -85,7 +85,7 @@ const NavBar = () => {
             </a>
             <a 
               href="#contact" 
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors text-lg"
               onClick={(e) => {
                 e.preventDefault();
                 scrollToSection('contact');
@@ -111,7 +111,7 @@ const NavBar = () => {
         <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
           <a 
             href="#about" 
-            className="py-2 text-white/80 hover:text-white" 
+            className="py-2 text-white/80 hover:text-white text-lg" 
             onClick={(e) => {
               e.preventDefault();
               scrollToSection('about');
@@ -121,7 +121,7 @@ const NavBar = () => {
           </a>
           <a 
             href="#games" 
-            className="py-2 text-white/80 hover:text-white" 
+            className="py-2 text-white/80 hover:text-white text-lg" 
             onClick={(e) => {
               e.preventDefault();
               scrollToSection('games');
@@ -131,7 +131,7 @@ const NavBar = () => {
           </a>
           <a 
             href="#careers" 
-            className="py-2 text-white/80 hover:text-white" 
+            className="py-2 text-white/80 hover:text-white text-lg" 
             onClick={(e) => {
               e.preventDefault();
               scrollToSection('careers');
@@ -141,7 +141,7 @@ const NavBar = () => {
           </a>
           <a 
             href="#contact" 
-            className="py-2 text-white/80 hover:text-white" 
+            className="py-2 text-white/80 hover:text-white text-lg" 
             onClick={(e) => {
               e.preventDefault();
               scrollToSection('contact');

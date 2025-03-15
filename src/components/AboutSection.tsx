@@ -4,17 +4,17 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const AboutSection = () => {
   return (
-    <section id="games" className="section bg-gray-50 py-20">
+    <section id="games" className="section bg-gray-50 py-10 md:py-14">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
+        <div className="text-center mb-8">
+          <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
             <span className="text-primary font-medium">Our Games</span>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="w-full md:w-1/2 order-2 md:order-1">
-            <div className="p-6">
+            <div className="p-4">
               <h3 className="text-2xl font-bold mb-4 flex items-center">
                 <img 
                   src="/lovable-uploads/19b593e8-7f17-40ea-9749-27b79f8b8bd1.png" 

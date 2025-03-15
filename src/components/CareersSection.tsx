@@ -3,15 +3,15 @@ import React from 'react';
 
 const CareersSection = () => {
   return (
-    <section id="careers" className="section bg-gray-50 py-16">
+    <section id="careers" className="bg-gray-50 py-10 md:py-14">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full">
+        <div className="text-center mb-6">
+          <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
             <span className="text-primary font-medium">Careers</span>
           </div>
         </div>
         
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-8 bg-white rounded-xl p-8 shadow-sm">
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 bg-white rounded-xl p-6 shadow-sm">
           <div className="md:w-1/3 flex justify-center">
             <img 
               src="/lovable-uploads/2ad17f22-745c-4a1b-b332-bc3caec754ac.png" 
@@ -21,8 +21,8 @@ const CareersSection = () => {
           </div>
           
           <div className="md:w-2/3">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">Join the fun</h2>
-            <p className="text-lg mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Join the fun</h2>
+            <p className="text-lg mb-3">
               Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big-ltd.com" className="text-primary font-medium hover:underline">careers@big-ltd.com</a>
             </p>
             
