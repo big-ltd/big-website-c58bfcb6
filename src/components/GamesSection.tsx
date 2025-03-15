@@ -3,7 +3,7 @@ import React from 'react';
 
 const GamesSection = () => {
   return (
-    <section id="games" className="bg-white dark:bg-gray-900 pt-4 pb-0">
+    <section id="games" className="bg-white dark:bg-gray-900 pt-[-4px] pb-0">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-8">
           <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
