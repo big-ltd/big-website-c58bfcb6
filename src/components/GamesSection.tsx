@@ -3,8 +3,8 @@ import React from 'react';
 
 const GamesSection = () => {
   return (
-    <section id="games" className="section bg-white dark:bg-gray-900 py-8 md:py-12">
-      <div className="container px-4 mx-auto">
+    <section id="games" className="bg-white dark:bg-gray-900">
+      <div className="container px-4 mx-auto py-16 md:py-24">
         <div className="text-center mb-8">
           <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
             <span className="text-primary font-medium">Our Games</span>
