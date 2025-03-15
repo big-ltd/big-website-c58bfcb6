@@ -13,7 +13,7 @@ const HeroSection = () => {
         <img 
           src="/lovable-uploads/8ae4f57d-3b33-4f87-add0-e9df9b145635.png" 
           alt="Match Story Game" 
-          className="w-full h-[75vh] object-cover object-center"
+          className="w-full h-[75vh] object-cover object-bottom"
         />
       </div>
     </section>
