@@ -23,7 +23,7 @@ const GamesSection = () => {
                   />
                   Match Story
                 </h3>
-                <p className="text-gray-700 mb-6">
+                <p className="text-gray-700 mb-6 text-xl md:text-2xl">
                   Match Story is an addictive yet relaxing puzzle game. Tap-to-match tiles to progress through chapters and unveil secrets.
                 </p>
                 <div className="flex flex-wrap items-center gap-4 mt-4">
