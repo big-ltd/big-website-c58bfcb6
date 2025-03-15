@@ -7,13 +7,13 @@ const Footer = () => {
   const [quote, setQuote] = useState<string>("");
   
   const quotes = [
-    "\"Love is the one thing that transcends time and space.\" – Interstellar",
-    "\"Every choice you have ever made has led you to this moment.\" – The Matrix Reloaded",
-    "\"Your focus determines your reality.\" – Star Wars: The Phantom Menace",
-    "\"The dream is real.\" – Inception",
-    "\"All those moments will be lost in time, like tears in rain.\" – Blade Runner",
-    "\"We are only here briefly, and in this moment, I want to allow myself joy.\" – Her",
-    "\"For every shadow, no matter how deep, is threatened by morning light.\" – The Fountain"
+    "\"Love is the one thing that transcends time and space.\" – <i>Interstellar</i>",
+    "\"Every choice you have ever made has led you to this moment.\" – <i>The Matrix Reloaded</i>",
+    "\"Your focus determines your reality.\" – <i>Star Wars: The Phantom Menace</i>",
+    "\"The dream is real.\" – <i>Inception</i>",
+    "\"All those moments will be lost in time, like tears in rain.\" – <i>Blade Runner</i>",
+    "\"We are only here briefly, and in this moment, I want to allow myself joy.\" – <i>Her</i>",
+    "\"For every shadow, no matter how deep, is threatened by morning light.\" – <i>The Fountain</i>"
   ];
   
   useEffect(() => {
@@ -33,8 +33,8 @@ const Footer = () => {
                 className="h-16" 
               />
             </div>
-            <div className="italic text-xl md:text-2xl text-gray-300 border-l-4 border-primary/60 pl-4 py-2 font-arial">
-              {quote}
+            <div className="text-xl md:text-2xl text-gray-300 border-l-4 border-primary/60 pl-4 py-2 font-arial">
+              <div dangerouslySetInnerHTML={{ __html: quote }} />
             </div>
           </div>
           
