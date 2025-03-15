@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -23,6 +22,7 @@ export default {
 				sans: ['Nunito', 'system-ui', 'sans-serif'],
 				heading: ['Nunito', 'system-ui', 'sans-serif'],
 				serif: ['Playfair Display', 'Georgia', 'serif'],
+				arial: ['Arial', 'Helvetica', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
