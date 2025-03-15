@@ -33,7 +33,7 @@ const Footer = () => {
                 className="h-16" 
               />
             </div>
-            <div className="text-xl md:text-2xl text-gray-300 border-l-4 border-primary/60 pl-4 py-2 font-arial">
+            <div className="text-lg text-gray-300 border-l-4 border-primary/60 pl-4 py-2 font-arial">
               <div dangerouslySetInnerHTML={{ __html: quote }} />
             </div>
           </div>
