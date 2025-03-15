@@ -13,7 +13,7 @@ const GamesSection = () => {
         
         <div className="game-content max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-center gap-2">
-            <div className="w-full md:w-1/2 order-2 md:order-1">
+            <div className="w-full md:w-1/2 order-2 md:order-1 mt-8 md:mt-0">
               <div className="md:pr-0">
                 <h3 className="text-2xl font-bold mb-4 flex items-center">
                   <img 
@@ -55,7 +55,7 @@ const GamesSection = () => {
               </div>
             </div>
             
-            <div className="w-full md:w-1/2 order-1 md:order-2 flex justify-center">
+            <div className="w-full md:w-1/2 order-1 md:order-2 flex justify-center mb-4 md:mb-0">
               <div className="relative rounded-xl overflow-hidden shadow-md max-w-[300px]">
                 <img 
                   src="/lovable-uploads/f826845e-cfba-4e75-b742-8f4d5ae927ed.png" 
