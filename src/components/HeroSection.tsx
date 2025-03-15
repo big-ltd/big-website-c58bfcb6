@@ -4,10 +4,6 @@ import React from 'react';
 const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-gray-900">
-      {/* Background gradient elements */}
-      <div className="absolute top-0 left-[10%] w-72 h-72 bg-[#5E3BA5]/20 rounded-full filter blur-3xl opacity-70 animate-float"></div>
-      <div className="absolute bottom-10 right-[5%] w-80 h-80 bg-[#361E75]/20 rounded-full filter blur-3xl opacity-70 animate-float" style={{ animationDelay: '1s' }}></div>
-      
       {/* Simple full-height image container */}
       <div className="w-full h-[70vh]">
         <img 
