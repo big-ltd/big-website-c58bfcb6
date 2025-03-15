@@ -11,7 +11,7 @@ const GamesSection = () => {
           </div>
         </div>
         
-        <div className="game-content">
+        <div className="game-content max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-full md:w-1/2 order-2 md:order-1">
               <div className="p-4">
