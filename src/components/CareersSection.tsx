@@ -22,7 +22,7 @@ const CareersSection = () => {
           
           <div className="md:w-2/3">
             <h2 className="text-2xl md:text-3xl font-bold mb-3">Join the fun</h2>
-            <p className="text-lg mb-3">
+            <p className="text-xl md:text-2xl mb-3">
               Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big-ltd.com" className="text-primary font-medium hover:underline">careers@big-ltd.com</a>
             </p>
             
