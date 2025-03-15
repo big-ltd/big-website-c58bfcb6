@@ -122,4 +122,9 @@
   .mb-8 {
     margin-bottom: 1rem !important;
   }
+  
+  /* Override mb-6 to have 1rem margin bottom */
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
 }
