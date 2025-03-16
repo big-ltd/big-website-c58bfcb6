@@ -17,7 +17,7 @@ const GamesSection = () => {
               <div className="md:pr-0">
                 <h3 className="text-2xl font-bold mb-4 flex items-center">
                   <img 
-                    src="/lovable-uploads/19b593e8-7f17-40ea-9749-27b79f8b8bd1.png" 
+                    src="/lovable-uploads/fb2b108e-59bd-455c-93d8-4204ea24e01c.png" 
                     alt="Match Tiles" 
                     className="mr-4 h-24 w-24" 
                   />
