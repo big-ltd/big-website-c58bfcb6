@@ -6,9 +6,10 @@
   
   # Check if the host is invest.big-ltd.com
   RewriteCond %{HTTP_HOST} ^invest\.big-ltd\.com$ [NC]
-  # Internally rewrite to /invest but keep the URL in the browser as is
-  RewriteRule ^$ /invest [L]
-  RewriteRule ^(?!invest)(.*)$ /invest/$1 [L]
+  # And if the request is not already for /invest
+  RewriteCond %{REQUEST_URI} !^/invest [NC]
+  # Then rewrite to /invest
+  RewriteRule ^(.*)$ /invest [L]
   
   # Standard SPA routing for other paths
   RewriteRule ^index\.html$ - [L]

@@ -2,28 +2,14 @@
 {
   "rewrites": [
     { 
-      "source": "/", 
-      "destination": "/invest",
-      "has": [
-        {
-          "type": "host",
-          "value": "invest.big-ltd.com"
-        }
-      ]
-    },
-    { 
-      "source": "/:path*", 
-      "destination": "/invest",
-      "has": [
-        {
-          "type": "host",
-          "value": "invest.big-ltd.com"
-        }
-      ]
-    },
-    { 
       "source": "/(.*)", 
-      "destination": "/index.html" 
+      "destination": "/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "invest.big-ltd.com"
+        }
+      ]
     }
   ]
 }
