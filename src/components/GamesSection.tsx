@@ -58,7 +58,7 @@ const GamesSection = () => {
             <div className="w-full md:w-1/2 order-1 md:order-2 flex justify-center mb-4 md:mb-0">
               <div className="relative rounded-xl overflow-hidden shadow-md max-w-[300px]">
                 <img 
-                  src="/lovable-uploads/f826845e-cfba-4e75-b742-8f4d5ae927ed.png" 
+                  src="/lovable-uploads/a4452e09-edd9-4c14-9147-144872eec815.png" 
                   alt="Match Story Gameplay" 
                   className="w-full h-auto object-contain"
                 />
