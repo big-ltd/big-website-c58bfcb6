@@ -7,7 +7,7 @@ const HeroSection = () => {
       {/* Full image without cropping */}
       <div className="w-full">
         <img 
-          src="/lovable-uploads/8ae4f57d-3b33-4f87-add0-e9df9b145635.png" 
+          src="/lovable-uploads/96c56aac-9191-4f5a-81e4-6475b88aca00.png" 
           alt="Match Story Game" 
           className="w-full h-auto"
         />
