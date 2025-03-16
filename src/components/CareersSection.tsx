@@ -14,7 +14,7 @@ const CareersSection = () => {
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 bg-white rounded-xl p-6 shadow-sm">
           <div className="md:w-1/3 flex justify-center">
             <img 
-              src="/lovable-uploads/2ad17f22-745c-4a1b-b332-bc3caec754ac.png" 
+              src="/lovable-uploads/37bf31f6-7130-4c68-a753-8f706c64fa90.png" 
               alt="Cartoon rabbit character" 
               className="w-48 h-auto object-contain"
             />
