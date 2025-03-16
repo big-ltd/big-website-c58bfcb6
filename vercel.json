@@ -3,13 +3,7 @@
   "rewrites": [
     { 
       "source": "/(.*)", 
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "invest.big-ltd.com"
-        }
-      ]
+      "destination": "/index.html"
     }
   ]
 }
