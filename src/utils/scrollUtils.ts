@@ -1,13 +1,21 @@
 
 /**
- * Scrolls to a specific section on the page with a consistent offset
+ * Scrolls to a specific section on the page with section-specific offsets
  * @param id The ID of the section to scroll to
  */
 export const scrollToSection = (id: string) => {
   const element = document.getElementById(id);
   if (element) {
-    // Using a consistent offset for both mobile and desktop
-    const headerOffset = 80;
+    // Default offset for most sections
+    let headerOffset = 80;
+    
+    // Custom offsets for specific sections
+    if (id === 'about') {
+      headerOffset = 100;
+    } else if (id === 'games') {
+      headerOffset = 140;
+    }
+    
     const elementPosition = element.getBoundingClientRect().top;
     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
     
