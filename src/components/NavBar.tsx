@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { scrollToSection } from '@/utils/scrollUtils';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,15 +22,9 @@ const NavBar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const offsetPosition = element.offsetTop - 50;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    scrollToSection(id);
     if (isOpen) setIsOpen(false);
   };
 
@@ -56,40 +51,28 @@ const NavBar = () => {
             <a 
               href="#about" 
               className="text-white/80 hover:text-white transition-colors text-lg"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection('about');
-              }}
+              onClick={(e) => handleNavClick(e, 'about')}
             >
               About
             </a>
             <a 
               href="#games" 
               className="text-white/80 hover:text-white transition-colors text-lg"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection('games');
-              }}
+              onClick={(e) => handleNavClick(e, 'games')}
             >
               Games
             </a>
             <a 
               href="#careers" 
               className="text-white/80 hover:text-white transition-colors text-lg"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection('careers');
-              }}
+              onClick={(e) => handleNavClick(e, 'careers')}
             >
               Careers
             </a>
             <a 
               href="#contact" 
               className="text-white/80 hover:text-white transition-colors text-lg"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection('contact');
-              }}
+              onClick={(e) => handleNavClick(e, 'contact')}
             >
               Contact
             </a>
@@ -112,40 +95,28 @@ const NavBar = () => {
           <a 
             href="#about" 
             className="py-2 text-white/80 hover:text-white text-lg" 
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('about');
-            }}
+            onClick={(e) => handleNavClick(e, 'about')}
           >
             About
           </a>
           <a 
             href="#games" 
             className="py-2 text-white/80 hover:text-white text-lg" 
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('games');
-            }}
+            onClick={(e) => handleNavClick(e, 'games')}
           >
             Games
           </a>
           <a 
             href="#careers" 
             className="py-2 text-white/80 hover:text-white text-lg" 
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('careers');
-            }}
+            onClick={(e) => handleNavClick(e, 'careers')}
           >
             Careers
           </a>
           <a 
             href="#contact" 
             className="py-2 text-white/80 hover:text-white text-lg" 
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('contact');
-            }}
+            onClick={(e) => handleNavClick(e, 'contact')}
           >
             Contact
           </a>

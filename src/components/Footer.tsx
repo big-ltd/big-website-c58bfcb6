@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { scrollToSection } from '@/utils/scrollUtils';
 
 const Footer = () => {
   const [quote, setQuote] = useState<string>("");
@@ -20,6 +21,11 @@ const Footer = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
     setQuote(quotes[randomIndex]);
   }, []);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    scrollToSection(id);
+  };
 
   return (
     <footer className="bg-gray-900 text-white mt-2.5">
@@ -42,25 +48,29 @@ const Footer = () => {
             <h4 className="font-bold text-lg mb-5">Company</h4>
             <ul className="space-y-3">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="#about" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                   onClick={(e) => handleNavClick(e, 'about')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   About Us
                 </a>
               </li>
               <li>
-                <a href="#games" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="#games" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                   onClick={(e) => handleNavClick(e, 'games')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Games
                 </a>
               </li>
               <li>
-                <a href="#careers" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="#careers" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                   onClick={(e) => handleNavClick(e, 'careers')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Careers
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="#contact" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                   onClick={(e) => handleNavClick(e, 'contact')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Contact
                 </a>
