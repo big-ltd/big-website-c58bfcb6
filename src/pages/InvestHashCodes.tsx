@@ -139,9 +139,9 @@ const InvestHashCodes = () => {
       const bucketExists = buckets?.some(bucket => bucket.name === STORAGE_BUCKET);
       
       if (!bucketExists) {
-        await supabase.storage.createBucket(STORAGE_BUCKET, {
-          public: true
-        });
+        // Since we can't create buckets directly from the client,
+        // we'll try to upload anyway and the server will handle errors
+        console.log("Bucket doesn't exist, will attempt upload anyway");
       }
 
       // Upload the file
@@ -153,7 +153,8 @@ const InvestHashCodes = () => {
         });
 
       if (error) {
-        throw error;
+        console.error("Upload error details:", error);
+        throw new Error(error.message);
       }
 
       // Get the public URL
@@ -172,7 +173,7 @@ const InvestHashCodes = () => {
       console.error('Error uploading file:', error);
       toast({
         title: "Error",
-        description: "Failed to upload PDF",
+        description: `Failed to upload PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {

@@ -82,12 +82,30 @@ const Invest = () => {
 
   const getPdfUrl = async () => {
     try {
-      const { data } = supabase
+      // Try to get the PDF URL from Supabase storage
+      const { data, error } = supabase
         .storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(PDF_FILE_NAME);
       
-      setPdfUrl(data.publicUrl);
+      if (error) {
+        throw error;
+      }
+
+      // Check if the URL is valid by making a HEAD request
+      try {
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+        if (response.ok) {
+          setPdfUrl(data.publicUrl);
+        } else {
+          throw new Error('PDF not found');
+        }
+      } catch (fetchError) {
+        // If there's an error with the fetch or the PDF doesn't exist,
+        // fall back to the static file
+        console.error('Error checking PDF existence:', fetchError);
+        setPdfUrl('/lovable-uploads/invest.pdf');
+      }
     } catch (error) {
       console.error('Error getting PDF URL:', error);
       // Fallback to the static PDF if there's an error
