@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -406,58 +405,45 @@ const InvestHashCodes = () => {
       console.log('===== DEBUG SLIDE REORDERING =====');
       console.log(`Starting move from ${sourceIndex} to ${destinationIndex}`);
       
-      // Log the current slides array with more details
+      const slidesArray = [...currentSlides];
+      
       console.log('Current slides before move:');
-      currentSlides.forEach((slide, idx) => {
-        console.log(`Position ${idx}: ${slide.name} - URL: ${slide.url.substring(0, 50)}...`);
+      slidesArray.forEach((slide, idx) => {
+        console.log(`${idx}: ${slide.name}`);
       });
       
-      // Create a deep copy of the slides array to avoid reference issues
-      const updatedSlides = JSON.parse(JSON.stringify(currentSlides));
+      const slideToMove = slidesArray[sourceIndex];
+      console.log(`Moving slide: ${slideToMove.name}`);
       
-      const slideToMove = updatedSlides[sourceIndex];
-      console.log(`Moving slide: ${slideToMove.name} from position ${sourceIndex} to ${destinationIndex}`);
-      
-      // Remove the slide from source position
-      updatedSlides.splice(sourceIndex, 1);
+      slidesArray.splice(sourceIndex, 1);
       console.log('After splice removal:');
-      updatedSlides.forEach((slide, idx) => {
-        console.log(`Position ${idx}: ${slide.name}`);
+      slidesArray.forEach((slide, idx) => {
+        console.log(`${idx}: ${slide.name}`);
       });
       
-      // Insert the slide at destination position
-      updatedSlides.splice(destinationIndex, 0, slideToMove);
+      slidesArray.splice(destinationIndex, 0, slideToMove);
       console.log('After splice insertion:');
-      updatedSlides.forEach((slide, idx) => {
-        console.log(`Position ${idx}: ${slide.name}`);
+      slidesArray.forEach((slide, idx) => {
+        console.log(`${idx}: ${slide.name}`);
       });
       
-      // Rename slides based on their new positions
-      const renamedSlides = updatedSlides.map((slide, index) => {
+      const renamedSlides = slidesArray.map((slide, index) => {
         const fileNumber = String(index + 1).padStart(2, '0');
         const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
         const newName = `${fileNumber}.${fileExtension}`;
         
-        const originalName = slide.name.split('?')[0];
-        
-        console.log(`Slide at position ${index} - Original filename: "${originalName}", New filename: "${newName}"`);
+        console.log(`Slide ${index} - Original: ${slide.name}, New: ${newName}`);
         
         return {
-          ...slide,
+          originalSlide: slide,
           newName,
-          originalName
+          originalName: slide.name
         };
       });
       
-      console.log('Renamed slides mapping:');
-      renamedSlides.forEach((slide, idx) => {
-        console.log(`Position ${idx}: "${slide.originalName}" → "${slide.newName}" (original URL: ${slide.url.substring(0, 40)}...)`);
-      });
-      
-      // Download all files in their current state
       console.log('Starting downloads...');
-      const downloadPromises = renamedSlides.map(async (slide, index) => {
-        console.log(`Starting download for slide at position ${index}: "${slide.originalName}"`);
+      const downloadPromises = renamedSlides.map(async (slide) => {
+        console.log(`Starting download for slide: ${slide.originalName}`);
         
         const { data, error } = await supabase.storage
           .from(STORAGE_BUCKET)
@@ -468,7 +454,7 @@ const InvestHashCodes = () => {
           throw error;
         }
         
-        console.log(`Successfully downloaded slide at position ${index}: "${slide.originalName}"`);
+        console.log(`Successfully downloaded slide: ${slide.originalName}`);
         
         return {
           ...slide,
@@ -477,9 +463,8 @@ const InvestHashCodes = () => {
       });
       
       const slidesWithFiles = await Promise.all(downloadPromises);
-      console.log('All downloads completed successfully.');
+      console.log('All downloads completed.');
       
-      // Delete all existing files before uploading
       const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
       console.log('Files to delete:', filesToDelete);
       
@@ -492,15 +477,12 @@ const InvestHashCodes = () => {
         throw deleteError;
       }
       
-      console.log('Successfully deleted all existing files.');
+      console.log('Successfully deleted old files. Starting uploads...');
       
-      // Add a delay to ensure files are fully processed by Supabase
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Upload files with their new names
-      console.log('Starting uploads with new filenames...');
       const uploadPromises = slidesWithFiles.map(async (slide, index) => {
-        console.log(`Uploading position ${index}: "${slide.newName}"`);
+        console.log(`Uploading ${index}: ${slide.newName}`);
         
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
@@ -514,51 +496,32 @@ const InvestHashCodes = () => {
           throw error;
         }
         
-        console.log(`Successfully uploaded "${slide.newName}"`);
+        console.log(`Successfully uploaded ${slide.newName}`);
       });
       
       await Promise.all(uploadPromises);
       console.log('All uploads completed successfully.');
       
-      // Generate fresh cache timestamp
       const newTimestamp = Date.now();
       setCacheTimestamp(newTimestamp);
       console.log('Cache timestamp updated:', newTimestamp);
       
-      // Delay to ensure storage consistency
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Create updated URLs for the new slide order
-      const updatedSlideURLs = renamedSlides.map(slide => {
+      const updatedSlides = renamedSlides.map(slide => {
         const { data } = supabase.storage
           .from(STORAGE_BUCKET)
           .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
         
-        const newUrl = `${data.publicUrl}?t=${newTimestamp}`;
-        
-        console.log(`New URL for "${slide.newName}": ${newUrl.substring(0, 50)}...`);
-        
         return {
-          url: newUrl,
+          url: `${data.publicUrl}?t=${newTimestamp}`,
           name: slide.newName
         };
       });
       
-      console.log('Final slide order after reordering:');
-      updatedSlideURLs.forEach((slide, idx) => {
-        console.log(`Position ${idx}: ${slide.name}`);
-      });
+      setCurrentSlides(updatedSlides);
       
-      // Update state with new slide order
-      setCurrentSlides(updatedSlideURLs);
-      
-      // Refresh from storage to confirm changes are reflected
       await checkCurrentSlides(newTimestamp);
-      
-      console.log('Slides refreshed from storage:');
-      currentSlides.forEach((slide, idx) => {
-        console.log(`Position ${idx}: ${slide.name}`);
-      });
       
       toast({
         title: "Success",
@@ -567,12 +530,6 @@ const InvestHashCodes = () => {
     } catch (error) {
       console.error('===== ERROR REORDERING SLIDES =====');
       console.error('Error details:', error);
-      
-      if (error instanceof Error) {
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
       
       toast({
         title: "Error",
@@ -685,7 +642,7 @@ const InvestHashCodes = () => {
                     {currentSlides.map((slide, index) => (
                       <div key={index} className="relative group">
                         <img 
-                          src={`${slide.url}&t=${Date.now()}`}
+                          src={slide.url}
                           alt={`Slide ${index + 1}`} 
                           className="w-full h-40 object-contain bg-gray-900 rounded-md"
                         />
