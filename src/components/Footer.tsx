@@ -19,7 +19,6 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-8">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/investhashcodes?hash=adminSecretHash123" className="text-gray-700 hover:text-gray-500 transition-colors text-xs">Admin</Link>
           </div>
         </div>
       </div>
