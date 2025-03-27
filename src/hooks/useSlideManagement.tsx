@@ -22,10 +22,51 @@ export const useSlideManagement = () => {
   const [currentSlides, setCurrentSlides] = useState<Slide[]>([]);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
+  const [storageError, setStorageError] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Create slides folder if it doesn't exist
+  const ensureSlidesFolderExists = async (): Promise<boolean> => {
+    try {
+      // Try to list the slides folder to see if it exists
+      const { data, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .list(SLIDES_FOLDER);
+      
+      if (error) {
+        // If there's an error, let's try to create the folder by uploading a dummy file
+        console.log('Creating slides folder...');
+        const { error: uploadError } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(`${SLIDES_FOLDER}/.folder`, new Blob([''], { type: 'text/plain' }), {
+            upsert: true
+          });
+        
+        if (uploadError) {
+          console.error('Error creating slides folder:', uploadError);
+          setStorageError(true);
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error ensuring slides folder exists:', error);
+      setStorageError(true);
+      return false;
+    }
+  };
 
   const fetchSlidesOrder = async (): Promise<SlidesOrder | null> => {
     try {
+      setStorageError(false);
+      
+      // Make sure slides folder exists before trying to fetch order file
+      const folderExists = await ensureSlidesFolderExists();
+      if (!folderExists) {
+        return null;
+      }
+      
       const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
         .download(`${SLIDES_FOLDER}/${SLIDES_ORDER_FILE}`);
@@ -68,6 +109,7 @@ export const useSlideManagement = () => {
       console.log('Slides order saved successfully');
     } catch (error) {
       console.error('Error saving slides order:', error);
+      setStorageError(true);
       throw error;
     }
   };
@@ -80,6 +122,7 @@ export const useSlideManagement = () => {
 
   const checkCurrentSlides = async (forceTimestamp = null) => {
     try {
+      setStorageError(false);
       const timestamp = forceTimestamp || Date.now();
       setCacheTimestamp(timestamp);
       
@@ -165,6 +208,7 @@ export const useSlideManagement = () => {
       console.log('Slides refreshed from storage.');
     } catch (error) {
       console.error('Error checking current slides:', error);
+      setStorageError(true);
     }
   };
 
@@ -175,6 +219,12 @@ export const useSlideManagement = () => {
     setUploadLoading(true);
 
     try {
+      // Ensure slides folder exists
+      const folderExists = await ensureSlidesFolderExists();
+      if (!folderExists) {
+        throw new Error('Could not create slides folder');
+      }
+      
       // First get the current slides order
       const slidesOrder = await fetchSlidesOrder();
       const currentOrder = slidesOrder ? [...slidesOrder.slides] : [];
@@ -238,6 +288,7 @@ export const useSlideManagement = () => {
       }
     } catch (error) {
       console.error('Error uploading files:', error);
+      setStorageError(true);
       toast({
         title: "Error",
         description: `Failed to upload slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -269,7 +320,7 @@ export const useSlideManagement = () => {
 
       if (data && data.length > 0) {
         const filesToDelete = data
-          .filter(file => file.name !== SLIDES_ORDER_FILE)
+          .filter(file => file.name !== SLIDES_ORDER_FILE && file.name !== '.folder')
           .map(file => `${SLIDES_FOLDER}/${file.name}`);
         
         if (filesToDelete.length > 0) {
@@ -301,6 +352,7 @@ export const useSlideManagement = () => {
       }
     } catch (error) {
       console.error('Error deleting slides:', error);
+      setStorageError(true);
       if (showConfirm) {
         toast({
           title: "Error",
@@ -353,6 +405,7 @@ export const useSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error deleting slide:', error);
+      setStorageError(true);
       toast({
         title: "Error",
         description: `Failed to delete slide: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -367,6 +420,13 @@ export const useSlideManagement = () => {
   const handleMoveSlide = async (sourceIndex: number, destinationIndex: number) => {
     if (sourceIndex === destinationIndex) return;
     
+    // Validate indices to prevent errors
+    if (sourceIndex < 0 || sourceIndex >= currentSlides.length || 
+        destinationIndex < 0 || destinationIndex >= currentSlides.length) {
+      console.error(`Invalid indices: source=${sourceIndex}, destination=${destinationIndex}, total slides=${currentSlides.length}`);
+      return;
+    }
+    
     setUploadLoading(true);
     
     try {
@@ -380,6 +440,8 @@ export const useSlideManagement = () => {
       
       // Create a new array with the updated order
       const newOrder = [...slidesOrder.slides];
+      
+      // Move the item - remove from source and insert at destination
       const [movedItem] = newOrder.splice(sourceIndex, 1);
       newOrder.splice(destinationIndex, 0, movedItem);
       
@@ -402,6 +464,7 @@ export const useSlideManagement = () => {
         };
       });
       
+      // Update the UI with the new order
       setCurrentSlides(updatedSlides);
       
       toast({
@@ -410,6 +473,7 @@ export const useSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error reordering slides:', error);
+      setStorageError(true);
       
       toast({
         title: "Error",
@@ -435,6 +499,7 @@ export const useSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error refreshing cache:', error);
+      setStorageError(true);
       toast({
         title: "Error",
         description: "Failed to refresh slide cache",
@@ -453,6 +518,7 @@ export const useSlideManagement = () => {
   return {
     currentSlides,
     uploadLoading,
+    storageError,
     checkCurrentSlides,
     handleFileUpload,
     handleClearAllSlides,
