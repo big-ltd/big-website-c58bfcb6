@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
@@ -124,14 +123,9 @@ export const useSlideManagement = () => {
   const verifyFileExists = async (path: string): Promise<boolean> => {
     try {
       // Try to get the file's metadata
-      const { data, error } = await supabase.storage
+      const { data } = supabase.storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(`${path}`);
-      
-      if (error) {
-        console.error(`File verification error for ${path}:`, error);
-        return false;
-      }
       
       // Try to check if the file exists with a HEAD request
       try {
