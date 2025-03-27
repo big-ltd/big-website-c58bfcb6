@@ -5,10 +5,17 @@ import { useToast } from "@/hooks/use-toast";
 
 const STORAGE_BUCKET = "investor_docs";
 const SLIDES_FOLDER = "slides";
+const SLIDES_ORDER_FILE = "slides_order.json";
 
 interface Slide {
   url: string;
   name: string;
+  originalName?: string;
+}
+
+interface SlidesOrder {
+  slides: string[];
+  lastUpdated: number;
 }
 
 export const useSlideManagement = () => {
@@ -17,54 +24,145 @@ export const useSlideManagement = () => {
   const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
   const { toast } = useToast();
 
-  const checkCurrentSlides = async (forceTimestamp = null) => {
+  const fetchSlidesOrder = async (): Promise<SlidesOrder | null> => {
     try {
-      const timestamp = forceTimestamp || Date.now();
-      setCacheTimestamp(timestamp);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const { data, error } = await supabase
-        .storage
+      const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
-        .list(`${SLIDES_FOLDER}/`, {
-          sortBy: { column: 'name', order: 'asc' }
-        });
+        .download(`${SLIDES_FOLDER}/${SLIDES_ORDER_FILE}`);
+      
+      if (error) {
+        console.log('No slides order file found, will create one');
+        return null;
+      }
+      
+      const text = await data.text();
+      return JSON.parse(text) as SlidesOrder;
+    } catch (error) {
+      console.error('Error fetching slides order:', error);
+      return null;
+    }
+  };
+
+  const saveSlidesOrder = async (slideNames: string[]): Promise<void> => {
+    try {
+      const orderData: SlidesOrder = {
+        slides: slideNames,
+        lastUpdated: Date.now()
+      };
+      
+      const { error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(`${SLIDES_FOLDER}/${SLIDES_ORDER_FILE}`, 
+          JSON.stringify(orderData, null, 2),
+          { 
+            contentType: 'application/json',
+            upsert: true,
+            cacheControl: '0'
+          }
+        );
       
       if (error) {
         throw error;
       }
       
-      if (data && data.length > 0) {
-        const imageFiles = data.filter(file => 
-          file.name.toLowerCase().endsWith('.jpg') || 
-          file.name.toLowerCase().endsWith('.jpeg') || 
-          file.name.toLowerCase().endsWith('.png')
-        );
+      console.log('Slides order saved successfully');
+    } catch (error) {
+      console.error('Error saving slides order:', error);
+      throw error;
+    }
+  };
+
+  const generateUniqueFileName = (fileExtension: string): string => {
+    const timestamp = Date.now();
+    const randomId = Math.floor(Math.random() * 100000);
+    return `${timestamp}_${randomId}.${fileExtension}`;
+  };
+
+  const checkCurrentSlides = async (forceTimestamp = null) => {
+    try {
+      const timestamp = forceTimestamp || Date.now();
+      setCacheTimestamp(timestamp);
+      
+      // First, get the slides order file
+      const slidesOrder = await fetchSlidesOrder();
+      
+      // If no order file exists, get all slides from storage
+      if (!slidesOrder) {
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .list(`${SLIDES_FOLDER}/`, {
+            sortBy: { column: 'name', order: 'asc' }
+          });
         
-        imageFiles.sort((a, b) => {
-          const nameA = a.name;
-          const nameB = b.name;
-          return nameA.localeCompare(nameB, undefined, { numeric: true });
-        });
+        if (error) {
+          throw error;
+        }
         
-        console.log('Fetched slides from storage:', imageFiles.map(f => f.name));
+        if (data && data.length > 0) {
+          const imageFiles = data.filter(file => 
+            (file.name.toLowerCase().endsWith('.jpg') || 
+            file.name.toLowerCase().endsWith('.jpeg') || 
+            file.name.toLowerCase().endsWith('.png')) && 
+            file.name !== SLIDES_ORDER_FILE
+          );
+          
+          // Create a new order file
+          const slideNames = imageFiles.map(file => file.name);
+          await saveSlidesOrder(slideNames);
+          
+          // Generate slide objects
+          const slideFiles = imageFiles.map(file => {
+            const { data } = supabase.storage
+              .from(STORAGE_BUCKET)
+              .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
+            return {
+              url: `${data.publicUrl}?t=${timestamp}`,
+              name: file.name
+            };
+          });
+          
+          setCurrentSlides(slideFiles);
+          console.log('Slides order created from existing files');
+        } else {
+          setCurrentSlides([]);
+        }
+      } else {
+        // Use the order from the file
+        console.log('Using slides order from file:', slidesOrder);
         
-        const slideFiles = imageFiles.map(file => {
+        // Check that all files in the order still exist
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .list(`${SLIDES_FOLDER}/`);
+        
+        if (error) {
+          throw error;
+        }
+        
+        const existingFiles = new Set(data.map(file => file.name));
+        const validSlideNames = slidesOrder.slides.filter(name => existingFiles.has(name));
+        
+        // If some files are missing, update the order
+        if (validSlideNames.length !== slidesOrder.slides.length) {
+          await saveSlidesOrder(validSlideNames);
+          console.log('Updated slides order, removed missing files');
+        }
+        
+        // Generate slide objects in the correct order
+        const slideFiles = validSlideNames.map(name => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
+            .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
           return {
             url: `${data.publicUrl}?t=${timestamp}`,
-            name: file.name
+            name: name
           };
         });
         
         setCurrentSlides(slideFiles);
-        console.log('Slides refreshed from storage.');
-      } else {
-        setCurrentSlides([]);
       }
+      
+      console.log('Slides refreshed from storage.');
     } catch (error) {
       console.error('Error checking current slides:', error);
     }
@@ -77,35 +175,12 @@ export const useSlideManagement = () => {
     setUploadLoading(true);
 
     try {
-      const { data: existingFiles, error: listError } = await supabase
-        .storage
-        .from(STORAGE_BUCKET)
-        .list(`${SLIDES_FOLDER}/`, {
-          sortBy: { column: 'name', order: 'asc' }
-        });
+      // First get the current slides order
+      const slidesOrder = await fetchSlidesOrder();
+      const currentOrder = slidesOrder ? [...slidesOrder.slides] : [];
       
-      if (listError) {
-        throw listError;
-      }
-      
-      const existingImageFiles = existingFiles ? existingFiles.filter(file => 
-        file.name.toLowerCase().endsWith('.jpg') || 
-        file.name.toLowerCase().endsWith('.jpeg') || 
-        file.name.toLowerCase().endsWith('.png')
-      ) : [];
-      
-      let nextSlideNumber = 1;
-      
-      if (existingImageFiles.length > 0) {
-        const fileNumbers = existingImageFiles.map(file => {
-          const nameMatch = file.name.match(/^(\d+)\./);
-          return nameMatch ? parseInt(nameMatch[1], 10) : 0;
-        });
-        
-        nextSlideNumber = Math.max(...fileNumbers) + 1;
-      }
-      
-      const uploadPromises = Array.from(files).map(async (file, index) => {
+      // Upload each file with a unique timestamped filename
+      const uploadPromises = Array.from(files).map(async (file) => {
         if (!file.type.startsWith('image/')) {
           toast({
             title: "Error",
@@ -115,9 +190,8 @@ export const useSlideManagement = () => {
           return null;
         }
 
-        const fileNumber = String(nextSlideNumber + index).padStart(2, '0');
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const newFileName = `${fileNumber}.${fileExtension}`;
+        const newFileName = generateUniqueFileName(fileExtension);
 
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
@@ -136,18 +210,27 @@ export const useSlideManagement = () => {
           .from(STORAGE_BUCKET)
           .getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`);
         
+        // Add to order
+        currentOrder.push(newFileName);
+        
         return {
           url: `${data.publicUrl}?t=${cacheTimestamp}`,
-          name: newFileName
+          name: newFileName,
+          originalName: file.name
         };
       });
 
       const results = await Promise.all(uploadPromises);
-      const successfulUploads = results.filter(Boolean);
+      const successfulUploads = results.filter(Boolean) as Slide[];
       
       if (successfulUploads.length > 0) {
+        // Save the updated order
+        await saveSlidesOrder(currentOrder);
+        
+        // Set the cache timestamp and refresh slides
         setCacheTimestamp(Date.now());
         await checkCurrentSlides();
+        
         toast({
           title: "Success",
           description: `${successfulUploads.length} slides uploaded successfully`,
@@ -185,17 +268,23 @@ export const useSlideManagement = () => {
       }
 
       if (data && data.length > 0) {
-        const filesToDelete = data.map(file => `${SLIDES_FOLDER}/${file.name}`);
+        const filesToDelete = data
+          .filter(file => file.name !== SLIDES_ORDER_FILE)
+          .map(file => `${SLIDES_FOLDER}/${file.name}`);
         
-        const { error: deleteError } = await supabase
-          .storage
-          .from(STORAGE_BUCKET)
-          .remove(filesToDelete);
+        if (filesToDelete.length > 0) {
+          const { error: deleteError } = await supabase
+            .storage
+            .from(STORAGE_BUCKET)
+            .remove(filesToDelete);
 
-        if (deleteError) {
-          throw deleteError;
+          if (deleteError) {
+            throw deleteError;
+          }
         }
-
+        
+        // Reset the order file
+        await saveSlidesOrder([]);
         setCurrentSlides([]);
         
         if (showConfirm) {
@@ -234,66 +323,28 @@ export const useSlideManagement = () => {
     setUploadLoading(true);
     
     try {
+      // Get the slide to delete
       const slideToDelete = currentSlides[slideIndex];
-      const slideFileName = slideToDelete.name.split('?')[0];
       
+      // Delete the file
       const { error: deleteError } = await supabase
         .storage
         .from(STORAGE_BUCKET)
-        .remove([`${SLIDES_FOLDER}/${slideFileName}`]);
+        .remove([`${SLIDES_FOLDER}/${slideToDelete.name}`]);
       
       if (deleteError) {
         throw deleteError;
       }
       
-      const updatedSlides = currentSlides.filter((_, index) => index !== slideIndex);
-      
-      if (updatedSlides.length > 0) {
-        const slidesToRenumber = [...updatedSlides];
-        
-        const downloadPromises = slidesToRenumber.map(async (slide, index) => {
-          const slideName = slide.name.split('?')[0];
-          const { data, error } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .download(`${SLIDES_FOLDER}/${slideName}`);
-          
-          if (error) {
-            throw error;
-          }
-          
-          return {
-            file: data,
-            originalName: slideName
-          };
-        });
-        
-        const slidesWithFiles = await Promise.all(downloadPromises);
-        
-        const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
-        await supabase.storage.from(STORAGE_BUCKET).remove(filesToDelete);
-        
-        const uploadPromises = slidesWithFiles.map(async (slide, index) => {
-          const fileNumber = String(index + 1).padStart(2, '0');
-          const fileExtension = slide.originalName.split('.').pop() || 'jpg';
-          const newFileName = `${fileNumber}.${fileExtension}`;
-          
-          const { error } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .upload(`${SLIDES_FOLDER}/${newFileName}`, slide.file, {
-              cacheControl: '0',
-              upsert: true
-            });
-          
-          if (error) {
-            throw error;
-          }
-        });
-        
-        await Promise.all(uploadPromises);
+      // Update the slides order
+      const slidesOrder = await fetchSlidesOrder();
+      if (slidesOrder) {
+        const updatedOrder = slidesOrder.slides.filter(name => name !== slideToDelete.name);
+        await saveSlidesOrder(updatedOrder);
       }
       
+      // Refresh the slides
       setCacheTimestamp(Date.now());
-      
       await checkCurrentSlides();
       
       toast({
@@ -319,143 +370,46 @@ export const useSlideManagement = () => {
     setUploadLoading(true);
     
     try {
-      console.log('===== DEBUG SLIDE REORDERING =====');
-      console.log(`Starting move from ${sourceIndex} to ${destinationIndex}`);
-      
-      const slidesArray = [...currentSlides];
-      
-      console.log('Current slides before move:');
-      slidesArray.forEach((slide, idx) => {
-        console.log(`${idx}: ${slide.name}`);
-      });
-      
-      const slideToMove = slidesArray[sourceIndex];
-      console.log(`Moving slide: ${slideToMove.name}`);
       console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
       
-      slidesArray.splice(sourceIndex, 1);
-      console.log('After splice removal:');
-      slidesArray.forEach((slide, idx) => {
-        console.log(`${idx}: ${slide.name}`);
-      });
-      
-      slidesArray.splice(destinationIndex, 0, slideToMove);
-      console.log('After splice insertion:');
-      slidesArray.forEach((slide, idx) => {
-        console.log(`${idx}: ${slide.name}`);
-      });
-      
-      console.log('Updated order:');
-      slidesArray.forEach((slide, idx) => {
-        console.log(`${idx}: ${slide.name}`);
-      });
-      
-      const renamedSlides = slidesArray.map((slide, index) => {
-        const fileNumber = String(index + 1).padStart(2, '0');
-        const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
-        const newName = `${fileNumber}.${fileExtension}`;
-        
-        console.log(`Slide ${index} - Original: ${slide.name}, New: ${newName}`);
-        
-        return {
-          originalSlide: slide,
-          newName,
-          originalName: slide.name
-        };
-      });
-      
-      console.log('Renamed slides:', renamedSlides.map(s => `${s.originalName} → ${s.newName}`));
-      console.log('Starting downloads...');
-      
-      const downloadPromises = renamedSlides.map(async (slide) => {
-        console.log(`Starting download for slide ${slide.originalName}`);
-        
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .download(`${SLIDES_FOLDER}/${slide.originalName}`);
-        
-        if (error) {
-          console.error(`Error downloading "${slide.originalName}":`, error);
-          throw error;
-        }
-        
-        console.log(`Successfully downloaded slide ${slide.originalName}`);
-        
-        return {
-          ...slide,
-          file: data
-        };
-      });
-      
-      const slidesWithFiles = await Promise.all(downloadPromises);
-      console.log('All downloads completed.');
-      
-      const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
-      console.log('Files to delete:', filesToDelete);
-      
-      const { error: deleteError } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .remove(filesToDelete);
-      
-      if (deleteError) {
-        console.error('Error deleting files:', deleteError);
-        throw deleteError;
+      // Get the current order
+      const slidesOrder = await fetchSlidesOrder();
+      if (!slidesOrder) {
+        throw new Error("Slides order not found");
       }
       
-      console.log('Successfully deleted old files. Starting uploads...');
+      // Create a new array with the updated order
+      const newOrder = [...slidesOrder.slides];
+      const [movedItem] = newOrder.splice(sourceIndex, 1);
+      newOrder.splice(destinationIndex, 0, movedItem);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Save the new order
+      await saveSlidesOrder(newOrder);
       
-      const uploadPromises = slidesWithFiles.map(async (slide, index) => {
-        console.log(`Uploading ${index}: ${slide.newName}`);
-        
-        const { error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .upload(`${SLIDES_FOLDER}/${slide.newName}`, slide.file, {
-            cacheControl: '0',
-            upsert: true
-          });
-        
-        if (error) {
-          console.error(`Error uploading "${slide.newName}":`, error);
-          throw error;
-        }
-        
-        console.log(`Successfully uploaded ${slide.newName}`);
-      });
+      // Update the UI immediately
+      const timestamp = Date.now();
+      setCacheTimestamp(timestamp);
       
-      await Promise.all(uploadPromises);
-      console.log('All uploads completed successfully.');
-      
-      const newTimestamp = Date.now();
-      setCacheTimestamp(newTimestamp);
-      console.log('Cache timestamp updated:', newTimestamp);
-      
-      // Update UI state immediately
-      const updatedSlides = renamedSlides.map(slide => {
+      // Generate slide objects in the new order
+      const updatedSlides = newOrder.map(name => {
         const { data } = supabase.storage
           .from(STORAGE_BUCKET)
-          .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
+          .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
         
         return {
-          url: `${data.publicUrl}?t=${newTimestamp}`,
-          name: slide.newName
+          url: `${data.publicUrl}?t=${timestamp}`,
+          name: name
         };
       });
       
       setCurrentSlides(updatedSlides);
-      
-      // Now refresh from storage to ensure consistency
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      await checkCurrentSlides(newTimestamp);
       
       toast({
         title: "Success",
         description: "Slides reordered successfully",
       });
     } catch (error) {
-      console.error('===== ERROR REORDERING SLIDES =====');
-      console.error('Error details:', error);
+      console.error('Error reordering slides:', error);
       
       toast({
         title: "Error",
@@ -466,7 +420,6 @@ export const useSlideManagement = () => {
       await checkCurrentSlides();
     } finally {
       setUploadLoading(false);
-      console.log('===== END SLIDE REORDERING =====');
     }
   };
 
@@ -491,6 +444,11 @@ export const useSlideManagement = () => {
       setUploadLoading(false);
     }
   };
+
+  // Initialize slides on component mount
+  useEffect(() => {
+    checkCurrentSlides();
+  }, []);
 
   return {
     currentSlides,

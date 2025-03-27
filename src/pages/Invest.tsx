@@ -12,17 +12,16 @@ import {
   SidebarProvider,
   SidebarRail
 } from "@/components/ui/sidebar";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
-const SLIDES_PREFIX = "slides/";
+const SLIDES_FOLDER = "slides";
+const SLIDES_ORDER_FILE = "slides_order.json";
+
+interface SlidesOrder {
+  slides: string[];
+  lastUpdated: number;
+}
 
 const Invest = () => {
   const [searchParams] = useSearchParams();
@@ -101,88 +100,119 @@ const Invest = () => {
     checkAuthorization();
   }, [searchParams, toast]);
 
+  const fetchSlidesOrder = async (): Promise<SlidesOrder | null> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .download(`${SLIDES_FOLDER}/${SLIDES_ORDER_FILE}`);
+      
+      if (error) {
+        console.log('No slides order file found');
+        return null;
+      }
+      
+      const text = await data.text();
+      return JSON.parse(text) as SlidesOrder;
+    } catch (error) {
+      console.error('Error fetching slides order:', error);
+      return null;
+    }
+  };
+
   const fetchSlides = async () => {
     try {
       // Update the cache timestamp to force new data loading
       setCacheTimestamp(Date.now());
       
-      // List all files in the slides directory
-      const { data, error } = await supabase
-        .storage
-        .from(STORAGE_BUCKET)
-        .list(SLIDES_PREFIX, {
-          sortBy: { column: 'name', order: 'asc' }
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data && data.length > 0) {
-        // Filter for only jpg/jpeg/png files
-        const imageFiles = data.filter(file => 
-          file.name.toLowerCase().endsWith('.jpg') || 
-          file.name.toLowerCase().endsWith('.jpeg') || 
-          file.name.toLowerCase().endsWith('.png')
-        );
-
-        // Sort files by name (assuming they are named with numbers like 01.jpg, 02.jpg, etc.)
-        imageFiles.sort((a, b) => {
-          // Extract numbers from filenames for natural sorting
-          const nameA = a.name;
-          const nameB = b.name;
-          return nameA.localeCompare(nameB, undefined, { numeric: true });
-        });
-
-        // Get public URLs for all slides and add cache-busting parameter
-        const urls = imageFiles.map(file => {
+      // First try to get the slides order
+      const slidesOrder = await fetchSlidesOrder();
+      
+      if (slidesOrder && slidesOrder.slides.length > 0) {
+        // Use the order from the file
+        console.log('Using slides order from file for viewing');
+        
+        // Generate URLs in the correct order
+        const urls = slidesOrder.slides.map(name => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
-            .getPublicUrl(SLIDES_PREFIX + file.name);
+            .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
           
-          // Add a cache-busting parameter to the URL
           return `${data.publicUrl}?t=${cacheTimestamp}`;
         });
-
+        
         setSlidesUrls(urls);
       } else {
-        // No slides found, try to use static files
-        try {
-          // Check for static slides in public folder
-          const staticUrls = [];
-          let i = 1;
-          const maxStaticSlides = 20; // Limit to checking 20 static slides
+        // No order file, try to list all files and create a default order
+        const { data, error } = await supabase
+          .storage
+          .from(STORAGE_BUCKET)
+          .list(`${SLIDES_FOLDER}/`, {
+            sortBy: { column: 'created_at', order: 'asc' }
+          });
 
-          while (i <= maxStaticSlides) {
-            const fileName = `0${i}`.slice(-2) + '.jpg'; // Format as 01.jpg, 02.jpg, etc.
-            const url = `/lovable-uploads/slides/${fileName}?t=${cacheTimestamp}`;
+        if (error) {
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          // Filter for only jpg/jpeg/png files
+          const imageFiles = data.filter(file => 
+            (file.name.toLowerCase().endsWith('.jpg') || 
+            file.name.toLowerCase().endsWith('.jpeg') || 
+            file.name.toLowerCase().endsWith('.png')) &&
+            file.name !== SLIDES_ORDER_FILE
+          );
+
+          // Get public URLs for all slides and add cache-busting parameter
+          const urls = imageFiles.map(file => {
+            const { data } = supabase.storage
+              .from(STORAGE_BUCKET)
+              .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
             
-            // Try to check if file exists (this is approximate)
-            const response = await fetch(url, { method: 'HEAD' });
-            if (response.ok) {
-              staticUrls.push(url);
-              i++;
-            } else {
-              break; // Stop when we don't find any more slides
-            }
-          }
+            // Add a cache-busting parameter to the URL
+            return `${data.publicUrl}?t=${cacheTimestamp}`;
+          });
 
-          if (staticUrls.length > 0) {
-            setSlidesUrls(staticUrls);
-          } else {
+          setSlidesUrls(urls);
+        } else {
+          // No slides found, try to use static files
+          try {
+            // Check for static slides in public folder
+            const staticUrls = [];
+            let i = 1;
+            const maxStaticSlides = 20; // Limit to checking 20 static slides
+
+            while (i <= maxStaticSlides) {
+              const fileName = `0${i}`.slice(-2) + '.jpg'; // Format as 01.jpg, 02.jpg, etc.
+              const url = `/lovable-uploads/slides/${fileName}?t=${cacheTimestamp}`;
+              
+              // Try to check if file exists (this is approximate)
+              const response = await fetch(url, { method: 'HEAD' });
+              if (response.ok) {
+                staticUrls.push(url);
+                i++;
+              } else {
+                break; // Stop when we don't find any more slides
+              }
+            }
+
+            if (staticUrls.length > 0) {
+              setSlidesUrls(staticUrls);
+            } else {
+              toast({
+                title: "No Slides Found",
+                description: "No presentation slides are available.",
+                variant: "destructive",
+              });
+            }
+          } catch (staticError) {
+            console.error('Error loading static slides:', staticError);
             toast({
-              title: "No Slides Found",
-              description: "No presentation slides are available.",
+              title: "Error",
+              description: "Failed to load presentation slides.",
               variant: "destructive",
             });
           }
-        } catch (staticError) {
-          console.error('Error loading static slides:', staticError);
-          toast({
-            title: "Error",
-            description: "Failed to load presentation slides.",
-            variant: "destructive",
-          });
         }
       }
     } catch (error) {

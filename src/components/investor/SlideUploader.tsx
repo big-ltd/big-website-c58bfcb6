@@ -60,9 +60,8 @@ const SlideUploader = ({
         </div>
         
         <p className="text-gray-400 text-sm">
-          Upload JPG or PNG image files. Files will be automatically numbered in the order they're selected.
-          For best results, select files in the order you want them to appear in the presentation.
-          You can reorder slides by using the up/down arrows after uploading.
+          Upload JPG or PNG image files. Files will be stored with unique timestamps.
+          You can reorder slides using the up/down arrows after uploading.
         </p>
       </div>
     </div>
