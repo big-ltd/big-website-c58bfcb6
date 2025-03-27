@@ -17,9 +17,22 @@ const InvestHashCodes = () => {
   const [hashCodes, setHashCodes] = useState<any[]>([]);
   const [newInvestorName, setNewInvestorName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      setIsSupabaseConfigured(false);
+      setLoading(false);
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not configured. Please set the required environment variables.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const hash = searchParams.get('hash');
     if (hash === ADMIN_HASH) {
       setIsAuthorized(true);
@@ -101,6 +114,20 @@ const InvestHashCodes = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
         <div className="text-white text-xl font-semibold">Verifying access...</div>
+      </div>
+    );
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full">
+          <h1 className="text-2xl font-bold text-white mb-4">Configuration Required</h1>
+          <p className="text-gray-300 mb-4">
+            This feature requires Supabase configuration. Please set the VITE_SUPABASE_URL and 
+            VITE_SUPABASE_ANON_KEY environment variables.
+          </p>
+        </div>
       </div>
     );
   }
