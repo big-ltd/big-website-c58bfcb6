@@ -20,6 +20,8 @@ const Invest = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
   const slideContainerRef = React.useRef<HTMLDivElement>(null);
+  // Add a timestamp to force cache refresh when needed
+  const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
 
   useEffect(() => {
     const checkAuthorization = async () => {
@@ -87,6 +89,9 @@ const Invest = () => {
 
   const fetchSlides = async () => {
     try {
+      // Update the cache timestamp to force new data loading
+      setCacheTimestamp(Date.now());
+      
       // List all files in the slides directory
       const { data, error } = await supabase
         .storage
@@ -115,12 +120,14 @@ const Invest = () => {
           return nameA.localeCompare(nameB, undefined, { numeric: true });
         });
 
-        // Get public URLs for all slides
+        // Get public URLs for all slides and add cache-busting parameter
         const urls = imageFiles.map(file => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
             .getPublicUrl(SLIDES_PREFIX + file.name);
-          return data.publicUrl;
+          
+          // Add a cache-busting parameter to the URL
+          return `${data.publicUrl}?t=${cacheTimestamp}`;
         });
 
         setSlidesUrls(urls);
@@ -134,7 +141,7 @@ const Invest = () => {
 
           while (i <= maxStaticSlides) {
             const fileName = `0${i}`.slice(-2) + '.jpg'; // Format as 01.jpg, 02.jpg, etc.
-            const url = `/lovable-uploads/slides/${fileName}`;
+            const url = `/lovable-uploads/slides/${fileName}?t=${cacheTimestamp}`;
             
             // Try to check if file exists (this is approximate)
             const response = await fetch(url, { method: 'HEAD' });
@@ -228,6 +235,12 @@ const Invest = () => {
     };
   }, [currentSlideIndex, slidesUrls.length]);
 
+  // Function to refresh slides on demand
+  const refreshSlides = () => {
+    setCacheTimestamp(Date.now());
+    fetchSlides();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
@@ -247,6 +260,14 @@ const Invest = () => {
           <div className="p-4 bg-gradient-primary flex justify-between items-center">
             <h1 className="text-2xl font-bold text-white">Investor Information</h1>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshSlides}
+                className="text-white hover:bg-gray-700"
+              >
+                Refresh Slides
+              </Button>
               <Button
                 variant="ghost"
                 onClick={toggleFullscreen}

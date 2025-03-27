@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { crypto } from '@/utils/crypto';
-import { Loader2, Plus, Trash } from 'lucide-react';
+import { Loader2, Plus, Trash, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 // Hardcoded hash for admin access - in a real app, use a more secure approach
 const ADMIN_HASH = "adminSecretHash123"; // You should change this to your preferred admin hash
@@ -21,7 +22,7 @@ const InvestHashCodes = () => {
   const [newInvestorName, setNewInvestorName] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [currentSlides, setCurrentSlides] = useState<string[]>([]);
+  const [currentSlides, setCurrentSlides] = useState<{url: string, name: string}[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -79,15 +80,28 @@ const InvestHashCodes = () => {
           file.name.toLowerCase().endsWith('.png')
         );
         
+        // Sort files by name (assuming they are named with numbers like 01.jpg, 02.jpg, etc.)
+        imageFiles.sort((a, b) => {
+          // Extract numbers from filenames for natural sorting
+          const nameA = a.name;
+          const nameB = b.name;
+          return nameA.localeCompare(nameB, undefined, { numeric: true });
+        });
+        
         // Get public URLs for all slides
-        const slideUrls = imageFiles.map(file => {
+        const slideFiles = imageFiles.map(file => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
             .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
-          return data.publicUrl;
+          return {
+            url: data.publicUrl,
+            name: file.name
+          };
         });
         
-        setCurrentSlides(slideUrls);
+        setCurrentSlides(slideFiles);
+      } else {
+        setCurrentSlides([]);
       }
     } catch (error) {
       console.error('Error checking current slides:', error);
@@ -147,6 +161,9 @@ const InvestHashCodes = () => {
     setUploadLoading(true);
 
     try {
+      // Clear existing slides first to avoid caching issues
+      await handleClearAllSlides(false);
+      
       // Process and upload each file
       const uploadPromises = Array.from(files).map(async (file, index) => {
         // Validate file type
@@ -164,10 +181,14 @@ const InvestHashCodes = () => {
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const newFileName = `${fileNumber}.${fileExtension}`;
 
+        // Add a timestamp parameter to avoid browser caching issues
+        const timestamp = Date.now();
+        const fileName = `${newFileName}?t=${timestamp}`;
+
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${newFileName}`, file, {
-            cacheControl: '3600',
+            cacheControl: '0', // Disable cache
             upsert: true
           });
 
@@ -182,7 +203,10 @@ const InvestHashCodes = () => {
           .from(STORAGE_BUCKET)
           .getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`);
         
-        return data.publicUrl;
+        return {
+          url: data.publicUrl,
+          name: newFileName
+        };
       });
 
       const results = await Promise.all(uploadPromises);
@@ -207,12 +231,14 @@ const InvestHashCodes = () => {
     }
   };
 
-  const handleClearAllSlides = async () => {
-    if (!confirm("Are you sure you want to delete all slides? This action cannot be undone.")) {
+  const handleClearAllSlides = async (showConfirm = true) => {
+    if (showConfirm && !confirm("Are you sure you want to delete all slides? This action cannot be undone.")) {
       return;
     }
 
-    setUploadLoading(true);
+    if (showConfirm) {
+      setUploadLoading(true);
+    }
 
     try {
       // List all files in the slides folder
@@ -240,11 +266,14 @@ const InvestHashCodes = () => {
         }
 
         setCurrentSlides([]);
-        toast({
-          title: "Success",
-          description: "All slides have been deleted",
-        });
-      } else {
+        
+        if (showConfirm) {
+          toast({
+            title: "Success",
+            description: "All slides have been deleted",
+          });
+        }
+      } else if (showConfirm) {
         toast({
           title: "Info",
           description: "No slides to delete",
@@ -252,9 +281,126 @@ const InvestHashCodes = () => {
       }
     } catch (error) {
       console.error('Error deleting slides:', error);
+      if (showConfirm) {
+        toast({
+          title: "Error",
+          description: `Failed to delete slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      if (showConfirm) {
+        setUploadLoading(false);
+      }
+    }
+  };
+
+  const handleMoveSlide = async (sourceIndex: number, destinationIndex: number) => {
+    if (sourceIndex === destinationIndex) return;
+    
+    setUploadLoading(true);
+    
+    try {
+      // Create a copy of currentSlides to manipulate
+      const updatedSlides = [...currentSlides];
+      
+      // Remove the slide from source position and insert at destination
+      const [movedSlide] = updatedSlides.splice(sourceIndex, 1);
+      updatedSlides.splice(destinationIndex, 0, movedSlide);
+      
+      // Create new slide objects with updated numbers
+      const renamedSlides = updatedSlides.map((slide, index) => {
+        const fileNumber = String(index + 1).padStart(2, '0');
+        const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg'; // Remove any query params
+        return {
+          ...slide,
+          newName: `${fileNumber}.${fileExtension}`,
+          oldName: slide.name
+        };
+      });
+      
+      // First, download all the images
+      const downloadPromises = renamedSlides.map(async (slide) => {
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .download(`${SLIDES_FOLDER}/${slide.name}`);
+        
+        if (error) {
+          throw error;
+        }
+        
+        return {
+          ...slide,
+          file: data
+        };
+      });
+      
+      const slidesWithFiles = await Promise.all(downloadPromises);
+      
+      // Delete all existing files
+      await handleClearAllSlides(false);
+      
+      // Upload files with new names
+      const uploadPromises = slidesWithFiles.map(async (slide) => {
+        const { error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(`${SLIDES_FOLDER}/${slide.newName}`, slide.file, {
+            cacheControl: '0', // Disable cache
+            upsert: true
+          });
+        
+        if (error) {
+          throw error;
+        }
+        
+        const { data } = supabase.storage
+          .from(STORAGE_BUCKET)
+          .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
+        
+        return {
+          url: data.publicUrl,
+          name: slide.newName
+        };
+      });
+      
+      await Promise.all(uploadPromises);
+      
+      // Refresh the slide list
+      await checkCurrentSlides();
+      
+      toast({
+        title: "Success",
+        description: "Slides reordered successfully",
+      });
+    } catch (error) {
+      console.error('Error reordering slides:', error);
       toast({
         title: "Error",
-        description: `Failed to delete slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: `Failed to reorder slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+      // Attempt to refresh the current slides to show current state
+      await checkCurrentSlides();
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const handleRefreshCache = async () => {
+    setUploadLoading(true);
+    try {
+      // Force a reload of the slide cache by adding timestamp parameters
+      await checkCurrentSlides();
+      
+      toast({
+        title: "Success",
+        description: "Slide cache refreshed",
+      });
+    } catch (error) {
+      console.error('Error refreshing cache:', error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh slide cache",
         variant: "destructive",
       });
     } finally {
@@ -308,35 +454,62 @@ const InvestHashCodes = () => {
                     
                     <Button 
                       variant="destructive"
-                      onClick={handleClearAllSlides}
+                      onClick={() => handleClearAllSlides(true)}
                       disabled={uploadLoading || currentSlides.length === 0}
                     >
                       <Trash className="h-4 w-4 mr-2" /> Clear All Slides
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={handleRefreshCache}
+                      disabled={uploadLoading}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" /> Refresh Cache
                     </Button>
                   </div>
                   
                   <p className="text-gray-400 text-sm">
                     Upload JPG or PNG image files. Files will be automatically numbered in the order they're selected.
                     For best results, select files in the order you want them to appear in the presentation.
+                    You can reorder slides by using the up/down arrows after uploading.
                   </p>
                 </div>
               </div>
               
               {currentSlides.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-white text-lg mb-2">Preview Slides</h3>
+                  <h3 className="text-white text-lg mb-2">Preview and Reorder Slides</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {currentSlides.map((url, index) => (
+                    {currentSlides.map((slide, index) => (
                       <div key={index} className="relative group">
                         <img 
-                          src={url} 
+                          src={`${slide.url}?t=${Date.now()}`} // Force cache refresh
                           alt={`Slide ${index + 1}`} 
                           className="w-full h-40 object-contain bg-gray-900 rounded-md"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex items-center justify-center">
-                          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex flex-col items-center justify-center">
+                          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity mb-2">
                             Slide {index + 1}
                           </span>
+                          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              disabled={index === 0 || uploadLoading}
+                              onClick={() => handleMoveSlide(index, index - 1)}
+                            >
+                              <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              disabled={index === currentSlides.length - 1 || uploadLoading}
+                              onClick={() => handleMoveSlide(index, index + 1)}
+                            >
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
