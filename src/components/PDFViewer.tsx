@@ -9,7 +9,6 @@ interface PDFViewerProps {
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
@@ -39,72 +38,35 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
     };
   }, []);
 
-  // Inject performance enhancer script into iframe when it loads
-  useEffect(() => {
-    if (isLoaded && iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        const iframe = iframeRef.current;
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        
-        // Create script element
-        const script = iframeDoc.createElement('script');
-        script.src = '/pdf-viewer-enhancer.js';
-        script.async = true;
-        
-        // Append to iframe document
-        iframeDoc.body.appendChild(script);
-      } catch (error) {
-        console.error('Could not inject performance script into PDF viewer:', error);
-      }
-    }
-  }, [isLoaded]);
-
-  // Add keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!iframeRef.current) return;
-
-      // Check if the iframe is the active element or we're in fullscreen mode
-      const isIframeFocused = document.activeElement === iframeRef.current || isFullscreen;
-      
-      if (isIframeFocused) {
-        if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'Space') {
-          e.preventDefault();
-          // Move to next page
-          iframeRef.current.contentWindow?.postMessage({ type: 'nextPage' }, '*');
-          setCurrentPage(prev => prev + 1);
-        } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-          e.preventDefault();
-          // Move to previous page
-          iframeRef.current.contentWindow?.postMessage({ type: 'previousPage' }, '*');
-          setCurrentPage(prev => Math.max(1, prev - 1));
-        } else if (e.key === 'Escape' && isFullscreen) {
-          // Handle ESC key in fullscreen mode
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isFullscreen, currentPage]);
-
-  // Focus the iframe when it loads
+  // Handle iframe load
   const handleIframeLoad = () => {
     setIsLoaded(true);
-    if (iframeRef.current) {
-      // Focus the iframe
-      setTimeout(() => {
-        if (iframeRef.current) {
-          iframeRef.current.focus();
-        }
-      }, 500); // Short delay to ensure PDF.js is initialized
+  };
+
+  // Construct URL with parameters to configure the built-in viewer
+  const getPdfViewerUrl = () => {
+    // Base URL
+    let url = pdfUrl;
+    
+    // Add hash parameters to configure the PDF.js viewer
+    // These are standard PDF.js parameters:
+    // - page: initial page to show
+    // - zoom: zoom level (page-fit, page-width, auto, etc)
+    // - pagemode: display mode (thumbs, bookmarks, none)
+    // - toolbar: show/hide toolbar (0 or 1)
+    // - navpanes: show/hide navigation panes (0 or 1)
+    
+    // Check if URL already has a hash
+    if (!url.includes('#')) {
+      url += '#';
+    } else {
+      url += '&';
     }
+    
+    // Configure the viewer to show all pages in continuous mode
+    url += 'view=Fit&pagemode=thumbs';
+    
+    return url;
   };
 
   return (
@@ -125,10 +87,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
         {pdfUrl ? (
           <iframe
             ref={iframeRef}
-            src={`${pdfUrl}#page=1&view=FitH&pagemode=thumbs`}
+            src={getPdfViewerUrl()}
             className="w-full h-full"
             title="Investor Document"
-            tabIndex={0}
             onLoad={handleIframeLoad}
           />
         ) : (
