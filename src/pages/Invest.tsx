@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,15 +82,11 @@ const Invest = () => {
   const getPdfUrl = async () => {
     try {
       // Try to get the PDF URL from Supabase storage
-      const { data, error } = supabase
+      const { data } = supabase
         .storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(PDF_FILE_NAME);
       
-      if (error) {
-        throw error;
-      }
-
       // Check if the URL is valid by making a HEAD request
       try {
         const response = await fetch(data.publicUrl, { method: 'HEAD' });
