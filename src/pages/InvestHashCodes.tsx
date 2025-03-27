@@ -397,25 +397,42 @@ const InvestHashCodes = () => {
     setUploadLoading(true);
     
     try {
+      console.log('===== DEBUG SLIDE REORDERING =====');
+      console.log(`Starting move from ${sourceIndex} to ${destinationIndex}`);
+      console.log('Current slides before move:', currentSlides.map((s, i) => `${i}: ${s.name}`));
+      
       const updatedSlides = [...currentSlides];
       
+      console.log(`Moving slide: ${currentSlides[sourceIndex].name}`);
+      
       const [movedSlide] = updatedSlides.splice(sourceIndex, 1);
+      console.log('After splice removal:', updatedSlides.map((s, i) => `${i}: ${s.name}`));
+      
       updatedSlides.splice(destinationIndex, 0, movedSlide);
+      console.log('After splice insertion:', updatedSlides.map((s, i) => `${i}: ${s.name}`));
       
       console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
-      console.log('Updated order:', updatedSlides.map(slide => slide.name));
+      console.log('Updated order:', updatedSlides.map((slide, index) => `${index}: ${slide.name}`));
       
       const renamedSlides = updatedSlides.map((slide, index) => {
         const fileNumber = String(index + 1).padStart(2, '0');
         const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
+        const newName = `${fileNumber}.${fileExtension}`;
+        const originalName = slide.name.split('?')[0];
+        
+        console.log(`Slide ${index} - Original: ${originalName}, New: ${newName}`);
+        
         return {
           ...slide,
-          newName: `${fileNumber}.${fileExtension}`,
-          originalName: slide.name.split('?')[0]
+          newName,
+          originalName
         };
       });
       
-      const downloadPromises = renamedSlides.map(async (slide) => {
+      console.log('Renamed slides:', renamedSlides.map(s => `${s.originalName} → ${s.newName}`));
+      
+      const downloadPromises = renamedSlides.map(async (slide, index) => {
+        console.log(`Starting download for slide ${index}: ${slide.originalName}`);
         const { data, error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .download(`${SLIDES_FOLDER}/${slide.originalName}`);
@@ -425,25 +442,34 @@ const InvestHashCodes = () => {
           throw error;
         }
         
+        console.log(`Successfully downloaded slide ${index}: ${slide.originalName}`);
+        
         return {
           ...slide,
           file: data
         };
       });
       
+      console.log('Starting downloads...');
       const slidesWithFiles = await Promise.all(downloadPromises);
+      console.log('All downloads completed.');
       
       const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
+      console.log('Files to delete:', filesToDelete);
+      
       const { error: deleteError } = await supabase.storage
         .from(STORAGE_BUCKET)
         .remove(filesToDelete);
       
       if (deleteError) {
         console.error('Error deleting files:', deleteError);
+        throw deleteError;
       }
       
-      const uploadPromises = slidesWithFiles.map(async (slide) => {
-        console.log(`Uploading ${slide.newName}`);
+      console.log('Successfully deleted old files. Starting uploads...');
+      
+      const uploadPromises = slidesWithFiles.map(async (slide, index) => {
+        console.log(`Uploading ${index}: ${slide.newName}`);
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${slide.newName}`, slide.file, {
@@ -455,28 +481,43 @@ const InvestHashCodes = () => {
           console.error(`Error uploading ${slide.newName}:`, error);
           throw error;
         }
+        
+        console.log(`Successfully uploaded ${slide.newName}`);
       });
       
       await Promise.all(uploadPromises);
+      console.log('All uploads completed successfully.');
       
       setCacheTimestamp(Date.now());
+      console.log('Cache timestamp updated:', Date.now());
       
       await checkCurrentSlides();
+      console.log('Slides refreshed from storage.');
       
       toast({
         title: "Success",
         description: "Slides reordered successfully",
       });
     } catch (error) {
-      console.error('Error reordering slides:', error);
+      console.error('===== ERROR REORDERING SLIDES =====');
+      console.error('Error details:', error);
+      
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      
       toast({
         title: "Error",
         description: `Failed to reorder slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
+      
       await checkCurrentSlides();
     } finally {
       setUploadLoading(false);
+      console.log('===== END SLIDE REORDERING =====');
     }
   };
 
