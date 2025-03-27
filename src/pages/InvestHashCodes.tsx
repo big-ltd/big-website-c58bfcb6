@@ -59,7 +59,8 @@ const InvestHashCodes = () => {
 
   const checkCurrentSlides = async () => {
     try {
-      setCacheTimestamp(Date.now());
+      const timestamp = Date.now();
+      setCacheTimestamp(timestamp);
       
       const { data, error } = await supabase
         .storage
@@ -90,7 +91,7 @@ const InvestHashCodes = () => {
             .from(STORAGE_BUCKET)
             .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
           return {
-            url: `${data.publicUrl}?t=${cacheTimestamp}`,
+            url: `${data.publicUrl}?t=${timestamp}`,
             name: file.name
           };
         });
@@ -488,8 +489,11 @@ const InvestHashCodes = () => {
       await Promise.all(uploadPromises);
       console.log('All uploads completed successfully.');
       
-      setCacheTimestamp(Date.now());
-      console.log('Cache timestamp updated:', Date.now());
+      const newTimestamp = Date.now();
+      setCacheTimestamp(newTimestamp);
+      console.log('Cache timestamp updated:', newTimestamp);
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       await checkCurrentSlides();
       console.log('Slides refreshed from storage.');
