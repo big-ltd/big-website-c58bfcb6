@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -404,22 +405,34 @@ const InvestHashCodes = () => {
     try {
       console.log('===== DEBUG SLIDE REORDERING =====');
       console.log(`Starting move from ${sourceIndex} to ${destinationIndex}`);
-      console.log('Current slides before move:', currentSlides.map((s, i) => `${i}: ${s.name}`));
       
-      const updatedSlides = [...currentSlides];
+      // Log the current slides array with more details
+      console.log('Current slides before move:');
+      currentSlides.forEach((slide, idx) => {
+        console.log(`Position ${idx}: ${slide.name} - URL: ${slide.url.substring(0, 50)}...`);
+      });
+      
+      // Create a deep copy of the slides array to avoid reference issues
+      const updatedSlides = JSON.parse(JSON.stringify(currentSlides));
       
       const slideToMove = updatedSlides[sourceIndex];
-      console.log(`Moving slide: ${slideToMove.name}`);
+      console.log(`Moving slide: ${slideToMove.name} from position ${sourceIndex} to ${destinationIndex}`);
       
+      // Remove the slide from source position
       updatedSlides.splice(sourceIndex, 1);
-      console.log('After splice removal:', updatedSlides.map((s, i) => `${i}: ${s.name}`));
+      console.log('After splice removal:');
+      updatedSlides.forEach((slide, idx) => {
+        console.log(`Position ${idx}: ${slide.name}`);
+      });
       
+      // Insert the slide at destination position
       updatedSlides.splice(destinationIndex, 0, slideToMove);
-      console.log('After splice insertion:', updatedSlides.map((s, i) => `${i}: ${s.name}`));
+      console.log('After splice insertion:');
+      updatedSlides.forEach((slide, idx) => {
+        console.log(`Position ${idx}: ${slide.name}`);
+      });
       
-      console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
-      console.log('Updated order:', updatedSlides.map((slide, index) => `${index}: ${slide.name}`));
-      
+      // Rename slides based on their new positions
       const renamedSlides = updatedSlides.map((slide, index) => {
         const fileNumber = String(index + 1).padStart(2, '0');
         const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
@@ -427,7 +440,7 @@ const InvestHashCodes = () => {
         
         const originalName = slide.name.split('?')[0];
         
-        console.log(`Slide ${index} - Original: ${originalName}, New: ${newName}`);
+        console.log(`Slide at position ${index} - Original filename: "${originalName}", New filename: "${newName}"`);
         
         return {
           ...slide,
@@ -436,20 +449,26 @@ const InvestHashCodes = () => {
         };
       });
       
-      console.log('Renamed slides:', renamedSlides.map(s => `${s.originalName} → ${s.newName}`));
+      console.log('Renamed slides mapping:');
+      renamedSlides.forEach((slide, idx) => {
+        console.log(`Position ${idx}: "${slide.originalName}" → "${slide.newName}" (original URL: ${slide.url.substring(0, 40)}...)`);
+      });
       
+      // Download all files in their current state
+      console.log('Starting downloads...');
       const downloadPromises = renamedSlides.map(async (slide, index) => {
-        console.log(`Starting download for slide ${index}: ${slide.originalName}`);
+        console.log(`Starting download for slide at position ${index}: "${slide.originalName}"`);
+        
         const { data, error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .download(`${SLIDES_FOLDER}/${slide.originalName}`);
         
         if (error) {
-          console.error(`Error downloading ${slide.originalName}:`, error);
+          console.error(`Error downloading "${slide.originalName}":`, error);
           throw error;
         }
         
-        console.log(`Successfully downloaded slide ${index}: ${slide.originalName}`);
+        console.log(`Successfully downloaded slide at position ${index}: "${slide.originalName}"`);
         
         return {
           ...slide,
@@ -457,10 +476,10 @@ const InvestHashCodes = () => {
         };
       });
       
-      console.log('Starting downloads...');
       const slidesWithFiles = await Promise.all(downloadPromises);
-      console.log('All downloads completed.');
+      console.log('All downloads completed successfully.');
       
+      // Delete all existing files before uploading
       const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
       console.log('Files to delete:', filesToDelete);
       
@@ -473,12 +492,16 @@ const InvestHashCodes = () => {
         throw deleteError;
       }
       
-      console.log('Successfully deleted old files. Starting uploads...');
+      console.log('Successfully deleted all existing files.');
       
+      // Add a delay to ensure files are fully processed by Supabase
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Upload files with their new names
+      console.log('Starting uploads with new filenames...');
       const uploadPromises = slidesWithFiles.map(async (slide, index) => {
-        console.log(`Uploading ${index}: ${slide.newName}`);
+        console.log(`Uploading position ${index}: "${slide.newName}"`);
+        
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${slide.newName}`, slide.file, {
@@ -487,37 +510,55 @@ const InvestHashCodes = () => {
           });
         
         if (error) {
-          console.error(`Error uploading ${slide.newName}:`, error);
+          console.error(`Error uploading "${slide.newName}":`, error);
           throw error;
         }
         
-        console.log(`Successfully uploaded ${slide.newName}`);
+        console.log(`Successfully uploaded "${slide.newName}"`);
       });
       
       await Promise.all(uploadPromises);
       console.log('All uploads completed successfully.');
       
+      // Generate fresh cache timestamp
       const newTimestamp = Date.now();
       setCacheTimestamp(newTimestamp);
       console.log('Cache timestamp updated:', newTimestamp);
       
+      // Delay to ensure storage consistency
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // Create updated URLs for the new slide order
       const updatedSlideURLs = renamedSlides.map(slide => {
         const { data } = supabase.storage
           .from(STORAGE_BUCKET)
           .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
         
+        const newUrl = `${data.publicUrl}?t=${newTimestamp}`;
+        
+        console.log(`New URL for "${slide.newName}": ${newUrl.substring(0, 50)}...`);
+        
         return {
-          url: `${data.publicUrl}?t=${newTimestamp}`,
+          url: newUrl,
           name: slide.newName
         };
       });
       
+      console.log('Final slide order after reordering:');
+      updatedSlideURLs.forEach((slide, idx) => {
+        console.log(`Position ${idx}: ${slide.name}`);
+      });
+      
+      // Update state with new slide order
       setCurrentSlides(updatedSlideURLs);
       
+      // Refresh from storage to confirm changes are reflected
       await checkCurrentSlides(newTimestamp);
-      console.log('Slides refreshed from storage.');
+      
+      console.log('Slides refreshed from storage:');
+      currentSlides.forEach((slide, idx) => {
+        console.log(`Position ${idx}: ${slide.name}`);
+      });
       
       toast({
         title: "Success",
