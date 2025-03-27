@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +21,6 @@ const InvestHashCodes = () => {
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [currentSlides, setCurrentSlides] = useState<{url: string, name: string}[]>([]);
-  // Add a timestamp to force cache refresh when needed
   const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
   const { toast } = useToast();
 
@@ -62,7 +60,6 @@ const InvestHashCodes = () => {
 
   const checkCurrentSlides = async () => {
     try {
-      // Update the cache timestamp to force new data loading
       setCacheTimestamp(Date.now());
       
       const { data, error } = await supabase
@@ -77,22 +74,18 @@ const InvestHashCodes = () => {
       }
       
       if (data && data.length > 0) {
-        // Filter for image files
         const imageFiles = data.filter(file => 
           file.name.toLowerCase().endsWith('.jpg') || 
           file.name.toLowerCase().endsWith('.jpeg') || 
           file.name.toLowerCase().endsWith('.png')
         );
         
-        // Sort files by name (assuming they are named with numbers like 01.jpg, 02.jpg, etc.)
         imageFiles.sort((a, b) => {
-          // Extract numbers from filenames for natural sorting
           const nameA = a.name;
           const nameB = b.name;
           return nameA.localeCompare(nameB, undefined, { numeric: true });
         });
         
-        // Get public URLs for all slides and add cache-busting parameter
         const slideFiles = imageFiles.map(file => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
@@ -109,7 +102,6 @@ const InvestHashCodes = () => {
       }
     } catch (error) {
       console.error('Error checking current slides:', error);
-      // Don't show an error toast as the slides might not exist yet
     }
   };
 
@@ -124,7 +116,6 @@ const InvestHashCodes = () => {
     }
 
     try {
-      // Generate a random hash code
       const hashCode = crypto.generateRandomHash();
 
       const { error } = await supabase
@@ -165,7 +156,6 @@ const InvestHashCodes = () => {
     setUploadLoading(true);
 
     try {
-      // First, get the existing slides to determine the next slide number
       const { data: existingFiles, error: listError } = await supabase
         .storage
         .from(STORAGE_BUCKET)
@@ -177,18 +167,15 @@ const InvestHashCodes = () => {
         throw listError;
       }
       
-      // Filter for image files
       const existingImageFiles = existingFiles ? existingFiles.filter(file => 
         file.name.toLowerCase().endsWith('.jpg') || 
         file.name.toLowerCase().endsWith('.jpeg') || 
         file.name.toLowerCase().endsWith('.png')
       ) : [];
       
-      // Determine the start number for new slides (next after the highest existing number)
-      let nextSlideNumber = 1; // Default to 1 if no slides exist
+      let nextSlideNumber = 1;
       
       if (existingImageFiles.length > 0) {
-        // Extract the highest number from existing filenames
         const fileNumbers = existingImageFiles.map(file => {
           const nameMatch = file.name.match(/^(\d+)\./);
           return nameMatch ? parseInt(nameMatch[1], 10) : 0;
@@ -197,9 +184,7 @@ const InvestHashCodes = () => {
         nextSlideNumber = Math.max(...fileNumbers) + 1;
       }
       
-      // Process and upload each file with the next available numbers
       const uploadPromises = Array.from(files).map(async (file, index) => {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
           toast({
             title: "Error",
@@ -209,18 +194,14 @@ const InvestHashCodes = () => {
           return null;
         }
 
-        // Create a padded file number (e.g., 01.jpg, 02.jpg) for proper ordering
         const fileNumber = String(nextSlideNumber + index).padStart(2, '0');
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const newFileName = `${fileNumber}.${fileExtension}`;
 
-        // Add a timestamp parameter to avoid browser caching issues
-        const timestamp = Date.now();
-        
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${newFileName}`, file, {
-            cacheControl: '0', // Disable cache
+            cacheControl: '0',
             upsert: true
           });
 
@@ -229,14 +210,13 @@ const InvestHashCodes = () => {
           throw new Error(error.message);
         }
 
-        // Get the public URL
         const { data } = supabase
           .storage
           .from(STORAGE_BUCKET)
           .getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`);
         
         return {
-          url: `${data.publicUrl}?t=${timestamp}`,
+          url: `${data.publicUrl}?t=${cacheTimestamp}`,
           name: newFileName
         };
       });
@@ -245,7 +225,6 @@ const InvestHashCodes = () => {
       const successfulUploads = results.filter(Boolean);
       
       if (successfulUploads.length > 0) {
-        // Force a cache refresh
         setCacheTimestamp(Date.now());
         await checkCurrentSlides();
         toast({
@@ -275,7 +254,6 @@ const InvestHashCodes = () => {
     }
 
     try {
-      // List all files in the slides folder
       const { data, error } = await supabase
         .storage
         .from(STORAGE_BUCKET)
@@ -286,10 +264,8 @@ const InvestHashCodes = () => {
       }
 
       if (data && data.length > 0) {
-        // Create an array of file paths to delete
         const filesToDelete = data.map(file => `${SLIDES_FOLDER}/${file.name}`);
         
-        // Delete all files
         const { error: deleteError } = await supabase
           .storage
           .from(STORAGE_BUCKET)
@@ -329,35 +305,118 @@ const InvestHashCodes = () => {
     }
   };
 
+  const handleDeleteSlide = async (slideIndex: number) => {
+    if (!confirm(`Are you sure you want to delete slide ${slideIndex + 1}?`)) {
+      return;
+    }
+
+    setUploadLoading(true);
+    
+    try {
+      const slideToDelete = currentSlides[slideIndex];
+      const slideFileName = slideToDelete.name.split('?')[0];
+      
+      const { error: deleteError } = await supabase
+        .storage
+        .from(STORAGE_BUCKET)
+        .remove([`${SLIDES_FOLDER}/${slideFileName}`]);
+      
+      if (deleteError) {
+        throw deleteError;
+      }
+      
+      const updatedSlides = currentSlides.filter((_, index) => index !== slideIndex);
+      
+      if (updatedSlides.length > 0) {
+        const slidesToRenumber = [...updatedSlides];
+        
+        const downloadPromises = slidesToRenumber.map(async (slide, index) => {
+          const slideName = slide.name.split('?')[0];
+          const { data, error } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .download(`${SLIDES_FOLDER}/${slideName}`);
+          
+          if (error) {
+            throw error;
+          }
+          
+          return {
+            file: data,
+            originalName: slideName
+          };
+        });
+        
+        const slidesWithFiles = await Promise.all(downloadPromises);
+        
+        const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
+        await supabase.storage.from(STORAGE_BUCKET).remove(filesToDelete);
+        
+        const uploadPromises = slidesWithFiles.map(async (slide, index) => {
+          const fileNumber = String(index + 1).padStart(2, '0');
+          const fileExtension = slide.originalName.split('.').pop() || 'jpg';
+          const newFileName = `${fileNumber}.${fileExtension}`;
+          
+          const { error } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .upload(`${SLIDES_FOLDER}/${newFileName}`, slide.file, {
+              cacheControl: '0',
+              upsert: true
+            });
+          
+          if (error) {
+            throw error;
+          }
+        });
+        
+        await Promise.all(uploadPromises);
+      }
+      
+      setCacheTimestamp(Date.now());
+      
+      await checkCurrentSlides();
+      
+      toast({
+        title: "Success",
+        description: "Slide deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting slide:', error);
+      toast({
+        title: "Error",
+        description: `Failed to delete slide: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+      await checkCurrentSlides();
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   const handleMoveSlide = async (sourceIndex: number, destinationIndex: number) => {
     if (sourceIndex === destinationIndex) return;
     
     setUploadLoading(true);
     
     try {
-      // Create a copy of currentSlides to manipulate
       const updatedSlides = [...currentSlides];
       
-      // Remove the slide from source position and insert at destination
       const [movedSlide] = updatedSlides.splice(sourceIndex, 1);
       updatedSlides.splice(destinationIndex, 0, movedSlide);
       
-      // Create new slide objects with updated numbers
       const renamedSlides = updatedSlides.map((slide, index) => {
         const fileNumber = String(index + 1).padStart(2, '0');
-        const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg'; // Remove any query params
+        const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
         return {
           ...slide,
           newName: `${fileNumber}.${fileExtension}`,
-          oldName: slide.name
+          originalName: slide.name.split('?')[0]
         };
       });
       
-      // First, download all the images
       const downloadPromises = renamedSlides.map(async (slide) => {
         const { data, error } = await supabase.storage
           .from(STORAGE_BUCKET)
-          .download(`${SLIDES_FOLDER}/${slide.name}`);
+          .download(`${SLIDES_FOLDER}/${slide.originalName}`);
         
         if (error) {
           throw error;
@@ -371,38 +430,26 @@ const InvestHashCodes = () => {
       
       const slidesWithFiles = await Promise.all(downloadPromises);
       
-      // Delete all existing files
-      await handleClearAllSlides(false);
+      const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
+      await supabase.storage.from(STORAGE_BUCKET).remove(filesToDelete);
       
-      // Upload files with new names
       const uploadPromises = slidesWithFiles.map(async (slide) => {
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${slide.newName}`, slide.file, {
-            cacheControl: '0', // Disable cache
+            cacheControl: '0',
             upsert: true
           });
         
         if (error) {
           throw error;
         }
-        
-        const { data } = supabase.storage
-          .from(STORAGE_BUCKET)
-          .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
-        
-        return {
-          url: `${data.publicUrl}?t=${cacheTimestamp}`,
-          name: slide.newName
-        };
       });
       
       await Promise.all(uploadPromises);
       
-      // Force a cache refresh
       setCacheTimestamp(Date.now());
       
-      // Refresh the slide list
       await checkCurrentSlides();
       
       toast({
@@ -416,7 +463,6 @@ const InvestHashCodes = () => {
         description: `Failed to reorder slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
-      // Attempt to refresh the current slides to show current state
       await checkCurrentSlides();
     } finally {
       setUploadLoading(false);
@@ -426,7 +472,6 @@ const InvestHashCodes = () => {
   const handleRefreshCache = async () => {
     setUploadLoading(true);
     try {
-      // Force a reload of the slide cache by updating timestamp
       setCacheTimestamp(Date.now());
       await checkCurrentSlides();
       
@@ -522,7 +567,7 @@ const InvestHashCodes = () => {
                     {currentSlides.map((slide, index) => (
                       <div key={index} className="relative group">
                         <img 
-                          src={`${slide.url}&t=${Date.now()}`} // Force cache refresh for preview
+                          src={`${slide.url}&t=${Date.now()}`}
                           alt={`Slide ${index + 1}`} 
                           className="w-full h-40 object-contain bg-gray-900 rounded-md"
                         />
@@ -546,6 +591,14 @@ const InvestHashCodes = () => {
                               onClick={() => handleMoveSlide(index, index + 1)}
                             >
                               <ArrowDown className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              disabled={uploadLoading}
+                              onClick={() => handleDeleteSlide(index)}
+                            >
+                              <Trash className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
