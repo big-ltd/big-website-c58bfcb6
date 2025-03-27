@@ -14,27 +14,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
   
   const toggleFullscreen = () => {
     if (!iframeRef.current) return;
-
-    if (!isFullscreen) {
-      if (iframeRef.current.requestFullscreen) {
-        iframeRef.current.requestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
+    
+    // Instead of using browser fullscreen, communicate with the iframe
+    // to trigger custom fullscreen within PDF.js
+    if (iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({ type: 'toggleFullscreen' }, '*');
     }
   };
 
-  // Handle fullscreen state changes
+  // Listen for messages from the iframe
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'fullscreenChange') {
+        setIsFullscreen(event.data.isFullscreen);
+      }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('message', handleMessage);
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 
@@ -49,22 +47,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
     let url = pdfUrl;
     
     // Add hash parameters to configure the PDF.js viewer
-    // These are standard PDF.js parameters:
-    // - page: initial page to show
-    // - zoom: zoom level (page-fit, page-width, auto, etc)
-    // - pagemode: display mode (thumbs, bookmarks, none)
-    // - toolbar: show/hide toolbar (0 or 1)
-    // - navpanes: show/hide navigation panes (0 or 1)
-    
-    // Check if URL already has a hash
     if (!url.includes('#')) {
       url += '#';
     } else {
       url += '&';
     }
     
-    // Configure the viewer to show all pages in continuous mode
-    url += 'view=Fit&pagemode=thumbs';
+    // Configure the viewer:
+    // - pagemode=thumbs: show thumbnails navigation
+    // - view=Fit: fit the page to the viewport
+    // - toolbar=0: hide the default toolbar (we'll remove download button via CSS)
+    url += 'pagemode=thumbs&view=Fit';
     
     return url;
   };
