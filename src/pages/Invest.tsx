@@ -17,6 +17,7 @@ const Invest = () => {
   const [loading, setLoading] = useState(true);
   const [pdfUrl, setPdfUrl] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -138,6 +139,53 @@ const Invest = () => {
     };
   }, []);
 
+  // Add keyboard navigation for PDF
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const iframe = document.getElementById('pdf-viewer') as HTMLIFrameElement;
+      if (!iframe) return;
+
+      // Check if the iframe is the active element or we're in fullscreen mode
+      const isIframeFocused = document.activeElement === iframe || isFullscreen;
+      
+      if (isIframeFocused) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          // Move to next page - using postMessage to communicate with PDF.js inside iframe
+          iframe.contentWindow?.postMessage({ type: 'nextPage' }, '*');
+          setCurrentPage(prev => prev + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          // Move to previous page
+          iframe.contentWindow?.postMessage({ type: 'previousPage' }, '*');
+          setCurrentPage(prev => Math.max(1, prev - 1));
+        } else if (e.key === 'Escape' && isFullscreen) {
+          // Handle ESC key in fullscreen mode
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+        }
+      }
+    };
+
+    // Focus the iframe when it loads to enable keyboard navigation
+    const focusIframe = () => {
+      const iframe = document.getElementById('pdf-viewer') as HTMLIFrameElement;
+      if (iframe) {
+        iframe.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    // Set a timeout to focus the iframe after it's loaded
+    const focusTimeout = setTimeout(focusIframe, 1000);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(focusTimeout);
+    };
+  }, [isFullscreen, currentPage]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
@@ -175,6 +223,12 @@ const Invest = () => {
                 src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                 className="w-full h-full"
                 title="Investor Document"
+                tabIndex={0} // Make iframe focusable for keyboard navigation
+                onLoad={() => {
+                  // Focus the iframe when it loads
+                  const iframe = document.getElementById('pdf-viewer');
+                  if (iframe) iframe.focus();
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
