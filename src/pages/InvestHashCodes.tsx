@@ -143,7 +143,7 @@ const InvestHashCodes = () => {
     setUploadLoading(true);
 
     try {
-      // Upload the file
+      // Upload the file with upsert:true to replace any existing file
       const { error } = await supabase.storage
         .from(STORAGE_BUCKET)
         .upload(PDF_FILE_NAME, file, {
