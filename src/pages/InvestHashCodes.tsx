@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { crypto } from '@/utils/crypto';
 import { Loader2, Plus, Trash, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 // Hardcoded hash for admin access - in a real app, use a more secure approach
 const ADMIN_HASH = "adminSecretHash123"; // You should change this to your preferred admin hash
@@ -23,6 +22,8 @@ const InvestHashCodes = () => {
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [currentSlides, setCurrentSlides] = useState<{url: string, name: string}[]>([]);
+  // Add a timestamp to force cache refresh when needed
+  const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,6 +62,9 @@ const InvestHashCodes = () => {
 
   const checkCurrentSlides = async () => {
     try {
+      // Update the cache timestamp to force new data loading
+      setCacheTimestamp(Date.now());
+      
       const { data, error } = await supabase
         .storage
         .from(STORAGE_BUCKET)
@@ -88,13 +92,13 @@ const InvestHashCodes = () => {
           return nameA.localeCompare(nameB, undefined, { numeric: true });
         });
         
-        // Get public URLs for all slides
+        // Get public URLs for all slides and add cache-busting parameter
         const slideFiles = imageFiles.map(file => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
             .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
           return {
-            url: data.publicUrl,
+            url: `${data.publicUrl}?t=${cacheTimestamp}`,
             name: file.name
           };
         });
@@ -204,7 +208,7 @@ const InvestHashCodes = () => {
           .getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`);
         
         return {
-          url: data.publicUrl,
+          url: `${data.publicUrl}?t=${timestamp}`,
           name: newFileName
         };
       });
@@ -213,6 +217,8 @@ const InvestHashCodes = () => {
       const successfulUploads = results.filter(Boolean);
       
       if (successfulUploads.length > 0) {
+        // Force a cache refresh
+        setCacheTimestamp(Date.now());
         await checkCurrentSlides();
         toast({
           title: "Success",
@@ -358,12 +364,15 @@ const InvestHashCodes = () => {
           .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
         
         return {
-          url: data.publicUrl,
+          url: `${data.publicUrl}?t=${cacheTimestamp}`,
           name: slide.newName
         };
       });
       
       await Promise.all(uploadPromises);
+      
+      // Force a cache refresh
+      setCacheTimestamp(Date.now());
       
       // Refresh the slide list
       await checkCurrentSlides();
@@ -389,7 +398,8 @@ const InvestHashCodes = () => {
   const handleRefreshCache = async () => {
     setUploadLoading(true);
     try {
-      // Force a reload of the slide cache by adding timestamp parameters
+      // Force a reload of the slide cache by updating timestamp
+      setCacheTimestamp(Date.now());
       await checkCurrentSlides();
       
       toast({
@@ -484,7 +494,7 @@ const InvestHashCodes = () => {
                     {currentSlides.map((slide, index) => (
                       <div key={index} className="relative group">
                         <img 
-                          src={`${slide.url}?t=${Date.now()}`} // Force cache refresh
+                          src={`${slide.url}&t=${Date.now()}`} // Force cache refresh for preview
                           alt={`Slide ${index + 1}`} 
                           className="w-full h-40 object-contain bg-gray-900 rounded-md"
                         />
