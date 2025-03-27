@@ -51,7 +51,7 @@ const Footer = () => {
                 <a href="#about" className="text-gray-400 hover:text-white transition-colors flex items-center"
                    onClick={(e) => handleNavClick(e, 'about')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
-                  About Us
+                  About
                 </a>
               </li>
               <li>
