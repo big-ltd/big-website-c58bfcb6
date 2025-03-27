@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { crypto } from '@/utils/crypto';
-import { Loader2, Plus, Trash, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
+import { Loader2, Plus, Trash, ArrowUp, ArrowDown } from 'lucide-react';
 
-// Hardcoded hash for admin access - in a real app, use a more secure approach
-const ADMIN_HASH = "adminSecretHash123"; // You should change this to your preferred admin hash
+const ADMIN_HASH = "adminSecretHash123";
 const STORAGE_BUCKET = "investor_docs";
 const SLIDES_FOLDER = "slides";
 
@@ -403,6 +402,9 @@ const InvestHashCodes = () => {
       const [movedSlide] = updatedSlides.splice(sourceIndex, 1);
       updatedSlides.splice(destinationIndex, 0, movedSlide);
       
+      console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
+      console.log('Updated order:', updatedSlides.map(slide => slide.name));
+      
       const renamedSlides = updatedSlides.map((slide, index) => {
         const fileNumber = String(index + 1).padStart(2, '0');
         const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
@@ -419,6 +421,7 @@ const InvestHashCodes = () => {
           .download(`${SLIDES_FOLDER}/${slide.originalName}`);
         
         if (error) {
+          console.error(`Error downloading ${slide.originalName}:`, error);
           throw error;
         }
         
@@ -431,9 +434,16 @@ const InvestHashCodes = () => {
       const slidesWithFiles = await Promise.all(downloadPromises);
       
       const filesToDelete = slidesWithFiles.map(slide => `${SLIDES_FOLDER}/${slide.originalName}`);
-      await supabase.storage.from(STORAGE_BUCKET).remove(filesToDelete);
+      const { error: deleteError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .remove(filesToDelete);
+      
+      if (deleteError) {
+        console.error('Error deleting files:', deleteError);
+      }
       
       const uploadPromises = slidesWithFiles.map(async (slide) => {
+        console.log(`Uploading ${slide.newName}`);
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${slide.newName}`, slide.file, {
@@ -442,6 +452,7 @@ const InvestHashCodes = () => {
           });
         
         if (error) {
+          console.error(`Error uploading ${slide.newName}:`, error);
           throw error;
         }
       });
