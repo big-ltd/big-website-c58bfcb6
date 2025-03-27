@@ -408,12 +408,13 @@ const InvestHashCodes = () => {
       
       const updatedSlides = [...currentSlides];
       
-      console.log(`Moving slide: ${currentSlides[sourceIndex].name}`);
+      const slideToMove = updatedSlides[sourceIndex];
+      console.log(`Moving slide: ${slideToMove.name}`);
       
-      const [movedSlide] = updatedSlides.splice(sourceIndex, 1);
+      updatedSlides.splice(sourceIndex, 1);
       console.log('After splice removal:', updatedSlides.map((s, i) => `${i}: ${s.name}`));
       
-      updatedSlides.splice(destinationIndex, 0, movedSlide);
+      updatedSlides.splice(destinationIndex, 0, slideToMove);
       console.log('After splice insertion:', updatedSlides.map((s, i) => `${i}: ${s.name}`));
       
       console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
@@ -423,6 +424,7 @@ const InvestHashCodes = () => {
         const fileNumber = String(index + 1).padStart(2, '0');
         const fileExtension = slide.name.split('.').pop()?.split('?')[0] || 'jpg';
         const newName = `${fileNumber}.${fileExtension}`;
+        
         const originalName = slide.name.split('?')[0];
         
         console.log(`Slide ${index} - Original: ${originalName}, New: ${newName}`);
@@ -500,6 +502,19 @@ const InvestHashCodes = () => {
       console.log('Cache timestamp updated:', newTimestamp);
       
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const updatedSlideURLs = renamedSlides.map(slide => {
+        const { data } = supabase.storage
+          .from(STORAGE_BUCKET)
+          .getPublicUrl(`${SLIDES_FOLDER}/${slide.newName}`);
+        
+        return {
+          url: `${data.publicUrl}?t=${newTimestamp}`,
+          name: slide.newName
+        };
+      });
+      
+      setCurrentSlides(updatedSlideURLs);
       
       await checkCurrentSlides(newTimestamp);
       console.log('Slides refreshed from storage.');
