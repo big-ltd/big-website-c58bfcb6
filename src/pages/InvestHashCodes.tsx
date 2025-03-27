@@ -60,12 +60,21 @@ const InvestHashCodes = () => {
 
   const checkCurrentPdf = async () => {
     try {
-      const { data: publicUrl } = supabase
+      const { data } = supabase
         .storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(PDF_FILE_NAME);
       
-      setCurrentPdfUrl(publicUrl.publicUrl);
+      // Verify if the file exists by making a HEAD request
+      try {
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+        if (response.ok) {
+          setCurrentPdfUrl(data.publicUrl);
+        }
+      } catch (error) {
+        console.error('Error checking if PDF exists:', error);
+        // Don't show an error toast as the PDF might not exist yet
+      }
     } catch (error) {
       console.error('Error checking current PDF:', error);
       // Don't show an error toast as the PDF might not exist yet
@@ -134,16 +143,6 @@ const InvestHashCodes = () => {
     setUploadLoading(true);
 
     try {
-      // First, check if the bucket exists and create it if it doesn't
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(bucket => bucket.name === STORAGE_BUCKET);
-      
-      if (!bucketExists) {
-        // Since we can't create buckets directly from the client,
-        // we'll try to upload anyway and the server will handle errors
-        console.log("Bucket doesn't exist, will attempt upload anyway");
-      }
-
       // Upload the file
       const { error } = await supabase.storage
         .from(STORAGE_BUCKET)
@@ -158,12 +157,12 @@ const InvestHashCodes = () => {
       }
 
       // Get the public URL
-      const { data: publicUrlData } = supabase
+      const { data } = supabase
         .storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(PDF_FILE_NAME);
       
-      setCurrentPdfUrl(publicUrlData.publicUrl);
+      setCurrentPdfUrl(data.publicUrl);
 
       toast({
         title: "Success",
