@@ -28,13 +28,14 @@ export const useSlideManagement = () => {
   // Create slides folder if it doesn't exist
   const ensureSlidesFolderExists = async (): Promise<boolean> => {
     try {
+      setStorageError(false);
+      
       // Try to list the slides folder to see if it exists
       const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
         .list(SLIDES_FOLDER);
       
       if (error) {
-        // If there's an error, let's try to create the folder by uploading a dummy file
         console.log('Creating slides folder...');
         const { error: uploadError } = await supabase.storage
           .from(STORAGE_BUCKET)
@@ -120,37 +121,79 @@ export const useSlideManagement = () => {
     return `${timestamp}_${randomId}.${fileExtension}`;
   };
 
+  const verifyFileExists = async (path: string): Promise<boolean> => {
+    try {
+      // Try to get the file's metadata
+      const { data, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(`${path}`);
+      
+      if (error) {
+        console.error(`File verification error for ${path}:`, error);
+        return false;
+      }
+      
+      // Try to check if the file exists with a HEAD request
+      try {
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+        return response.ok;
+      } catch (fetchError) {
+        console.error(`Fetch error for ${path}:`, fetchError);
+        return false;
+      }
+    } catch (error) {
+      console.error(`File verification failed for ${path}:`, error);
+      return false;
+    }
+  };
+
   const checkCurrentSlides = async (forceTimestamp = null) => {
     try {
       setStorageError(false);
       const timestamp = forceTimestamp || Date.now();
       setCacheTimestamp(timestamp);
       
+      // Make sure slides folder exists
+      const folderExists = await ensureSlidesFolderExists();
+      if (!folderExists) {
+        console.error('Could not ensure slides folder exists');
+        setCurrentSlides([]);
+        return;
+      }
+      
+      // Get all files in the slides folder
+      const { data: allFiles, error: listError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .list(`${SLIDES_FOLDER}/`);
+      
+      if (listError) {
+        console.error('Error listing slides folder:', listError);
+        setStorageError(true);
+        setCurrentSlides([]);
+        return;
+      }
+      
+      // Filter for actual image files
+      const imageFiles = allFiles.filter(file => 
+        (file.name.toLowerCase().endsWith('.jpg') || 
+        file.name.toLowerCase().endsWith('.jpeg') || 
+        file.name.toLowerCase().endsWith('.png')) && 
+        file.name !== SLIDES_ORDER_FILE && 
+        file.name !== '.folder'
+      );
+      
+      console.log(`Found ${imageFiles.length} image files in storage`);
+      
       // First, get the slides order file
       const slidesOrder = await fetchSlidesOrder();
       
-      // If no order file exists, get all slides from storage
-      if (!slidesOrder) {
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .list(`${SLIDES_FOLDER}/`, {
-            sortBy: { column: 'name', order: 'asc' }
-          });
+      if (!slidesOrder || slidesOrder.slides.length === 0) {
+        // No valid order file exists, create a new one based on all found files
+        const slideNames = imageFiles.map(file => file.name);
         
-        if (error) {
-          throw error;
-        }
+        console.log(`Creating new slides order with ${slideNames.length} files`);
         
-        if (data && data.length > 0) {
-          const imageFiles = data.filter(file => 
-            (file.name.toLowerCase().endsWith('.jpg') || 
-            file.name.toLowerCase().endsWith('.jpeg') || 
-            file.name.toLowerCase().endsWith('.png')) && 
-            file.name !== SLIDES_ORDER_FILE
-          );
-          
-          // Create a new order file
-          const slideNames = imageFiles.map(file => file.name);
+        if (slideNames.length > 0) {
           await saveSlidesOrder(slideNames);
           
           // Generate slide objects
@@ -165,50 +208,69 @@ export const useSlideManagement = () => {
           });
           
           setCurrentSlides(slideFiles);
-          console.log('Slides order created from existing files');
         } else {
+          console.log('No image files found, setting empty slides');
           setCurrentSlides([]);
         }
       } else {
         // Use the order from the file
-        console.log('Using slides order from file:', slidesOrder);
+        console.log(`Using slides order from file:`, slidesOrder);
         
-        // Check that all files in the order still exist
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .list(`${SLIDES_FOLDER}/`);
+        // Create a set of actual files for quick lookups
+        const existingFileNames = new Set(imageFiles.map(file => file.name));
         
-        if (error) {
-          throw error;
-        }
+        // Filter the slides order to only include files that actually exist
+        const validSlideNames = slidesOrder.slides.filter(name => existingFileNames.has(name));
         
-        const existingFiles = new Set(data.map(file => file.name));
-        const validSlideNames = slidesOrder.slides.filter(name => existingFiles.has(name));
-        
-        // If some files are missing, update the order
+        // If some files are missing from the order, update it
         if (validSlideNames.length !== slidesOrder.slides.length) {
-          await saveSlidesOrder(validSlideNames);
           console.log('Updated slides order, removed missing files');
+          await saveSlidesOrder(validSlideNames);
         }
         
-        // Generate slide objects in the correct order
-        const slideFiles = validSlideNames.map(name => {
-          const { data } = supabase.storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
-          return {
-            url: `${data.publicUrl}?t=${timestamp}`,
-            name: name
-          };
-        });
-        
-        setCurrentSlides(slideFiles);
+        // If we still have valid slides, create the slide objects
+        if (validSlideNames.length > 0) {
+          // Generate slide objects in the correct order
+          const slideFiles = validSlideNames.map(name => {
+            const { data } = supabase.storage
+              .from(STORAGE_BUCKET)
+              .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
+            return {
+              url: `${data.publicUrl}?t=${timestamp}`,
+              name: name
+            };
+          });
+          
+          setCurrentSlides(slideFiles);
+        } else {
+          // If no valid slides are left, check if there are any images and create a new order
+          if (imageFiles.length > 0) {
+            const newSlideNames = imageFiles.map(file => file.name);
+            await saveSlidesOrder(newSlideNames);
+            
+            // Generate slide objects
+            const slideFiles = imageFiles.map(file => {
+              const { data } = supabase.storage
+                .from(STORAGE_BUCKET)
+                .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
+              return {
+                url: `${data.publicUrl}?t=${timestamp}`,
+                name: file.name
+              };
+            });
+            
+            setCurrentSlides(slideFiles);
+          } else {
+            setCurrentSlides([]);
+          }
+        }
       }
       
       console.log('Slides refreshed from storage.');
     } catch (error) {
       console.error('Error checking current slides:', error);
       setStorageError(true);
+      setCurrentSlides([]);
     }
   };
 
@@ -278,8 +340,9 @@ export const useSlideManagement = () => {
         await saveSlidesOrder(currentOrder);
         
         // Set the cache timestamp and refresh slides
-        setCacheTimestamp(Date.now());
-        await checkCurrentSlides();
+        const newTimestamp = Date.now();
+        setCacheTimestamp(newTimestamp);
+        await checkCurrentSlides(newTimestamp);
         
         toast({
           title: "Success",
@@ -490,8 +553,9 @@ export const useSlideManagement = () => {
   const handleRefreshCache = async () => {
     setUploadLoading(true);
     try {
-      setCacheTimestamp(Date.now());
-      await checkCurrentSlides();
+      const newTimestamp = Date.now();
+      setCacheTimestamp(newTimestamp);
+      await checkCurrentSlides(newTimestamp);
       
       toast({
         title: "Success",
@@ -512,7 +576,12 @@ export const useSlideManagement = () => {
 
   // Initialize slides on component mount
   useEffect(() => {
-    checkCurrentSlides();
+    // Use a short delay on first load to ensure the storage is ready
+    const timer = setTimeout(() => {
+      checkCurrentSlides();
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   return {
