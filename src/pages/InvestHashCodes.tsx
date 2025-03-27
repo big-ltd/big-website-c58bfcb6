@@ -57,10 +57,12 @@ const InvestHashCodes = () => {
     }
   };
 
-  const checkCurrentSlides = async () => {
+  const checkCurrentSlides = async (forceTimestamp = null) => {
     try {
-      const timestamp = Date.now();
+      const timestamp = forceTimestamp || Date.now();
       setCacheTimestamp(timestamp);
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       const { data, error } = await supabase
         .storage
@@ -85,6 +87,8 @@ const InvestHashCodes = () => {
           const nameB = b.name;
           return nameA.localeCompare(nameB, undefined, { numeric: true });
         });
+        
+        console.log('Fetched slides from storage:', imageFiles.map(f => f.name));
         
         const slideFiles = imageFiles.map(file => {
           const { data } = supabase.storage
@@ -469,6 +473,8 @@ const InvestHashCodes = () => {
       
       console.log('Successfully deleted old files. Starting uploads...');
       
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const uploadPromises = slidesWithFiles.map(async (slide, index) => {
         console.log(`Uploading ${index}: ${slide.newName}`);
         const { error } = await supabase.storage
@@ -493,9 +499,9 @@ const InvestHashCodes = () => {
       setCacheTimestamp(newTimestamp);
       console.log('Cache timestamp updated:', newTimestamp);
       
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      await checkCurrentSlides();
+      await checkCurrentSlides(newTimestamp);
       console.log('Slides refreshed from storage.');
       
       toast({
