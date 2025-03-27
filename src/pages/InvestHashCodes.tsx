@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { crypto } from '@/utils/crypto';
-import { Loader2, Plus, Trash, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Plus, Trash, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
 
 const ADMIN_HASH = "adminSecretHash123";
 const STORAGE_BUCKET = "investor_docs";
