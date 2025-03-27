@@ -6,12 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
 
 const COOKIE_NAME = 'investor_authenticated';
-const PDF_URL = '/lovable-uploads/invest.pdf'; // Update this path to your actual PDF
+const STORAGE_BUCKET = "investor_docs";
+const PDF_FILE_NAME = "invest.pdf";
 
 const Invest = () => {
   const [searchParams] = useSearchParams();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pdfUrl, setPdfUrl] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,6 +22,7 @@ const Invest = () => {
       const cookie = Cookies.get(COOKIE_NAME);
       if (cookie) {
         setIsAuthorized(true);
+        await getPdfUrl();
         setLoading(false);
         return;
       }
@@ -59,6 +62,7 @@ const Invest = () => {
             .update({ redeemed: true })
             .eq('hash_code', hash);
 
+          await getPdfUrl();
           setIsAuthorized(true);
           toast({
             title: "Access Granted",
@@ -75,6 +79,21 @@ const Invest = () => {
 
     checkAuthorization();
   }, [searchParams, toast]);
+
+  const getPdfUrl = async () => {
+    try {
+      const { data } = supabase
+        .storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(PDF_FILE_NAME);
+      
+      setPdfUrl(data.publicUrl);
+    } catch (error) {
+      console.error('Error getting PDF URL:', error);
+      // Fallback to the static PDF if there's an error
+      setPdfUrl('/lovable-uploads/invest.pdf');
+    }
+  };
 
   if (loading) {
     return (
@@ -96,11 +115,17 @@ const Invest = () => {
             <h1 className="text-2xl font-bold text-white">Investor Information</h1>
           </div>
           <div className="w-full h-[calc(100vh-200px)]">
-            <iframe
-              src={PDF_URL}
-              className="w-full h-full"
-              title="Investor Document"
-            />
+            {pdfUrl ? (
+              <iframe
+                src={pdfUrl}
+                className="w-full h-full"
+                title="Investor Document"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-white">No investor document available. Please contact the administrator.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

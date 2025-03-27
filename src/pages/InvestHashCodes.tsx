@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { crypto } from '@/utils/crypto';
+import { Loader2 } from 'lucide-react';
 
 // Hardcoded hash for admin access - in a real app, use a more secure approach
 const ADMIN_HASH = "adminSecretHash123"; // You should change this to your preferred admin hash
+const STORAGE_BUCKET = "investor_docs";
+const PDF_FILE_NAME = "invest.pdf";
 
 const InvestHashCodes = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +20,8 @@ const InvestHashCodes = () => {
   const [hashCodes, setHashCodes] = useState<any[]>([]);
   const [newInvestorName, setNewInvestorName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [currentPdfUrl, setCurrentPdfUrl] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,6 +29,7 @@ const InvestHashCodes = () => {
     if (hash === ADMIN_HASH) {
       setIsAuthorized(true);
       fetchHashCodes();
+      checkCurrentPdf();
     } else {
       setIsAuthorized(false);
     }
@@ -49,6 +55,20 @@ const InvestHashCodes = () => {
         description: "Failed to load hash codes",
         variant: "destructive",
       });
+    }
+  };
+
+  const checkCurrentPdf = async () => {
+    try {
+      const { data: publicUrl } = supabase
+        .storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(PDF_FILE_NAME);
+      
+      setCurrentPdfUrl(publicUrl.publicUrl);
+    } catch (error) {
+      console.error('Error checking current PDF:', error);
+      // Don't show an error toast as the PDF might not exist yet
     }
   };
 
@@ -97,6 +117,69 @@ const InvestHashCodes = () => {
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: "Error",
+        description: "Please select a PDF file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadLoading(true);
+
+    try {
+      // First, check if the bucket exists and create it if it doesn't
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(bucket => bucket.name === STORAGE_BUCKET);
+      
+      if (!bucketExists) {
+        await supabase.storage.createBucket(STORAGE_BUCKET, {
+          public: true
+        });
+      }
+
+      // Upload the file
+      const { error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(PDF_FILE_NAME, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Get the public URL
+      const { data: publicUrlData } = supabase
+        .storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(PDF_FILE_NAME);
+      
+      setCurrentPdfUrl(publicUrlData.publicUrl);
+
+      toast({
+        title: "Success",
+        description: "Investor PDF uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
@@ -118,6 +201,41 @@ const InvestHashCodes = () => {
           </div>
           
           <div className="p-6">
+            <div className="mb-8">
+              <h2 className="text-xl text-white mb-4">Upload Investor PDF</h2>
+              <div className="bg-gray-700 p-4 rounded-md mb-4">
+                <div className="flex flex-col gap-3">
+                  <label className="text-white text-sm">
+                    Current PDF: {currentPdfUrl ? (
+                      <a 
+                        href={currentPdfUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline ml-2"
+                      >
+                        View PDF
+                      </a>
+                    ) : "No PDF uploaded yet"}
+                  </label>
+                  
+                  <div className="flex gap-3 items-center">
+                    <Input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileUpload}
+                      className="max-w-md"
+                      disabled={uploadLoading}
+                    />
+                    {uploadLoading && <Loader2 className="h-5 w-5 animate-spin text-white" />}
+                  </div>
+                  
+                  <p className="text-gray-400 text-sm">
+                    Upload a PDF file. This will replace the current investor information document.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="mb-8">
               <h2 className="text-xl text-white mb-4">Add New Investor</h2>
               <div className="flex gap-3">
