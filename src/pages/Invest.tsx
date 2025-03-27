@@ -4,6 +4,8 @@ import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
+import { Fullscreen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
@@ -14,6 +16,7 @@ const Invest = () => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [pdfUrl, setPdfUrl] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -109,6 +112,32 @@ const Invest = () => {
     }
   };
 
+  const toggleFullscreen = () => {
+    const iframe = document.getElementById('pdf-viewer') as HTMLIFrameElement;
+    if (!iframe) return;
+
+    if (!isFullscreen) {
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
@@ -125,13 +154,25 @@ const Invest = () => {
     <div className="min-h-screen bg-gray-900 flex flex-col">
       <div className="container mx-auto px-4 py-8 flex-grow">
         <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
-          <div className="p-4 bg-gradient-primary">
+          <div className="p-4 bg-gradient-primary flex justify-between items-center">
             <h1 className="text-2xl font-bold text-white">Investor Information</h1>
+            {pdfUrl && (
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={toggleFullscreen}
+                className="bg-transparent border-white text-white hover:bg-white/20"
+              >
+                <Fullscreen />
+                <span className="sr-only">Toggle fullscreen</span>
+              </Button>
+            )}
           </div>
           <div className="w-full h-[calc(100vh-200px)]">
             {pdfUrl ? (
               <iframe
-                src={pdfUrl}
+                id="pdf-viewer"
+                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                 className="w-full h-full"
                 title="Investor Document"
               />
