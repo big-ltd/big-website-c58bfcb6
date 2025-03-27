@@ -4,8 +4,21 @@ import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
-import { ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
+import { ChevronUp, ChevronDown, Maximize, Minimize } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarProvider,
+  SidebarRail
+} from "@/components/ui/sidebar";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
@@ -18,6 +31,7 @@ const Invest = () => {
   const [slidesUrls, setSlidesUrls] = useState<string[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { toast } = useToast();
   const slideContainerRef = React.useRef<HTMLDivElement>(null);
   // Add a timestamp to force cache refresh when needed
@@ -193,6 +207,12 @@ const Invest = () => {
     }
   };
 
+  const goToSlide = (index: number) => {
+    if (index >= 0 && index < slidesUrls.length) {
+      setCurrentSlideIndex(index);
+    }
+  };
+
   const toggleFullscreen = () => {
     if (!slideContainerRef.current) return;
     
@@ -211,9 +231,9 @@ const Invest = () => {
   // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
         goToNextSlide();
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
         goToPreviousSlide();
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
@@ -235,12 +255,6 @@ const Invest = () => {
     };
   }, [currentSlideIndex, slidesUrls.length]);
 
-  // Function to refresh slides on demand
-  const refreshSlides = () => {
-    setCacheTimestamp(Date.now());
-    fetchSlides();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-primary">
@@ -254,75 +268,97 @@ const Invest = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
-      <div className="container mx-auto px-4 py-8 flex-grow">
-        <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
-          <div className="p-4 bg-gradient-primary flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-white">Investor Information</h1>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshSlides}
-                className="text-white hover:bg-gray-700"
-              >
-                Refresh Slides
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={toggleFullscreen}
-                className="text-white hover:bg-gray-700"
-              >
-                {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-              </Button>
-            </div>
-          </div>
-          
-          <div 
-            ref={slideContainerRef}
-            className="relative w-full h-[calc(100vh-200px)] bg-black flex flex-col items-center justify-center"
-          >
-            {slidesUrls.length > 0 ? (
-              <>
-                <img 
-                  src={slidesUrls[currentSlideIndex]} 
-                  alt={`Slide ${currentSlideIndex + 1}`}
-                  className="max-h-full max-w-full object-contain"
-                />
-                
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4">
-                  <Button
-                    onClick={goToPreviousSlide}
-                    disabled={currentSlideIndex === 0}
-                    className="rounded-full p-2 h-10 w-10"
-                    variant="secondary"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-                  
-                  <span className="text-white bg-gray-800/70 px-3 py-1 rounded-md text-sm">
-                    {currentSlideIndex + 1} / {slidesUrls.length}
-                  </span>
-                  
-                  <Button
-                    onClick={goToNextSlide}
-                    disabled={currentSlideIndex === slidesUrls.length - 1}
-                    className="rounded-full p-2 h-10 w-10"
-                    variant="secondary"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <p className="text-white">No investor slides available. Please contact the administrator.</p>
+    <SidebarProvider defaultOpen={isSidebarOpen}>
+      <div className="min-h-screen bg-gray-900 flex flex-col w-full">
+        <div className="container mx-auto px-0 py-0 flex-grow flex">
+          <Sidebar collapsible="offcanvas" variant="inset">
+            <SidebarContent className="p-2">
+              <div className="p-2 bg-gradient-primary rounded-md mb-4">
+                <h2 className="text-lg font-semibold text-white">Slides ({slidesUrls.length})</h2>
               </div>
-            )}
+              <div className="grid gap-2 mt-2 max-h-[calc(100vh-120px)] overflow-y-auto p-1">
+                {slidesUrls.map((url, index) => (
+                  <div 
+                    key={index}
+                    className={`relative cursor-pointer transition-all duration-200 
+                      ${currentSlideIndex === index ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-primary/50'}`}
+                    onClick={() => goToSlide(index)}
+                  >
+                    <img 
+                      src={url} 
+                      alt={`Thumbnail ${index + 1}`}
+                      className="w-full h-24 object-contain bg-black rounded-md" 
+                    />
+                    <div className="absolute bottom-0 right-0 bg-black/70 text-white text-xs px-2 py-1 rounded-tl-md">
+                      {index + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SidebarContent>
+            <SidebarRail />
+          </Sidebar>
+          
+          <div className="flex-1 bg-gray-800 rounded-lg shadow-xl overflow-hidden">
+            <div className="p-4 bg-gradient-primary flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-white">Investor Information</h1>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={toggleFullscreen}
+                  className="text-white hover:bg-gray-700"
+                >
+                  {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                </Button>
+              </div>
+            </div>
+            
+            <div 
+              ref={slideContainerRef}
+              className="relative w-full h-[calc(100vh-200px)] bg-black flex flex-col items-center justify-center"
+            >
+              {slidesUrls.length > 0 ? (
+                <>
+                  <img 
+                    src={slidesUrls[currentSlideIndex]} 
+                    alt={`Slide ${currentSlideIndex + 1}`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                  
+                  <div className="absolute bottom-4 right-4 flex flex-col justify-center items-center gap-4 bg-gray-800/70 p-2 rounded-md">
+                    <Button
+                      onClick={goToPreviousSlide}
+                      disabled={currentSlideIndex === 0}
+                      className="rounded-full p-2 h-10 w-10"
+                      variant="secondary"
+                    >
+                      <ChevronUp className="w-5 h-5" />
+                    </Button>
+                    
+                    <span className="text-white bg-gray-800/70 px-3 py-1 rounded-md text-sm">
+                      {currentSlideIndex + 1} / {slidesUrls.length}
+                    </span>
+                    
+                    <Button
+                      onClick={goToNextSlide}
+                      disabled={currentSlideIndex === slidesUrls.length - 1}
+                      className="rounded-full p-2 h-10 w-10"
+                      variant="secondary"
+                    >
+                      <ChevronDown className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <p className="text-white">No investor slides available. Please contact the administrator.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
