@@ -1,9 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
-import PDFViewer from '@/components/PDFViewer';
 
 const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
@@ -124,13 +124,24 @@ const Invest = () => {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col">
       <div className="container mx-auto px-4 py-8 flex-grow">
-        {pdfUrl ? (
-          <PDFViewer pdfUrl={pdfUrl} />
-        ) : (
-          <div className="bg-gray-800 rounded-lg shadow-xl p-8 text-center">
-            <p className="text-white text-xl">No investor document available. Please contact the administrator.</p>
+        <div className="bg-gray-800 rounded-lg shadow-xl overflow-hidden">
+          <div className="p-4 bg-gradient-primary">
+            <h1 className="text-2xl font-bold text-white">Investor Information</h1>
           </div>
-        )}
+          <div className="w-full h-[calc(100vh-200px)]">
+            {pdfUrl ? (
+              <iframe
+                src={pdfUrl}
+                className="w-full h-full"
+                title="Investor Document"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-white">No investor document available. Please contact the administrator.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
