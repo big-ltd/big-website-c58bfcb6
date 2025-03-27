@@ -125,7 +125,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ pdfUrl }) => {
         {pdfUrl ? (
           <iframe
             ref={iframeRef}
-            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+            src={`${pdfUrl}#view=FitH`}
             className="w-full h-full"
             title="Investor Document"
             tabIndex={0}

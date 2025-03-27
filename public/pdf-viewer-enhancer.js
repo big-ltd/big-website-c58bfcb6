@@ -25,11 +25,15 @@
       const pageCount = pdfViewer.pagesCount || pdfViewer.pagesCount;
       
       if (currentPage < pageCount) {
-        pdfViewer.page = currentPage + 1;
-        // For alternate PDF.js versions
+        // Set the page number directly
         if (typeof pdfViewer.currentPageNumber !== 'undefined') {
           pdfViewer.currentPageNumber = currentPage + 1;
+        } else if (typeof pdfViewer.page !== 'undefined') {
+          pdfViewer.page = currentPage + 1;
         }
+        
+        // Scroll to ensure the page is visible
+        scrollToPage(currentPage + 1);
       }
     } else {
       // Fallback: try to use keyboard event to trigger built-in navigation
@@ -44,15 +48,58 @@
       const currentPage = pdfViewer.page || pdfViewer.currentPageNumber;
       
       if (currentPage > 1) {
-        pdfViewer.page = currentPage - 1;
-        // For alternate PDF.js versions
+        // Set the page number directly
         if (typeof pdfViewer.currentPageNumber !== 'undefined') {
           pdfViewer.currentPageNumber = currentPage - 1;
+        } else if (typeof pdfViewer.page !== 'undefined') {
+          pdfViewer.page = currentPage - 1;
         }
+        
+        // Scroll to ensure the page is visible
+        scrollToPage(currentPage - 1);
       }
     } else {
       // Fallback: try to use keyboard event
       simulateKeyEvent('ArrowUp');
+    }
+  }
+
+  // Helper function to scroll to a specific page
+  function scrollToPage(pageNumber) {
+    try {
+      // Try different methods to ensure the page is visible
+      const pdfViewer = getPDFViewerInstance();
+      
+      // Method 1: Use scrollIntoView if available
+      if (pdfViewer && pdfViewer.container) {
+        const pageElement = document.querySelector(`[data-page-number="${pageNumber}"]`);
+        if (pageElement) {
+          pageElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          return;
+        }
+      }
+      
+      // Method 2: Try PDF.js specific methods
+      if (window.PDFViewerApplication) {
+        if (window.PDFViewerApplication.pdfViewer && window.PDFViewerApplication.pdfViewer.scrollPageIntoView) {
+          window.PDFViewerApplication.pdfViewer.scrollPageIntoView({ pageNumber });
+          return;
+        }
+      }
+      
+      // Method 3: Find page container and scroll to it
+      const pageContainers = document.querySelectorAll('.page');
+      if (pageContainers && pageContainers.length >= pageNumber) {
+        pageContainers[pageNumber - 1].scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    } catch (error) {
+      console.error('Error scrolling to page:', error);
     }
   }
 
@@ -86,16 +133,23 @@
 
   // Optimize PDF rendering when possible
   if (window.PDFViewerApplication) {
+    // Wait for PDF.js to initialize
     window.PDFViewerApplication.initializedPromise.then(() => {
-      // Reduce the rendering resolution for better performance
       if (window.PDFViewerApplication.pdfViewer) {
-        // Only render visible pages
+        // Set vertical scroll mode for better navigation
         window.PDFViewerApplication.pdfViewer.scrollMode = 1; // vertical scroll
+        
+        // Disable spread mode (show single pages)
         window.PDFViewerApplication.pdfViewer.spreadMode = 0; // no spreads
         
-        // Reduce quality slightly for better performance
+        // Prioritize visible pages for better performance
         if (window.PDFViewerApplication.pdfViewer.defaultRenderingQueue) {
           window.PDFViewerApplication.pdfViewer.defaultRenderingQueue.highestPriorityPage = true;
+        }
+        
+        // Enable continuous scrolling to show all pages
+        if (typeof window.PDFViewerApplication.pdfViewer.setScrollMode === 'function') {
+          window.PDFViewerApplication.pdfViewer.setScrollMode(1); // continuous scrolling
         }
       }
     });
