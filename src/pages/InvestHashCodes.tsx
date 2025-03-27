@@ -165,10 +165,39 @@ const InvestHashCodes = () => {
     setUploadLoading(true);
 
     try {
-      // Clear existing slides first to avoid caching issues
-      await handleClearAllSlides(false);
+      // First, get the existing slides to determine the next slide number
+      const { data: existingFiles, error: listError } = await supabase
+        .storage
+        .from(STORAGE_BUCKET)
+        .list(`${SLIDES_FOLDER}/`, {
+          sortBy: { column: 'name', order: 'asc' }
+        });
       
-      // Process and upload each file
+      if (listError) {
+        throw listError;
+      }
+      
+      // Filter for image files
+      const existingImageFiles = existingFiles ? existingFiles.filter(file => 
+        file.name.toLowerCase().endsWith('.jpg') || 
+        file.name.toLowerCase().endsWith('.jpeg') || 
+        file.name.toLowerCase().endsWith('.png')
+      ) : [];
+      
+      // Determine the start number for new slides (next after the highest existing number)
+      let nextSlideNumber = 1; // Default to 1 if no slides exist
+      
+      if (existingImageFiles.length > 0) {
+        // Extract the highest number from existing filenames
+        const fileNumbers = existingImageFiles.map(file => {
+          const nameMatch = file.name.match(/^(\d+)\./);
+          return nameMatch ? parseInt(nameMatch[1], 10) : 0;
+        });
+        
+        nextSlideNumber = Math.max(...fileNumbers) + 1;
+      }
+      
+      // Process and upload each file with the next available numbers
       const uploadPromises = Array.from(files).map(async (file, index) => {
         // Validate file type
         if (!file.type.startsWith('image/')) {
@@ -181,14 +210,13 @@ const InvestHashCodes = () => {
         }
 
         // Create a padded file number (e.g., 01.jpg, 02.jpg) for proper ordering
-        const fileNumber = String(index + 1).padStart(2, '0');
+        const fileNumber = String(nextSlideNumber + index).padStart(2, '0');
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const newFileName = `${fileNumber}.${fileExtension}`;
 
         // Add a timestamp parameter to avoid browser caching issues
         const timestamp = Date.now();
-        const fileName = `${newFileName}?t=${timestamp}`;
-
+        
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(`${SLIDES_FOLDER}/${newFileName}`, file, {
