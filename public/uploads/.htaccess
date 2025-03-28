@@ -1,15 +1,19 @@
 
-# Allow access to images
-<FilesMatch "\.(jpg|jpeg|png|gif|svg)$">
+# Enable rewriting
+Options +FollowSymLinks
+RewriteEngine On
+
+# Allow direct access to image files (jpg, jpeg, png, gif, webp)
+<FilesMatch ".(jpg|jpeg|png|gif|webp)$">
     Order Allow,Deny
     Allow from all
 </FilesMatch>
 
-# Protect json files
-<FilesMatch "\.json$">
-    Order Deny,Allow
-    Deny from all
-</FilesMatch>
-
-# Disable directory listing
+# No directory listings
 Options -Indexes
+
+# Allow access to the slides folder
+<Directory "slides">
+    Order Allow,Deny
+    Allow from all
+</Directory>

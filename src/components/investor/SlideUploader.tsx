@@ -43,7 +43,7 @@ const SlideUploader = ({
           
           <Button 
             variant="destructive"
-            onClick={() => onClearAllSlides()}
+            onClick={onClearAllSlides}
             disabled={uploadLoading || currentSlides.length === 0}
             type="button"
           >
@@ -52,7 +52,7 @@ const SlideUploader = ({
           
           <Button
             variant="outline"
-            onClick={() => onRefreshCache()}
+            onClick={onRefreshCache}
             disabled={uploadLoading}
             type="button"
           >

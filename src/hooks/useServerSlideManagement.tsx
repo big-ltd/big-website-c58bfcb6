@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Slide } from '@/types/slideTypes';
 import {
@@ -17,7 +17,7 @@ export const useServerSlideManagement = () => {
   const { toast } = useToast();
 
   // Function to fetch slides from the server
-  const fetchSlides = async (forceTimestamp = null) => {
+  const fetchSlides = useCallback(async (forceTimestamp = null) => {
     try {
       setUploadLoading(true);
       
@@ -33,6 +33,7 @@ export const useServerSlideManagement = () => {
       }));
       
       setCurrentSlides(slidesWithTimestamp);
+      console.log('Slides updated in state:', slidesWithTimestamp);
     } catch (error) {
       console.error('Error fetching slides:', error);
       toast({
@@ -43,7 +44,7 @@ export const useServerSlideManagement = () => {
     } finally {
       setUploadLoading(false);
     }
-  };
+  }, [toast]);
 
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,21 +54,18 @@ export const useServerSlideManagement = () => {
     setUploadLoading(true);
     
     try {
-      const uploadedSlides = await uploadSlidesToServer(files);
+      await uploadSlidesToServer(files);
       
-      // Add timestamp to URLs to prevent caching
-      const slidesWithTimestamp = uploadedSlides.map(slide => ({
-        ...slide,
-        url: `${slide.url}?t=${cacheTimestamp}`
-      }));
-      
-      // Update state with all slides (including the newly uploaded ones)
+      // After upload, fetch the latest slides
       await fetchSlides();
       
       toast({
         title: "Success",
         description: `${files.length} slides uploaded successfully.`,
       });
+      
+      // Clear the input to allow re-uploading the same files
+      event.target.value = '';
     } catch (error) {
       console.error('Error uploading files:', error);
       toast({
@@ -81,8 +79,8 @@ export const useServerSlideManagement = () => {
   };
 
   // Clear all slides
-  const handleClearAllSlides = async (showConfirm = true) => {
-    if (showConfirm && !window.confirm("Are you sure you want to clear all slides? This action cannot be undone.")) {
+  const handleClearAllSlides = async () => {
+    if (!window.confirm("Are you sure you want to clear all slides? This action cannot be undone.")) {
       return;
     }
     
@@ -209,7 +207,7 @@ export const useServerSlideManagement = () => {
   // Initialize slides on component mount
   useEffect(() => {
     fetchSlides();
-  }, []);
+  }, [fetchSlides]);
 
   return {
     currentSlides,

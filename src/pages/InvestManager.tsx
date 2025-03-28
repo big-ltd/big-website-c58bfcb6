@@ -73,16 +73,18 @@ const InvestHashCodes = () => {
                 currentSlides={currentSlides}
                 uploadLoading={uploadLoading}
                 onFileUpload={handleFileUpload}
-                onClearAllSlides={() => handleClearAllSlides(true)}
+                onClearAllSlides={handleClearAllSlides}
                 onRefreshCache={handleRefreshCache}
               />
               
-              <SlidePreview 
-                slides={currentSlides}
-                uploadLoading={uploadLoading}
-                onMoveSlide={handleMoveSlide}
-                onDeleteSlide={handleDeleteSlide}
-              />
+              {currentSlides.length > 0 && (
+                <SlidePreview 
+                  slides={currentSlides}
+                  uploadLoading={uploadLoading}
+                  onMoveSlide={handleMoveSlide}
+                  onDeleteSlide={handleDeleteSlide}
+                />
+              )}
             </div>
 
             <AddInvestorForm onAddInvestor={addInvestor} />

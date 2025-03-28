@@ -75,10 +75,12 @@ function listSlides() {
     // If we have an order, use it to construct the slides
     if (!empty($order)) {
         foreach ($order as $slideName) {
-            $slides[] = [
-                'name' => $slideName,
-                'url' => '/uploads/slides/' . $slideName
-            ];
+            if (file_exists(SLIDES_DIR . '/' . $slideName)) {
+                $slides[] = [
+                    'name' => $slideName,
+                    'url' => '/uploads/slides/' . $slideName
+                ];
+            }
         }
     } else {
         // If no order exists, build the slides from the directory
@@ -132,7 +134,11 @@ function uploadSlides() {
                         'url' => '/uploads/slides/' . $newFileName,
                         'originalName' => $file['name']
                     ];
+                } else {
+                    error_log("Failed to move uploaded file: " . $file['name']);
                 }
+            } else {
+                error_log("Upload error for file: " . $file['name'] . ", error code: " . $file['error']);
             }
         }
         
@@ -186,10 +192,12 @@ function moveSlide() {
                 // Return the updated slides
                 $slides = [];
                 foreach ($order as $slideName) {
-                    $slides[] = [
-                        'name' => $slideName,
-                        'url' => '/uploads/slides/' . $slideName
-                    ];
+                    if (file_exists(SLIDES_DIR . '/' . $slideName)) {
+                        $slides[] = [
+                            'name' => $slideName,
+                            'url' => '/uploads/slides/' . $slideName
+                        ];
+                    }
                 }
                 
                 respond(200, $slides);

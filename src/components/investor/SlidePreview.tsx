@@ -37,6 +37,11 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
               src={slide.url}
               alt={`Slide ${index + 1}`} 
               className="w-full h-40 object-contain bg-gray-900 rounded-md"
+              onError={(e) => {
+                console.error(`Error loading image: ${slide.url}`);
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = '/placeholder.svg';
+              }}
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex flex-col items-center justify-center opacity-100 group-hover:opacity-100">
               <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity mb-2">
