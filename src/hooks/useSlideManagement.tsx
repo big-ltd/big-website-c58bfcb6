@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Slide, STORAGE_BUCKET, SLIDES_FOLDER } from '@/types/slideTypes';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,13 +86,15 @@ export const useSlideManagement = () => {
         }
       } else {
         // Use the order from the file
-        console.log(`Using slides order from file:`, slidesOrder);
+        console.log(`Using slides order from file with ${slidesOrder.slides.length} slides`);
         
         // Create a set of actual files for quick lookups
         const existingFileNames = new Set(imageFiles.map(file => file.name));
         
         // Filter the slides order to only include files that actually exist
         const validSlideNames = slidesOrder.slides.filter(name => existingFileNames.has(name));
+        
+        console.log(`Valid slide names based on order file:`, validSlideNames);
         
         // If we still have valid slides, create the slide objects
         if (validSlideNames.length > 0) {
@@ -125,7 +127,7 @@ export const useSlideManagement = () => {
         }
       }
       
-      console.log('Slides refreshed from storage.');
+      console.log('Slides refreshed from storage:', currentSlides);
     } catch (error) {
       console.error('Error checking current slides:', error);
       setStorageError(true);
@@ -165,7 +167,13 @@ export const useSlideManagement = () => {
     try {
       await clearAllSlides(
         showConfirm,
-        () => setCurrentSlides([]),
+        () => {
+          setCurrentSlides([]);
+          toast({
+            title: "Success",
+            description: "All slides have been cleared",
+          });
+        },
         (error) => setStorageError(true)
       );
     } finally {
@@ -183,8 +191,9 @@ export const useSlideManagement = () => {
         slideIndex,
         currentSlides,
         async () => {
-          setCacheTimestamp(Date.now());
-          await checkCurrentSlides();
+          const newTimestamp = Date.now();
+          setCacheTimestamp(newTimestamp);
+          await checkCurrentSlides(newTimestamp);
         },
         (error) => {
           setStorageError(true);
@@ -208,10 +217,14 @@ export const useSlideManagement = () => {
           console.log('Slide moved successfully, updated slides:', updatedSlides);
           setCurrentSlides(updatedSlides);
           setCacheTimestamp(timestamp);
+          // Force a refresh of the slides data from storage to ensure we have the latest data
+          setTimeout(() => {
+            checkCurrentSlides(timestamp);
+          }, 500);
         },
         async (error) => {
           setStorageError(true);
-          await checkCurrentSlides();
+          await checkCurrentSlides(Date.now());
         }
       );
     } finally {

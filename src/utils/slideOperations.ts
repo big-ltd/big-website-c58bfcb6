@@ -216,8 +216,9 @@ export const moveSlide = async (
   try {
     console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
     
-    // Get the current slides data
+    // Get the names of all current slides in their current order
     const slideNames = slides.map(slide => slide.name);
+    console.log("Current slide order before move:", slideNames);
     
     // Create a new array with the updated order
     const newOrder = [...slideNames];
@@ -226,11 +227,14 @@ export const moveSlide = async (
     const [movedItem] = newOrder.splice(sourceIndex, 1);
     newOrder.splice(destinationIndex, 0, movedItem);
     
-    console.log("Previous order:", slideNames);
-    console.log("New order:", newOrder);
+    console.log("New slide order after move:", newOrder);
     
-    // Save the new order to storage
+    // Save the new order to storage - wait for this to complete
     await saveSlidesOrder(newOrder);
+    
+    // Verify the order was actually saved
+    const verifiedOrder = await fetchSlidesOrder();
+    console.log("Verified order from storage after save:", verifiedOrder?.slides);
     
     // Update the UI immediately with optimistic update
     const newSlides = [...slides];

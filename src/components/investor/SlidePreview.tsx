@@ -13,12 +13,25 @@ interface SlidePreviewProps {
 const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: SlidePreviewProps) => {
   if (slides.length === 0) return null;
 
+  // Helper function to handle button clicks with proper event handling
+  const handleMoveClick = async (e: React.MouseEvent, sourceIndex: number, destinationIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await onMoveSlide(sourceIndex, destinationIndex);
+  };
+
+  const handleDeleteClick = async (e: React.MouseEvent, slideIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await onDeleteSlide(slideIndex);
+  };
+
   return (
     <div className="mt-4">
       <h3 className="text-white text-lg mb-2">Preview and Reorder Slides</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {slides.map((slide, index) => (
-          <div key={index} className="relative group">
+          <div key={slide.name} className="relative group">
             <img 
               src={slide.url}
               alt={`Slide ${index + 1}`} 
@@ -33,7 +46,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
                   size="sm" 
                   variant="secondary"
                   disabled={index === 0 || uploadLoading}
-                  onClick={() => onMoveSlide(index, index - 1)}
+                  onClick={(e) => handleMoveClick(e, index, index - 1)}
                   type="button"
                 >
                   <ArrowUp className="h-4 w-4" />
@@ -42,7 +55,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
                   size="sm" 
                   variant="secondary"
                   disabled={index === slides.length - 1 || uploadLoading}
-                  onClick={() => onMoveSlide(index, index + 1)}
+                  onClick={(e) => handleMoveClick(e, index, index + 1)}
                   type="button"
                 >
                   <ArrowDown className="h-4 w-4" />
@@ -51,7 +64,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
                   size="sm" 
                   variant="destructive"
                   disabled={uploadLoading}
-                  onClick={() => onDeleteSlide(index)}
+                  onClick={(e) => handleDeleteClick(e, index)}
                   type="button"
                 >
                   <Trash className="h-4 w-4" />
