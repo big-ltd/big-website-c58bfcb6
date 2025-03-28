@@ -24,7 +24,7 @@ const InvestHashCodes = () => {
 
   // Use the slide management hook
   const { 
-    slides, 
+    slides = [], 
     slidesLoading, 
     uploadSlides, 
     uploadLoading, 

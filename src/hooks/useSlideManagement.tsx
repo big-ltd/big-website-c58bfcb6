@@ -16,10 +16,10 @@ export interface Slide {
   url: string;
 }
 
-// Define the shape of the slide_order table
-interface SlideOrderRecord {
+// Interface that matches the database schema
+interface DbSlideRecord {
   id: string;
-  fileName: string;
+  filename: string; // Note: lowercase 'n' to match DB schema
   order: number;
   created_at: string;
 }
@@ -69,7 +69,7 @@ export const useSlideManagement = () => {
             // Create slide order entries for existing files
             const slideEntries = imageFiles.map((file, index) => ({
               id: crypto.randomUUID(),
-              fileName: file.name,
+              filename: file.name, // Note: lowercase 'n' to match DB schema
               order: index
             }));
 
@@ -94,14 +94,14 @@ export const useSlideManagement = () => {
         }
 
         // Map database entries to slide objects with URLs
-        const slidesWithUrls = slideOrderData.map((slide: SlideOrderRecord) => {
+        const slidesWithUrls = (slideOrderData as DbSlideRecord[]).map((slide) => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${slide.fileName}`);
+            .getPublicUrl(`${SLIDES_FOLDER}/${slide.filename}`);
 
           return {
             id: slide.id,
-            fileName: slide.fileName,
+            fileName: slide.filename, // Convert to our app's expected format
             order: slide.order,
             url: data.publicUrl
           };
@@ -180,10 +180,10 @@ export const useSlideManagement = () => {
           ? Math.max(...currentSlides.map(slide => slide.order)) 
           : -1;
 
-        // Insert new slide order entries
+        // Insert new slide order entries - convert fileName to filename for DB
         const newSlideEntries = successfulUploads.map((upload, index) => ({
           id: crypto.randomUUID(),
-          fileName: upload.fileName,
+          filename: upload.fileName, // Note: lowercase 'n' to match DB schema
           order: highestOrder + 1 + index
         }));
 

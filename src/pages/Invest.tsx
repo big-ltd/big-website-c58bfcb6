@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,10 +11,10 @@ const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
 const SLIDES_FOLDER = "slides";
 
-// Define the shape of the slide_order table
-interface SlideOrderRecord {
+// Interface that matches the database schema
+interface DbSlideRecord {
   id: string;
-  fileName: string;
+  filename: string; // Note: lowercase 'n' to match DB schema
   order: number;
   created_at: string;
 }
@@ -49,10 +48,10 @@ const Invest = () => {
         }
 
         // Map database entries to public URLs
-        return slideOrderData.map((slide: SlideOrderRecord) => {
+        return (slideOrderData as DbSlideRecord[]).map((slide) => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${slide.fileName}`);
+            .getPublicUrl(`${SLIDES_FOLDER}/${slide.filename}`);
           return data.publicUrl;
         });
       } catch (error) {
