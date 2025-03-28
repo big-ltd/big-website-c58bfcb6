@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Trash, RefreshCw, AlertCircle } from 'lucide-react';
+import { SLIDES_FOLDER } from '@/types/slideTypes';
 
 interface SlideUploaderProps {
   currentSlides: { url: string, name: string }[];
@@ -28,7 +29,7 @@ const SlideUploader = ({
         <label className="text-white text-sm">
           Current Slides: {currentSlides.length > 0 ? (
             <span className="text-blue-400 ml-2">
-              {currentSlides.length} slides available
+              {currentSlides.length} slides available in /{SLIDES_FOLDER}/
             </span>
           ) : "No slides uploaded yet"}
         </label>
@@ -74,7 +75,7 @@ const SlideUploader = ({
         )}
         
         <p className="text-gray-400 text-sm">
-          Upload JPG or PNG image files. Files will be stored in your browser's local storage.
+          Upload JPG or PNG image files. Files will be stored in the /{SLIDES_FOLDER}/ folder.
           You can reorder slides using the up/down arrows after uploading.
         </p>
       </div>

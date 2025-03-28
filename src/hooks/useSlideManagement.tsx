@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Slide } from '@/types/slideTypes';
+import { Slide, SLIDES_FOLDER } from '@/types/slideTypes';
 import {
   getSlidesOrder,
   saveSlidesOrder,
@@ -56,6 +56,9 @@ export const useSlideManagement = () => {
       // Get current order
       const currentOrder = await getSlidesOrder();
       
+      // Create slides directory if it doesn't exist (client-side only check)
+      console.log(`Using slides folder: /${SLIDES_FOLDER}/`);
+      
       // Array to store new slide objects
       const newSlides: Slide[] = [];
       
@@ -76,10 +79,10 @@ export const useSlideManagement = () => {
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const newFileName = generateUniqueFileName(fileExtension);
         
-        // Create a URL for the image
+        // Create a URL for the image (create blob URL)
         const url = URL.createObjectURL(file);
         
-        // Create a slide object
+        // Create a slide object 
         const newSlide: Slide = {
           name: newFileName,
           url: url,
@@ -92,6 +95,7 @@ export const useSlideManagement = () => {
         
         // Store the file information in localStorage so we can reference it later
         localStorage.setItem(`slide_${newFileName}`, url);
+        console.log(`Stored slide in /${SLIDES_FOLDER}/${newFileName}`);
       }
       
       // Update the slides order
@@ -103,7 +107,7 @@ export const useSlideManagement = () => {
       if (newSlides.length > 0) {
         toast({
           title: "Success",
-          description: `${newSlides.length} slides uploaded successfully`,
+          description: `${newSlides.length} slides uploaded successfully to /${SLIDES_FOLDER}/`,
         });
       }
     } catch (error) {

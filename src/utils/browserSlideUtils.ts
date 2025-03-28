@@ -1,4 +1,3 @@
-
 import { Slide, SLIDES_FOLDER } from '@/types/slideTypes';
 
 // Store slides order in localStorage
@@ -34,18 +33,21 @@ export const getSlidesOrder = async (): Promise<string[]> => {
   }
 };
 
-// Generate a URL for a slide
+// Generate a URL for a slide - ensure it's in the /slides folder
 export const getPublicUrl = (filename: string, timestamp: number): string => {
   // First try to get from localStorage
   const storedUrl = localStorage.getItem(`slide_${filename}`);
   if (storedUrl) {
-    return storedUrl;
+    // Store blob URLs as-is
+    if (storedUrl.startsWith('blob:')) {
+      return storedUrl;
+    }
+    
+    // Otherwise ensure the path has the right format
+    return `/${SLIDES_FOLDER}/${filename}?t=${timestamp}`;
   }
   
-  // If not found in localStorage, use a fallback path
-  if (filename.includes('://') || filename.startsWith('/')) {
-    return `${filename}?t=${timestamp}`;
-  }
+  // If not found in localStorage, use a fallback path with correct folder
   return `/${SLIDES_FOLDER}/${filename}?t=${timestamp}`;
 };
 
