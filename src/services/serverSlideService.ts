@@ -1,4 +1,3 @@
-
 import { Slide } from '@/types/slideTypes';
 
 // API endpoint for slide operations
@@ -32,6 +31,12 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     
     if (!response.ok) {
       console.error(`Server error response (${response.status}): ${responseText}`);
+      
+      // Check if response contains HTML (which indicates a server error)
+      if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+        throw new Error(`Server returned HTML instead of JSON. This usually indicates a PHP error. Please check server logs.`);
+      }
+      
       throw new Error(`HTTP error ${response.status}: ${response.statusText}. Server message: ${responseText.substring(0, 200)}`);
     }
     
@@ -46,12 +51,23 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
       const contentType = response.headers.get('content-type');
       console.log(`Response content type: ${contentType}`);
       
+      // Check if response contains HTML (which indicates a server error)
+      if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+        console.error('Server returned HTML instead of JSON. Full response:', responseText);
+        throw new Error('Server returned HTML instead of JSON. This usually indicates a PHP error. Please check server logs.');
+      }
+      
       const data = JSON.parse(responseText);
       console.log('Parsed server response:', data);
       return data;
     } catch (parseError) {
       console.error('Failed to parse server response as JSON:', parseError);
       console.error('First 500 characters of response:', responseText.substring(0, 500));
+      
+      // Provide more detailed error message for HTML responses
+      if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+        throw new Error('Server returned HTML instead of JSON. This usually indicates a PHP error or incorrect server configuration.');
+      }
       
       // Log more details about the response for better debugging
       if (responseText.length > 500) {

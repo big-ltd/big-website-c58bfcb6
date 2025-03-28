@@ -4,7 +4,7 @@ Options +FollowSymLinks
 RewriteEngine On
 
 # Allow direct access to image files (jpg, jpeg, png, gif, webp)
-<FilesMatch ".(jpg|jpeg|png|gif|webp)$">
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
     Order Allow,Deny
     Allow from all
 </FilesMatch>
@@ -20,7 +20,13 @@ Options -Indexes
 
 # Explicitly allow access to image files in all requests
 <IfModule mod_headers.c>
-    <FilesMatch ".(jpg|jpeg|png|gif|webp)$">
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
         Header set Access-Control-Allow-Origin "*"
+        Header set Content-Type "image/%{SUFFIX}"
     </FilesMatch>
 </IfModule>
+
+# Ensure PHP files are processed properly
+<FilesMatch "\.php$">
+    SetHandler application/x-httpd-php
+</FilesMatch>

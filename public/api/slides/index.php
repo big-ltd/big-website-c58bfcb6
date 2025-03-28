@@ -1,5 +1,10 @@
 
 <?php
+// Disable output buffering completely
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
 // Set default content type to JSON for all responses
 header('Content-Type: application/json');
 
@@ -7,10 +12,14 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't display errors to the client
 ini_set('log_errors', 1);
+error_log("API request started: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI']);
 
 // Constants
 define('SLIDES_DIR', '../../uploads/slides');
 define('SLIDES_ORDER_FILE', '../../uploads/slides_order.json');
+
+// Prevent any HTML output
+if (ob_get_length()) ob_clean();
 
 // Create the uploads directory if it doesn't exist
 if (!file_exists('../../uploads')) {
@@ -114,10 +123,13 @@ function listSlides() {
 
 // Upload slides
 function uploadSlides() {
-    // Clear any previous output that might have been sent
+    // Make absolutely sure there's no output before we start
     if (ob_get_length()) ob_clean();
     
     error_log("=== Upload function called ===");
+    error_log("POST data: " . print_r($_POST, true));
+    error_log("FILES data: " . print_r($_FILES, true));
+    
     $response = [];
     $uploadedFiles = [];
     
@@ -151,6 +163,15 @@ function uploadSlides() {
     
     foreach ($files as $file) {
         if ($file['error'] === UPLOAD_ERR_OK) {
+            // Verify this is an image file
+            $fileType = $file['type'];
+            error_log("File type: " . $fileType);
+            
+            if (!strpos($fileType, 'image/') === 0) {
+                error_log("File is not an image: " . $file['name'] . " (type: " . $fileType . ")");
+                continue;
+            }
+            
             // Generate a unique filename
             $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
             $newFileName = generateUniqueFileName($fileExtension);
@@ -353,12 +374,11 @@ function restructureFiles($files) {
 
 // Helper function to send a JSON response
 function respond($statusCode, $data) {
-    http_response_code($statusCode);
+    // Make absolutely sure there's no output before we send headers
+    if (ob_get_length()) ob_clean();
     
-    // Clear any output buffers that might exist
-    while (ob_get_level()) {
-        ob_end_clean();
-    }
+    // Set the HTTP status code
+    http_response_code($statusCode);
     
     // Always set content type to application/json
     header('Content-Type: application/json');
