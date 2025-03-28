@@ -122,7 +122,7 @@ export const useSlideManagement = () => {
 
   const verifyFileExists = async (path: string): Promise<boolean> => {
     try {
-      // Try to get the file's metadata
+      // Try to get the file's public URL
       const { data } = supabase.storage
         .from(STORAGE_BUCKET)
         .getPublicUrl(`${path}`);

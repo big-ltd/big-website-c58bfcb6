@@ -39,6 +39,7 @@ export const createBucketIfNotExists = async (bucketId: string): Promise<void> =
     }
   } catch (error) {
     console.error('Error in createBucketIfNotExists:', error);
-    throw error;
+    // Don't throw the error here, just log it and continue
+    // This prevents the app from crashing when there's an issue with storage
   }
 };

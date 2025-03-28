@@ -1,10 +1,9 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
-import { ChevronUp, ChevronDown, Maximize, Minimize, AlertCircle } from 'lucide-react';
+import { ChevronUp, ChevronDown, Maximize, Minimize, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { createBucketIfNotExists } from '@/utils/createBucket';
 import {
@@ -35,12 +34,10 @@ const Invest = () => {
   const [storageError, setStorageError] = useState(false);
   const { toast } = useToast();
   const slideContainerRef = React.useRef<HTMLDivElement>(null);
-  // Add a timestamp to force cache refresh when needed
   const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
 
   useEffect(() => {
     const checkAuthorization = async () => {
-      // Ensure the storage bucket exists
       try {
         await createBucketIfNotExists(STORAGE_BUCKET);
       } catch (err) {
@@ -48,7 +45,6 @@ const Invest = () => {
         setStorageError(true);
       }
 
-      // Check if already authorized via cookie
       const cookie = Cookies.get(COOKIE_NAME);
       if (cookie) {
         setIsAuthorized(true);
@@ -57,7 +53,6 @@ const Invest = () => {
         return;
       }
 
-      // Check hash code from URL
       const hash = searchParams.get('hash');
       if (!hash) {
         setIsAuthorized(false);
@@ -66,7 +61,6 @@ const Invest = () => {
       }
 
       try {
-        // Query the database to check if hash exists and is not redeemed
         const { data, error } = await supabase
           .from('investor_hash_codes')
           .select('*')
@@ -83,10 +77,7 @@ const Invest = () => {
             variant: "destructive",
           });
         } else {
-          // Set cookie for future access
-          Cookies.set(COOKIE_NAME, 'true', { expires: 365 }); // 1 year expiry
-
-          // Mark hash as redeemed
+          Cookies.set(COOKIE_NAME, 'true', { expires: 365 });
           await supabase
             .from('investor_hash_codes')
             .update({ redeemed: true })
@@ -110,12 +101,10 @@ const Invest = () => {
     checkAuthorization();
   }, [searchParams, toast]);
 
-  // Create slides folder if it doesn't exist
   const ensureSlidesFolderExists = async (): Promise<boolean> => {
     try {
       setStorageError(false);
       
-      // Try to list the slides folder to see if it exists
       const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
         .list(`${SLIDES_FOLDER}/`);
@@ -147,7 +136,6 @@ const Invest = () => {
     try {
       setStorageError(false);
       
-      // Make sure slides folder exists before trying to fetch order file
       const folderExists = await ensureSlidesFolderExists();
       if (!folderExists) {
         return null;
@@ -170,13 +158,11 @@ const Invest = () => {
     }
   };
 
-  const fetchSlides = async () => {
+  const fetchSlides = useCallback(async () => {
     try {
-      // Update the cache timestamp to force new data loading
       setCacheTimestamp(Date.now());
       setStorageError(false);
       
-      // Make sure the bucket and folder exist
       await createBucketIfNotExists(STORAGE_BUCKET);
       const folderExists = await ensureSlidesFolderExists();
       if (!folderExists) {
@@ -184,10 +170,8 @@ const Invest = () => {
         return;
       }
       
-      // First try to get the slides order
       const slidesOrder = await fetchSlidesOrder();
       
-      // Get all files in the slides folder to check what actually exists
       const { data: allFiles, error: listError } = await supabase.storage
         .from(STORAGE_BUCKET)
         .list(`${SLIDES_FOLDER}/`);
@@ -199,7 +183,6 @@ const Invest = () => {
         return;
       }
       
-      // Filter for actual image files
       const imageFiles = allFiles.filter(file => 
         (file.name.toLowerCase().endsWith('.jpg') || 
         file.name.toLowerCase().endsWith('.jpeg') || 
@@ -211,17 +194,13 @@ const Invest = () => {
       console.log(`Found ${imageFiles.length} image files in storage`);
       
       if (slidesOrder && slidesOrder.slides.length > 0) {
-        // Use the order from the file
         console.log('Using slides order from file for viewing');
         
-        // Create a set of actual files for quick lookups
         const existingFileNames = new Set(imageFiles.map(file => file.name));
         
-        // Filter the slides order to only include files that actually exist
         const validSlideNames = slidesOrder.slides.filter(name => existingFileNames.has(name));
         
         if (validSlideNames.length > 0) {
-          // Generate URLs in the correct order
           const urls = validSlideNames.map(name => {
             const { data } = supabase.storage
               .from(STORAGE_BUCKET)
@@ -232,7 +211,6 @@ const Invest = () => {
           
           setSlidesUrls(urls);
         } else if (imageFiles.length > 0) {
-          // If order file doesn't contain valid files but we found images, use those
           const urls = imageFiles.map(file => {
             const { data } = supabase.storage
               .from(STORAGE_BUCKET)
@@ -243,11 +221,9 @@ const Invest = () => {
           
           setSlidesUrls(urls);
         } else {
-          // No valid images found
           setSlidesUrls([]);
         }
       } else if (imageFiles.length > 0) {
-        // No order file, use the images we found directly
         const urls = imageFiles.map(file => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
@@ -258,24 +234,21 @@ const Invest = () => {
         
         setSlidesUrls(urls);
       } else {
-        // No slides found, try to use static files
         try {
-          // Check for static slides in public folder
           const staticUrls = [];
           let i = 1;
-          const maxStaticSlides = 20; // Limit to checking 20 static slides
+          const maxStaticSlides = 20;
 
           while (i <= maxStaticSlides) {
-            const fileName = `0${i}`.slice(-2) + '.jpg'; // Format as 01.jpg, 02.jpg, etc.
+            const fileName = `0${i}`.slice(-2) + '.jpg';
             const url = `/lovable-uploads/slides/${fileName}?t=${cacheTimestamp}`;
             
-            // Try to check if file exists (this is approximate)
             const response = await fetch(url, { method: 'HEAD' });
             if (response.ok) {
               staticUrls.push(url);
               i++;
             } else {
-              break; // Stop when we don't find any more slides
+              break;
             }
           }
 
@@ -309,7 +282,7 @@ const Invest = () => {
       });
       setSlidesUrls([]);
     }
-  };
+  }, [cacheTimestamp, toast]);
 
   const goToNextSlide = () => {
     if (currentSlideIndex < slidesUrls.length - 1) {
@@ -346,6 +319,7 @@ const Invest = () => {
 
   const refreshSlides = async () => {
     setCacheTimestamp(Date.now());
+    setStorageError(false);
     await fetchSlides();
     toast({
       title: "Refreshed",
@@ -353,7 +327,6 @@ const Invest = () => {
     });
   };
 
-  // Add keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
@@ -369,7 +342,6 @@ const Invest = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     
-    // Handle fullscreen change events from browser
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
@@ -439,14 +411,40 @@ const Invest = () => {
                 </div>
               )}
               
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 <Button 
                   variant="outline" 
                   className="w-full" 
                   onClick={refreshSlides}
                 >
-                  Refresh Slides
+                  <RefreshCw className="mr-2 h-4 w-4" /> Refresh Slides
                 </Button>
+                
+                {storageError && (
+                  <Button 
+                    variant="outline"
+                    className="w-full bg-red-900/20 text-red-200 hover:bg-red-900/30 hover:text-red-100" 
+                    onClick={async () => {
+                      try {
+                        await createBucketIfNotExists(STORAGE_BUCKET);
+                        await fetchSlides();
+                        toast({
+                          title: "Storage Check",
+                          description: "Storage connection attempt complete.",
+                        });
+                      } catch (err) {
+                        console.error('Error checking storage:', err);
+                        toast({
+                          title: "Storage Error",
+                          description: "Still having issues with storage connection.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    Retry Storage Connection
+                  </Button>
+                )}
               </div>
             </SidebarContent>
             <SidebarRail />
