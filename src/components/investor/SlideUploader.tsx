@@ -11,7 +11,6 @@ interface SlideUploaderProps {
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   onClearAllSlides: () => Promise<void>;
   onRefreshCache: () => Promise<void>;
-  onDownloadAllSlides?: () => Promise<void>;
   hasError?: boolean;
 }
 
