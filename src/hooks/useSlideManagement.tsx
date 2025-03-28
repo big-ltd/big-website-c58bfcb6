@@ -106,6 +106,7 @@ export const useSlideManagement = () => {
             };
           });
           
+          console.log("Setting current slides with ordered files:", slideFiles);
           setCurrentSlides(slideFiles);
         } else {
           // If no valid slides are left, check if there are any images and create a new order
@@ -120,14 +121,14 @@ export const useSlideManagement = () => {
               };
             });
             
+            console.log("No valid ordered slides, using all image files:", slideFiles);
             setCurrentSlides(slideFiles);
           } else {
+            console.log("No slides found at all");
             setCurrentSlides([]);
           }
         }
       }
-      
-      console.log('Slides refreshed from storage:', currentSlides);
     } catch (error) {
       console.error('Error checking current slides:', error);
       setStorageError(true);
@@ -209,6 +210,9 @@ export const useSlideManagement = () => {
     setUploadLoading(true);
     
     try {
+      console.log(`Starting move slide operation: source=${sourceIndex}, destination=${destinationIndex}`);
+      console.log("Current slides before move:", currentSlides);
+      
       await moveSlide(
         sourceIndex,
         destinationIndex,
@@ -217,14 +221,20 @@ export const useSlideManagement = () => {
           console.log('Slide moved successfully, updated slides:', updatedSlides);
           setCurrentSlides(updatedSlides);
           setCacheTimestamp(timestamp);
-          // Force a refresh of the slides data from storage to ensure we have the latest data
+          
+          // Force a refresh of the slides data from storage with some delay
+          // to ensure the order file has been properly saved and processed
           setTimeout(() => {
             checkCurrentSlides(timestamp);
           }, 500);
         },
         async (error) => {
+          console.error('Error during move operation:', error);
           setStorageError(true);
-          await checkCurrentSlides(Date.now());
+          // Force a refresh to ensure we have the latest data
+          const newTimestamp = Date.now();
+          setCacheTimestamp(newTimestamp);
+          await checkCurrentSlides(newTimestamp);
         }
       );
     } finally {
@@ -258,10 +268,10 @@ export const useSlideManagement = () => {
 
   // Initialize slides on component mount
   useEffect(() => {
-    // Use a short delay on first load to ensure the storage is ready
+    // Use a longer delay on first load to ensure the storage is ready
     const timer = setTimeout(() => {
       checkCurrentSlides();
-    }, 500);
+    }, 1000); // Increased timeout to ensure storage system is ready
     
     return () => clearTimeout(timer);
   }, []);

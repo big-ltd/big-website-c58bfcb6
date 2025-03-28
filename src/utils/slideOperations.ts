@@ -236,25 +236,30 @@ export const moveSlide = async (
     const verifiedOrder = await fetchSlidesOrder();
     console.log("Verified order from storage after save:", verifiedOrder?.slides);
     
-    // Update the UI immediately with optimistic update
-    const newSlides = [...slides];
-    const [movedSlide] = newSlides.splice(sourceIndex, 1);
-    newSlides.splice(destinationIndex, 0, movedSlide);
-    
-    // Update the timestamp to prevent caching issues
+    // Create a new timestamp for cache busting
     const timestamp = Date.now();
     
-    // Update the URLs with the new timestamp
-    const updatedSlides = newSlides.map(slide => {
-      // Extract the URL without the timestamp
-      const baseUrl = slide.url.split('?')[0];
+    // Create updated slides array with new order and updated timestamps
+    const updatedSlides = newOrder.map(name => {
+      const originalSlide = slides.find(slide => slide.name === name);
+      if (!originalSlide) {
+        console.error(`Could not find original slide with name ${name}`);
+        // Create a placeholder in case the original is not found
+        return {
+          name: name,
+          url: getPublicUrl(`${SLIDES_FOLDER}/${name}`, timestamp)
+        };
+      }
+      
       return {
-        ...slide,
-        url: `${baseUrl}?t=${timestamp}`
+        ...originalSlide,
+        url: getPublicUrl(`${SLIDES_FOLDER}/${name}`, timestamp)
       };
     });
     
-    // Update the UI with the refreshed URLs
+    console.log("Reordered slides to return:", updatedSlides);
+    
+    // Update the UI with the refreshed slides
     onSuccess(updatedSlides, timestamp);
     
     toast({

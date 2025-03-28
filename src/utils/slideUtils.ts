@@ -57,7 +57,7 @@ export const fetchSlidesOrder = async (): Promise<SlidesOrder | null> => {
   }
 };
 
-export const saveSlidesOrder = async (slideNames: string[]): Promise<void> => {
+export const saveSlidesOrder = async (slideNames: string[]): Promise<boolean> => {
   try {
     // Ensure we have a valid array
     if (!slideNames || !Array.isArray(slideNames)) {
@@ -73,7 +73,7 @@ export const saveSlidesOrder = async (slideNames: string[]): Promise<void> => {
     console.log('Saving slides order:', JSON.stringify(orderData, null, 2));
     
     // Wait for the upload to complete
-    const { error, data } = await supabase.storage
+    const { error } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(`${SLIDES_FOLDER}/${SLIDES_ORDER_FILE}`, 
         JSON.stringify(orderData, null, 2),
@@ -89,14 +89,16 @@ export const saveSlidesOrder = async (slideNames: string[]): Promise<void> => {
       throw error;
     }
     
-    console.log('Slides order saved successfully. Response:', data);
+    console.log('Slides order saved successfully');
     
     // Verify the order was saved correctly
     const verifyOrder = await fetchSlidesOrder();
     console.log('Verification - New slides order after save:', verifyOrder);
+    
+    return true;
   } catch (error) {
     console.error('Error saving slides order:', error);
-    throw error;
+    return false;
   }
 };
 

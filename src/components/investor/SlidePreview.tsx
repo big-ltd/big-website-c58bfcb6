@@ -17,6 +17,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
   const handleMoveClick = async (e: React.MouseEvent, sourceIndex: number, destinationIndex: number) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log(`Move button clicked: from ${sourceIndex} to ${destinationIndex}`);
     await onMoveSlide(sourceIndex, destinationIndex);
   };
 
@@ -31,7 +32,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
       <h3 className="text-white text-lg mb-2">Preview and Reorder Slides</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {slides.map((slide, index) => (
-          <div key={slide.name} className="relative group">
+          <div key={slide.name + index} className="relative group">
             <img 
               src={slide.url}
               alt={`Slide ${index + 1}`} 
