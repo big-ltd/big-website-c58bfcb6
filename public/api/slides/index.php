@@ -3,17 +3,24 @@
 // Set default content type to JSON for all responses
 header('Content-Type: application/json');
 
+// Enable all error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors to the client
+ini_set('log_errors', 1);
+
 // Constants
 define('SLIDES_DIR', '../../uploads/slides');
 define('SLIDES_ORDER_FILE', '../../uploads/slides_order.json');
 
 // Create the uploads directory if it doesn't exist
 if (!file_exists('../../uploads')) {
+    error_log("Creating uploads directory");
     mkdir('../../uploads', 0755, true);
 }
 
 // Create the slides directory if it doesn't exist
 if (!file_exists(SLIDES_DIR)) {
+    error_log("Creating slides directory");
     mkdir(SLIDES_DIR, 0755, true);
 }
 
@@ -22,6 +29,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Get the request path
 $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
+
+error_log("Processing {$method} request to {$path}");
 
 // Parse the request
 switch ($method) {
@@ -105,10 +114,14 @@ function listSlides() {
 
 // Upload slides
 function uploadSlides() {
-    error_log("Upload function called");
+    // Clear any previous output that might have been sent
+    if (ob_get_length()) ob_clean();
+    
+    error_log("=== Upload function called ===");
     $response = [];
     $uploadedFiles = [];
     
+    // Check if files were uploaded
     if (!isset($_FILES['slides'])) {
         error_log("No files found in upload request");
         respond(400, ['error' => 'No files uploaded']);
@@ -116,6 +129,14 @@ function uploadSlides() {
     }
     
     error_log("Files found in request: " . print_r($_FILES['slides'], true));
+    
+    // Check for PHP upload errors
+    if (isset($_FILES['slides']['error']) && $_FILES['slides']['error'] !== UPLOAD_ERR_OK) {
+        $errorMessage = getUploadErrorMessage($_FILES['slides']['error']);
+        error_log("PHP Upload Error: " . $errorMessage);
+        respond(400, ['error' => 'File upload error: ' . $errorMessage]);
+        return;
+    }
     
     // Get the current order
     $order = [];
@@ -147,10 +168,11 @@ function uploadSlides() {
                 ];
                 error_log("File moved successfully: " . $newFileName);
             } else {
-                error_log("Failed to move uploaded file: " . $file['name']);
+                error_log("Failed to move uploaded file: " . $file['name'] . " - PHP Error: " . error_get_last()['message']);
             }
         } else {
-            error_log("Upload error for file: " . $file['name'] . ", error code: " . $file['error']);
+            $errorMessage = getUploadErrorMessage($file['error']);
+            error_log("Upload error for file: " . $file['name'] . ", error code: " . $file['error'] . " - " . $errorMessage);
         }
     }
     
@@ -158,7 +180,31 @@ function uploadSlides() {
     saveOrderData($order);
     
     error_log("Upload complete. Files processed: " . count($uploadedFiles));
+    error_log("Response data: " . json_encode($uploadedFiles));
+    
     respond(200, $uploadedFiles);
+}
+
+// Helper function to get upload error message
+function getUploadErrorMessage($errorCode) {
+    switch ($errorCode) {
+        case UPLOAD_ERR_INI_SIZE:
+            return "The uploaded file exceeds the upload_max_filesize directive in php.ini";
+        case UPLOAD_ERR_FORM_SIZE:
+            return "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form";
+        case UPLOAD_ERR_PARTIAL:
+            return "The uploaded file was only partially uploaded";
+        case UPLOAD_ERR_NO_FILE:
+            return "No file was uploaded";
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return "Missing a temporary folder";
+        case UPLOAD_ERR_CANT_WRITE:
+            return "Failed to write file to disk";
+        case UPLOAD_ERR_EXTENSION:
+            return "A PHP extension stopped the file upload";
+        default:
+            return "Unknown upload error";
+    }
 }
 
 // Save slide order
@@ -309,6 +355,11 @@ function restructureFiles($files) {
 function respond($statusCode, $data) {
     http_response_code($statusCode);
     
+    // Clear any output buffers that might exist
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
     // Always set content type to application/json
     header('Content-Type: application/json');
     
@@ -319,6 +370,7 @@ function respond($statusCode, $data) {
     $json = json_encode($data);
     if ($json === false) {
         // If JSON encoding fails, send a fallback error
+        error_log("JSON encoding failed: " . json_last_error_msg());
         http_response_code(500);
         echo json_encode(['error' => 'Failed to encode response: ' . json_last_error_msg()]);
     } else {

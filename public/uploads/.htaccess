@@ -17,3 +17,10 @@ Options -Indexes
     Order Allow,Deny
     Allow from all
 </Directory>
+
+# Explicitly allow access to image files in all requests
+<IfModule mod_headers.c>
+    <FilesMatch ".(jpg|jpeg|png|gif|webp)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>

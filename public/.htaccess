@@ -30,4 +30,9 @@
   Header set Access-Control-Allow-Origin "*"
   Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT"
   Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+  
+  # For image files, ensure the correct content type
+  <FilesMatch ".(jpg|jpeg|png|gif|webp)$">
+    Header set Content-Type "image/%{SUFFIX}"
+  </FilesMatch>
 </IfModule>

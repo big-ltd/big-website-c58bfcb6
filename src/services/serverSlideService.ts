@@ -1,3 +1,4 @@
+
 import { Slide } from '@/types/slideTypes';
 
 // API endpoint for slide operations
@@ -9,25 +10,30 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
   
   Array.from(files).forEach(file => {
     formData.append('slides', file);
+    console.log(`Adding file to upload: ${file.name}, type: ${file.type}, size: ${file.size} bytes`);
   });
   
   console.log(`Uploading ${files.length} files to server...`);
   
   try {
+    console.log(`Sending POST request to ${SLIDES_API_ENDPOINT}/upload`);
+    
     const response = await fetch(`${SLIDES_API_ENDPOINT}/upload`, {
       method: 'POST',
       body: formData,
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server error response:', errorText);
-      throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-    }
+    console.log(`Server responded with status: ${response.status} ${response.statusText}`);
+    console.log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`);
     
     // Get response as text first for debugging
     const responseText = await response.text();
     console.log('Raw server response:', responseText);
+    
+    if (!response.ok) {
+      console.error(`Server error response (${response.status}): ${responseText}`);
+      throw new Error(`HTTP error ${response.status}: ${response.statusText}. Server message: ${responseText.substring(0, 200)}`);
+    }
     
     // Handle empty response
     if (!responseText || responseText.trim() === '') {
@@ -37,13 +43,22 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     
     // Try to parse the response as JSON
     try {
+      const contentType = response.headers.get('content-type');
+      console.log(`Response content type: ${contentType}`);
+      
       const data = JSON.parse(responseText);
       console.log('Parsed server response:', data);
       return data;
     } catch (parseError) {
       console.error('Failed to parse server response as JSON:', parseError);
-      console.error('Raw response was:', responseText);
-      throw new Error('Server returned invalid JSON. Please try again.');
+      console.error('First 500 characters of response:', responseText.substring(0, 500));
+      
+      // Log more details about the response for better debugging
+      if (responseText.length > 500) {
+        console.error(`Response is too long (${responseText.length} chars). Check server logs.`);
+      }
+      
+      throw new Error(`Server returned invalid JSON. Details: ${parseError.message}. Response starts with: ${responseText.substring(0, 100)}`);
     }
   } catch (error) {
     console.error('Error uploading slides:', error);
