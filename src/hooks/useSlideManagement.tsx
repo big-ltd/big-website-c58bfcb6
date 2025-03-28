@@ -1,21 +1,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Slide } from '@/types/slideTypes';
+import { Slide, STORAGE_BUCKET, SLIDES_FOLDER } from '@/types/slideTypes';
+import { supabase } from '@/integrations/supabase/client';
 import {
   getSlidesOrder,
-  getPublicUrl,
-  listFiles,
-  getSlidesFolder,
-  ensureDir
-} from '@/utils/fileSystem';
+  saveSlidesOrder,
+  getPublicUrl
+} from '@/utils/browserSlideUtils';
 import {
   uploadSlideFiles,
   clearAllSlides,
   deleteSlide,
   moveSlide
-} from '@/utils/localSlideOperations';
-import path from 'path';
+} from '@/utils/slideOperations';
 
 export const useSlideManagement = () => {
   const [currentSlides, setCurrentSlides] = useState<Slide[]>([]);
@@ -30,31 +28,26 @@ export const useSlideManagement = () => {
       const timestamp = forceTimestamp || Date.now();
       setCacheTimestamp(timestamp);
       
-      // Make sure slides folder exists
-      const slidesFolder = getSlidesFolder();
-      const folderExists = await ensureDir(slidesFolder);
-      if (!folderExists) {
-        console.error('Could not ensure slides folder exists');
-        setCurrentSlides([]);
-        setStorageError(true);
-        return;
-      }
+      // List files from Supabase storage
+      const { data: files, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .list(SLIDES_FOLDER);
       
-      // Get all files in the slides folder
-      const allFiles = await listFiles(slidesFolder);
-      if (!allFiles) {
-        console.error('Error listing slides folder');
+      if (error) {
+        console.error('Error listing slides from storage:', error);
         setStorageError(true);
         setCurrentSlides([]);
         return;
       }
       
       // Filter for actual image files
-      const imageFiles = allFiles.filter(file => 
-        file.toLowerCase().endsWith('.jpg') || 
-        file.toLowerCase().endsWith('.jpeg') || 
-        file.toLowerCase().endsWith('.png')
-      );
+      const imageFiles = files
+        ? files.filter(file => 
+            file.name.toLowerCase().endsWith('.jpg') || 
+            file.name.toLowerCase().endsWith('.jpeg') || 
+            file.name.toLowerCase().endsWith('.png'))
+            .map(file => file.name)
+        : [];
       
       console.log(`Found ${imageFiles.length} image files in storage`);
       
@@ -67,20 +60,28 @@ export const useSlideManagement = () => {
         if (imageFiles.length > 0) {
           // Generate slide objects
           const slideFiles = imageFiles.map(file => {
+            // Get public URL from Supabase
+            const { data } = supabase.storage
+              .from(STORAGE_BUCKET)
+              .getPublicUrl(`${SLIDES_FOLDER}/${file}`);
+              
             return {
-              url: getPublicUrl(file, timestamp),
+              url: `${data.publicUrl}?t=${timestamp}`,
               name: file
             };
           });
           
           setCurrentSlides(slideFiles);
+          
+          // Save the new order
+          await saveSlidesOrder(imageFiles);
         } else {
           console.log('No image files found, setting empty slides');
           setCurrentSlides([]);
         }
       } else {
-        // Use the order from the file
-        console.log(`Using slides order from file with ${slideOrder.length} slides`);
+        // Use the order from localStorage
+        console.log(`Using slides order from localStorage with ${slideOrder.length} slides`);
         
         // Create a set of actual files for quick lookups
         const existingFileNames = new Set(imageFiles);
@@ -94,27 +95,45 @@ export const useSlideManagement = () => {
         if (validSlideNames.length > 0) {
           // Generate slide objects in the correct order
           const slideFiles = validSlideNames.map(name => {
+            // Get public URL from Supabase
+            const { data } = supabase.storage
+              .from(STORAGE_BUCKET)
+              .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
+              
             return {
-              url: getPublicUrl(name, timestamp),
+              url: `${data.publicUrl}?t=${timestamp}`,
               name: name
             };
           });
           
           console.log("Setting current slides with ordered files:", slideFiles);
           setCurrentSlides(slideFiles);
+          
+          // If the valid names are different than what was in localStorage, update it
+          if (validSlideNames.length !== slideOrder.length) {
+            await saveSlidesOrder(validSlideNames);
+          }
         } else {
           // If no valid slides are left, check if there are any images and create a new order
           if (imageFiles.length > 0) {
             // Generate slide objects
             const slideFiles = imageFiles.map(file => {
+              // Get public URL from Supabase
+              const { data } = supabase.storage
+                .from(STORAGE_BUCKET)
+                .getPublicUrl(`${SLIDES_FOLDER}/${file}`);
+                
               return {
-                url: getPublicUrl(file, timestamp),
+                url: `${data.publicUrl}?t=${timestamp}`,
                 name: file
               };
             });
             
             console.log("No valid ordered slides, using all image files:", slideFiles);
             setCurrentSlides(slideFiles);
+            
+            // Save the new order
+            await saveSlidesOrder(imageFiles);
           } else {
             console.log("No slides found at all");
             setCurrentSlides([]);
@@ -142,9 +161,20 @@ export const useSlideManagement = () => {
           const newTimestamp = Date.now();
           setCacheTimestamp(newTimestamp);
           checkCurrentSlides(newTimestamp);
+          
+          toast({
+            title: "Success",
+            description: `${files.length} slides uploaded successfully`,
+          });
         },
         (error) => {
           setStorageError(true);
+          
+          toast({
+            title: "Error",
+            description: `Failed to upload slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            variant: "destructive",
+          });
         }
       );
     } finally {
@@ -167,7 +197,15 @@ export const useSlideManagement = () => {
             description: "All slides have been cleared",
           });
         },
-        (error) => setStorageError(true)
+        (error) => {
+          setStorageError(true);
+          
+          toast({
+            title: "Error",
+            description: `Failed to delete slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            variant: "destructive",
+          });
+        }
       );
     } finally {
       if (showConfirm) {
@@ -187,10 +225,21 @@ export const useSlideManagement = () => {
           const newTimestamp = Date.now();
           setCacheTimestamp(newTimestamp);
           await checkCurrentSlides(newTimestamp);
+          
+          toast({
+            title: "Success",
+            description: "Slide deleted successfully",
+          });
         },
         (error) => {
           setStorageError(true);
           checkCurrentSlides();
+          
+          toast({
+            title: "Error",
+            description: `Failed to delete slide: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            variant: "destructive",
+          });
         }
       );
     } finally {
@@ -213,6 +262,11 @@ export const useSlideManagement = () => {
           console.log('Slide moved successfully, updated slides:', updatedSlides);
           setCurrentSlides(updatedSlides);
           setCacheTimestamp(timestamp);
+          
+          toast({
+            title: "Success",
+            description: "Slides reordered successfully",
+          });
         },
         async (error) => {
           console.error('Error during move operation:', error);
@@ -221,6 +275,12 @@ export const useSlideManagement = () => {
           const newTimestamp = Date.now();
           setCacheTimestamp(newTimestamp);
           await checkCurrentSlides(newTimestamp);
+          
+          toast({
+            title: "Error",
+            description: `Failed to reorder slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            variant: "destructive",
+          });
         }
       );
     } finally {
@@ -254,11 +314,7 @@ export const useSlideManagement = () => {
 
   // Initialize slides on component mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      checkCurrentSlides();
-    }, 1000);
-    
-    return () => clearTimeout(timer);
+    checkCurrentSlides();
   }, []);
 
   return {

@@ -1,8 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Slide, STORAGE_BUCKET, SLIDES_FOLDER, SLIDES_ORDER_FILE } from '@/types/slideTypes';
-import { ensureSlidesFolderExists, fetchSlidesOrder, saveSlidesOrder, generateUniqueFileName, getPublicUrl } from './slideUtils';
-import { toast } from "@/hooks/use-toast";
+import { Slide, STORAGE_BUCKET, SLIDES_FOLDER } from '@/types/slideTypes';
+import { saveSlidesOrder, getSlidesOrder, generateUniqueFileName, getPublicUrl } from './browserSlideUtils';
+import { useToast } from "@/hooks/use-toast";
 
 export const uploadSlideFiles = async (
   files: FileList,
@@ -11,24 +11,13 @@ export const uploadSlideFiles = async (
   onError: (error: any) => void
 ) => {
   try {
-    // Ensure slides folder exists
-    const folderExists = await ensureSlidesFolderExists();
-    if (!folderExists) {
-      throw new Error('Could not create slides folder');
-    }
-    
     // First get the current slides order
-    const slidesOrder = await fetchSlidesOrder();
-    const currentOrder = slidesOrder ? [...slidesOrder.slides] : [];
+    const currentOrder = await getSlidesOrder();
     
-    // Upload each file with a unique timestamped filename
+    // Upload each file to Supabase storage
     const uploadPromises = Array.from(files).map(async (file) => {
       if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Error",
-          description: `${file.name} is not an image file`,
-          variant: "destructive",
-        });
+        console.error(`${file.name} is not an image file`);
         return null;
       }
 
@@ -50,8 +39,13 @@ export const uploadSlideFiles = async (
       // Add to order
       currentOrder.push(newFileName);
       
+      // Get the public URL
+      const { data } = supabase.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`);
+      
       return {
-        url: getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`, cacheTimestamp),
+        url: `${data.publicUrl}?t=${cacheTimestamp}`,
         name: newFileName,
         originalName: file.name
       };
@@ -64,21 +58,10 @@ export const uploadSlideFiles = async (
       // Save the updated order
       await saveSlidesOrder(currentOrder);
       onSuccess();
-      
-      toast({
-        title: "Success",
-        description: `${successfulUploads.length} slides uploaded successfully`,
-      });
     }
   } catch (error) {
     console.error('Error uploading files:', error);
     onError(error);
-    
-    toast({
-      title: "Error",
-      description: `Failed to upload slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      variant: "destructive",
-    });
   }
 };
 
@@ -103,7 +86,7 @@ export const clearAllSlides = async (
 
     if (data && data.length > 0) {
       const filesToDelete = data
-        .filter(file => file.name !== SLIDES_ORDER_FILE && file.name !== '.folder')
+        .filter(file => !file.name.endsWith('.json') && file.name !== '.folder')
         .map(file => `${SLIDES_FOLDER}/${file.name}`);
       
       if (filesToDelete.length > 0) {
@@ -120,30 +103,10 @@ export const clearAllSlides = async (
       // Reset the order file
       await saveSlidesOrder([]);
       onSuccess();
-      
-      if (showConfirm) {
-        toast({
-          title: "Success",
-          description: "All slides have been deleted",
-        });
-      }
-    } else if (showConfirm) {
-      toast({
-        title: "Info",
-        description: "No slides to delete",
-      });
     }
   } catch (error) {
     console.error('Error deleting slides:', error);
     onError(error);
-    
-    if (showConfirm) {
-      toast({
-        title: "Error",
-        description: `Failed to delete slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    }
   }
 };
 
@@ -161,7 +124,7 @@ export const deleteSlide = async (
     // Get the slide to delete
     const slideToDelete = slides[slideIndex];
     
-    // Delete the file
+    // Delete the file from Supabase
     const { error: deleteError } = await supabase
       .storage
       .from(STORAGE_BUCKET)
@@ -172,28 +135,15 @@ export const deleteSlide = async (
     }
     
     // Update the slides order
-    const slidesOrder = await fetchSlidesOrder();
-    if (slidesOrder) {
-      const updatedOrder = slidesOrder.slides.filter(name => name !== slideToDelete.name);
-      await saveSlidesOrder(updatedOrder);
-    }
+    const currentOrder = await getSlidesOrder();
+    const updatedOrder = currentOrder.filter(name => name !== slideToDelete.name);
+    await saveSlidesOrder(updatedOrder);
     
     // Refresh the slides
     onSuccess();
-    
-    toast({
-      title: "Success",
-      description: "Slide deleted successfully",
-    });
   } catch (error) {
     console.error('Error deleting slide:', error);
     onError(error);
-    
-    toast({
-      title: "Error",
-      description: `Failed to delete slide: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      variant: "destructive",
-    });
   }
 };
 
@@ -229,12 +179,11 @@ export const moveSlide = async (
     
     console.log("New slide order after move:", newOrder);
     
-    // Save the new order to storage - wait for this to complete
-    await saveSlidesOrder(newOrder);
-    
-    // Verify the order was actually saved
-    const verifiedOrder = await fetchSlidesOrder();
-    console.log("Verified order from storage after save:", verifiedOrder?.slides);
+    // Save the new order
+    const saveSuccess = await saveSlidesOrder(newOrder);
+    if (!saveSuccess) {
+      throw new Error("Failed to save reordered slides");
+    }
     
     // Create a new timestamp for cache busting
     const timestamp = Date.now();
@@ -247,13 +196,13 @@ export const moveSlide = async (
         // Create a placeholder in case the original is not found
         return {
           name: name,
-          url: getPublicUrl(`${SLIDES_FOLDER}/${name}`, timestamp)
+          url: getPublicUrl(name, timestamp)
         };
       }
       
       return {
         ...originalSlide,
-        url: getPublicUrl(`${SLIDES_FOLDER}/${name}`, timestamp)
+        url: getPublicUrl(originalSlide.name, timestamp)
       };
     });
     
@@ -261,19 +210,8 @@ export const moveSlide = async (
     
     // Update the UI with the refreshed slides
     onSuccess(updatedSlides, timestamp);
-    
-    toast({
-      title: "Success",
-      description: "Slides reordered successfully",
-    });
   } catch (error) {
     console.error('Error reordering slides:', error);
     onError(error);
-    
-    toast({
-      title: "Error",
-      description: `Failed to reorder slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      variant: "destructive",
-    });
   }
 };
