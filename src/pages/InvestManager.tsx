@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from 'lucide-react';
 import SlideUploader from '@/components/investor/SlideUploader';
 import SlidePreview from '@/components/investor/SlidePreview';
 import AddInvestorForm from '@/components/investor/AddInvestorForm';

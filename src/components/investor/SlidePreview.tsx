@@ -17,7 +17,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
   const handleMoveClick = async (e: React.MouseEvent, sourceIndex: number, destinationIndex: number) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log(`Move button clicked: from ${sourceIndex} to ${destinationIndex}`);
+    console.log(`Moving slide: from ${sourceIndex} to ${destinationIndex}`);
     await onMoveSlide(sourceIndex, destinationIndex);
   };
 

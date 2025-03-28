@@ -5,23 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
 import { ChevronUp, ChevronDown, Maximize, Minimize, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { createBucketIfNotExists } from '@/utils/createBucket';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarProvider,
-  SidebarRail
-} from "@/components/ui/sidebar";
+import { getSlidesOrder, getPublicUrl } from '@/utils/fileSystem';
 
 const COOKIE_NAME = 'investor_authenticated';
-const STORAGE_BUCKET = "investor_docs";
-const SLIDES_FOLDER = "slides";
-const SLIDES_ORDER_FILE = "slides_order.json";
-
-interface SlidesOrder {
-  slides: string[];
-  lastUpdated: number;
-}
 
 const Invest = () => {
   const [searchParams] = useSearchParams();
@@ -39,9 +25,9 @@ const Invest = () => {
   useEffect(() => {
     const checkAuthorization = async () => {
       try {
-        await createBucketIfNotExists(STORAGE_BUCKET);
+        // No need to create bucket, since we're using local files
       } catch (err) {
-        console.error('Error ensuring storage bucket exists:', err);
+        console.error('Error ensuring storage:', err);
         setStorageError(true);
       }
 
@@ -101,139 +87,21 @@ const Invest = () => {
     checkAuthorization();
   }, [searchParams, toast]);
 
-  const ensureSlidesFolderExists = async (): Promise<boolean> => {
-    try {
-      setStorageError(false);
-      
-      const { data, error } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .list(`${SLIDES_FOLDER}/`);
-      
-      if (error) {
-        console.log('Creating slides folder...');
-        const { error: uploadError } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .upload(`${SLIDES_FOLDER}/.folder`, new Blob([''], { type: 'text/plain' }), {
-            upsert: true
-          });
-        
-        if (uploadError) {
-          console.error('Error creating slides folder:', uploadError);
-          setStorageError(true);
-          return false;
-        }
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error ensuring slides folder exists:', error);
-      setStorageError(true);
-      return false;
-    }
-  };
-
-  const fetchSlidesOrder = async (): Promise<SlidesOrder | null> => {
-    try {
-      setStorageError(false);
-      
-      const folderExists = await ensureSlidesFolderExists();
-      if (!folderExists) {
-        return null;
-      }
-      
-      const { data, error } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .download(`${SLIDES_FOLDER}/${SLIDES_ORDER_FILE}`);
-      
-      if (error) {
-        console.log('No slides order file found');
-        return null;
-      }
-      
-      const text = await data.text();
-      return JSON.parse(text) as SlidesOrder;
-    } catch (error) {
-      console.error('Error fetching slides order:', error);
-      return null;
-    }
-  };
-
   const fetchSlides = useCallback(async () => {
     try {
       setCacheTimestamp(Date.now());
       setStorageError(false);
       
-      await createBucketIfNotExists(STORAGE_BUCKET);
-      const folderExists = await ensureSlidesFolderExists();
-      if (!folderExists) {
-        setSlidesUrls([]);
-        return;
-      }
+      // Get slides order from local file
+      const slideOrder = await getSlidesOrder();
       
-      const slidesOrder = await fetchSlidesOrder();
-      
-      const { data: allFiles, error: listError } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .list(`${SLIDES_FOLDER}/`);
-      
-      if (listError) {
-        console.error('Error listing files in slides folder:', listError);
-        setStorageError(true);
-        setSlidesUrls([]);
-        return;
-      }
-      
-      const imageFiles = allFiles.filter(file => 
-        (file.name.toLowerCase().endsWith('.jpg') || 
-        file.name.toLowerCase().endsWith('.jpeg') || 
-        file.name.toLowerCase().endsWith('.png')) && 
-        file.name !== SLIDES_ORDER_FILE && 
-        file.name !== '.folder'
-      );
-      
-      console.log(`Found ${imageFiles.length} image files in storage`);
-      
-      if (slidesOrder && slidesOrder.slides.length > 0) {
+      if (slideOrder && slideOrder.length > 0) {
         console.log('Using slides order from file for viewing');
         
-        const existingFileNames = new Set(imageFiles.map(file => file.name));
-        
-        const validSlideNames = slidesOrder.slides.filter(name => existingFileNames.has(name));
-        
-        if (validSlideNames.length > 0) {
-          const urls = validSlideNames.map(name => {
-            const { data } = supabase.storage
-              .from(STORAGE_BUCKET)
-              .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
-            
-            return `${data.publicUrl}?t=${cacheTimestamp}`;
-          });
-          
-          setSlidesUrls(urls);
-        } else if (imageFiles.length > 0) {
-          const urls = imageFiles.map(file => {
-            const { data } = supabase.storage
-              .from(STORAGE_BUCKET)
-              .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
-            
-            return `${data.publicUrl}?t=${cacheTimestamp}`;
-          });
-          
-          setSlidesUrls(urls);
-        } else {
-          setSlidesUrls([]);
-        }
-      } else if (imageFiles.length > 0) {
-        const urls = imageFiles.map(file => {
-          const { data } = supabase.storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
-          
-          return `${data.publicUrl}?t=${cacheTimestamp}`;
-        });
-        
+        const urls = slideOrder.map(name => getPublicUrl(name, cacheTimestamp));
         setSlidesUrls(urls);
       } else {
+        // Try to load static files if no slides are in the order file
         try {
           const staticUrls = [];
           let i = 1;
@@ -426,7 +294,6 @@ const Invest = () => {
                     className="w-full bg-red-900/20 text-red-200 hover:bg-red-900/30 hover:text-red-100" 
                     onClick={async () => {
                       try {
-                        await createBucketIfNotExists(STORAGE_BUCKET);
                         await fetchSlides();
                         toast({
                           title: "Storage Check",

@@ -1,19 +1,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Slide, STORAGE_BUCKET, SLIDES_FOLDER } from '@/types/slideTypes';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  ensureSlidesFolderExists, 
-  fetchSlidesOrder, 
-  getPublicUrl 
-} from '@/utils/slideUtils';
+import { Slide } from '@/types/slideTypes';
+import {
+  getSlidesOrder,
+  getPublicUrl,
+  listFiles,
+  getSlidesFolder,
+  ensureDir
+} from '@/utils/fileSystem';
 import {
   uploadSlideFiles,
   clearAllSlides,
   deleteSlide,
   moveSlide
-} from '@/utils/slideOperations';
+} from '@/utils/localSlideOperations';
+import path from 'path';
 
 export const useSlideManagement = () => {
   const [currentSlides, setCurrentSlides] = useState<Slide[]>([]);
@@ -29,7 +31,8 @@ export const useSlideManagement = () => {
       setCacheTimestamp(timestamp);
       
       // Make sure slides folder exists
-      const folderExists = await ensureSlidesFolderExists();
+      const slidesFolder = getSlidesFolder();
+      const folderExists = await ensureDir(slidesFolder);
       if (!folderExists) {
         console.error('Could not ensure slides folder exists');
         setCurrentSlides([]);
@@ -38,12 +41,9 @@ export const useSlideManagement = () => {
       }
       
       // Get all files in the slides folder
-      const { data: allFiles, error: listError } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .list(`${SLIDES_FOLDER}/`);
-      
-      if (listError) {
-        console.error('Error listing slides folder:', listError);
+      const allFiles = await listFiles(slidesFolder);
+      if (!allFiles) {
+        console.error('Error listing slides folder');
         setStorageError(true);
         setCurrentSlides([]);
         return;
@@ -51,31 +51,25 @@ export const useSlideManagement = () => {
       
       // Filter for actual image files
       const imageFiles = allFiles.filter(file => 
-        (file.name.toLowerCase().endsWith('.jpg') || 
-        file.name.toLowerCase().endsWith('.jpeg') || 
-        file.name.toLowerCase().endsWith('.png')) && 
-        file.name !== 'slides_order.json' && 
-        file.name !== '.folder'
+        file.toLowerCase().endsWith('.jpg') || 
+        file.toLowerCase().endsWith('.jpeg') || 
+        file.toLowerCase().endsWith('.png')
       );
       
       console.log(`Found ${imageFiles.length} image files in storage`);
       
-      // First, get the slides order file
-      const slidesOrder = await fetchSlidesOrder();
-      console.log('Retrieved slides order:', slidesOrder);
+      // Get the slides order
+      const slideOrder = await getSlidesOrder();
+      console.log('Retrieved slides order:', slideOrder);
       
-      if (!slidesOrder || !slidesOrder.slides || slidesOrder.slides.length === 0) {
+      if (!slideOrder || slideOrder.length === 0) {
         // No valid order file exists, create a new one based on all found files
-        const slideNames = imageFiles.map(file => file.name);
-        
-        console.log(`Creating new slides order with ${slideNames.length} files`);
-        
-        if (slideNames.length > 0) {
+        if (imageFiles.length > 0) {
           // Generate slide objects
           const slideFiles = imageFiles.map(file => {
             return {
-              url: getPublicUrl(`${SLIDES_FOLDER}/${file.name}`, timestamp),
-              name: file.name
+              url: getPublicUrl(file, timestamp),
+              name: file
             };
           });
           
@@ -86,13 +80,13 @@ export const useSlideManagement = () => {
         }
       } else {
         // Use the order from the file
-        console.log(`Using slides order from file with ${slidesOrder.slides.length} slides`);
+        console.log(`Using slides order from file with ${slideOrder.length} slides`);
         
         // Create a set of actual files for quick lookups
-        const existingFileNames = new Set(imageFiles.map(file => file.name));
+        const existingFileNames = new Set(imageFiles);
         
         // Filter the slides order to only include files that actually exist
-        const validSlideNames = slidesOrder.slides.filter(name => existingFileNames.has(name));
+        const validSlideNames = slideOrder.filter(name => existingFileNames.has(name));
         
         console.log(`Valid slide names based on order file:`, validSlideNames);
         
@@ -101,7 +95,7 @@ export const useSlideManagement = () => {
           // Generate slide objects in the correct order
           const slideFiles = validSlideNames.map(name => {
             return {
-              url: getPublicUrl(`${SLIDES_FOLDER}/${name}`, timestamp),
+              url: getPublicUrl(name, timestamp),
               name: name
             };
           });
@@ -111,13 +105,11 @@ export const useSlideManagement = () => {
         } else {
           // If no valid slides are left, check if there are any images and create a new order
           if (imageFiles.length > 0) {
-            const newSlideNames = imageFiles.map(file => file.name);
-            
             // Generate slide objects
             const slideFiles = imageFiles.map(file => {
               return {
-                url: getPublicUrl(`${SLIDES_FOLDER}/${file.name}`, timestamp),
-                name: file.name
+                url: getPublicUrl(file, timestamp),
+                name: file
               };
             });
             
@@ -221,12 +213,6 @@ export const useSlideManagement = () => {
           console.log('Slide moved successfully, updated slides:', updatedSlides);
           setCurrentSlides(updatedSlides);
           setCacheTimestamp(timestamp);
-          
-          // Force a refresh of the slides data from storage with some delay
-          // to ensure the order file has been properly saved and processed
-          setTimeout(() => {
-            checkCurrentSlides(timestamp);
-          }, 500);
         },
         async (error) => {
           console.error('Error during move operation:', error);
@@ -268,10 +254,9 @@ export const useSlideManagement = () => {
 
   // Initialize slides on component mount
   useEffect(() => {
-    // Use a longer delay on first load to ensure the storage is ready
     const timer = setTimeout(() => {
       checkCurrentSlides();
-    }, 1000); // Increased timeout to ensure storage system is ready
+    }, 1000);
     
     return () => clearTimeout(timer);
   }, []);
