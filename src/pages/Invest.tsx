@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
 import { ChevronUp, ChevronDown, Maximize, Minimize, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { getSlidesOrder, getPublicUrl } from '@/utils/browserSlideUtils';
+import { SLIDES_FOLDER, STORAGE_BUCKET } from '@/types/slideTypes';
 
 const COOKIE_NAME = 'investor_authenticated';
 
@@ -93,16 +92,40 @@ const Invest = () => {
       setCacheTimestamp(Date.now());
       setStorageError(false);
       
-      // Get slide order
-      const slideOrder = await getSlidesOrder();
+      // First try to get the slides_order.json file
+      const { data: orderData, error: orderError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .download(`${SLIDES_FOLDER}/slides_order.json`);
       
-      if (slideOrder && slideOrder.length > 0) {
-        console.log('Using slides order from localStorage for viewing');
+      let slideOrder: string[] = [];
+      
+      if (!orderError && orderData) {
+        try {
+          const orderText = await orderData.text();
+          const orderJson = JSON.parse(orderText);
+          slideOrder = orderJson.slides || [];
+          console.log('Using slides order from Supabase:', slideOrder);
+        } catch (parseErr) {
+          console.error('Error parsing slides order:', parseErr);
+        }
+      }
+      
+      if (slideOrder.length > 0) {
+        // Generate URLs for each slide
+        const urls = slideOrder.map(name => {
+          const { data } = supabase.storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
+            
+          return `${data.publicUrl}?t=${cacheTimestamp}`;
+        });
         
-        // List all files in the slides folder from Supabase
+        setSlidesUrls(urls);
+      } else {
+        // If no order file or it's empty, list all files in the slides folder
         const { data: files, error } = await supabase.storage
-          .from('lovable-uploads')
-          .list('slides');
+          .from(STORAGE_BUCKET)
+          .list(SLIDES_FOLDER);
         
         if (error) {
           console.error('Error listing slides from storage:', error);
@@ -120,70 +143,21 @@ const Invest = () => {
               .map(file => file.name)
           : [];
         
-        // Create a set for quick lookups
-        const existingFileNames = new Set(imageFiles);
-        
-        // Filter the order to only include files that exist
-        const validSlideNames = slideOrder.filter(name => existingFileNames.has(name));
-        
-        if (validSlideNames.length > 0) {
-          // Generate URLs for each slide
-          const urls = validSlideNames.map(name => {
+        if (imageFiles.length > 0) {
+          // Generate URLs for each file
+          const urls = imageFiles.map(filename => {
             const { data } = supabase.storage
-              .from('lovable-uploads')
-              .getPublicUrl(`slides/${name}`);
+              .from(STORAGE_BUCKET)
+              .getPublicUrl(`${SLIDES_FOLDER}/${filename}`);
               
             return `${data.publicUrl}?t=${cacheTimestamp}`;
           });
           
           setSlidesUrls(urls);
         } else {
-          // If no valid slides in the order, use all available images
-          const urls = imageFiles.map(file => {
-            const { data } = supabase.storage
-              .from('lovable-uploads')
-              .getPublicUrl(`slides/${file}`);
-              
-            return `${data.publicUrl}?t=${cacheTimestamp}`;
-          });
-          
-          setSlidesUrls(urls);
-        }
-      } else {
-        // Try to load static files if no slides are in the order file
-        try {
-          const staticUrls = [];
-          let i = 1;
-          const maxStaticSlides = 20;
-
-          while (i <= maxStaticSlides) {
-            const fileName = `0${i}`.slice(-2) + '.jpg';
-            const url = `/lovable-uploads/slides/${fileName}?t=${cacheTimestamp}`;
-            
-            const response = await fetch(url, { method: 'HEAD' });
-            if (response.ok) {
-              staticUrls.push(url);
-              i++;
-            } else {
-              break;
-            }
-          }
-
-          if (staticUrls.length > 0) {
-            setSlidesUrls(staticUrls);
-          } else {
-            toast({
-              title: "No Slides Found",
-              description: "No presentation slides are available.",
-              variant: "destructive",
-            });
-            setSlidesUrls([]);
-          }
-        } catch (staticError) {
-          console.error('Error loading static slides:', staticError);
           toast({
-            title: "Error",
-            description: "Failed to load presentation slides.",
+            title: "No Slides Found",
+            description: "No presentation slides are available.",
             variant: "destructive",
           });
           setSlidesUrls([]);
@@ -200,76 +174,6 @@ const Invest = () => {
       setSlidesUrls([]);
     }
   }, [cacheTimestamp, toast]);
-
-  const goToNextSlide = () => {
-    if (currentSlideIndex < slidesUrls.length - 1) {
-      setCurrentSlideIndex(currentSlideIndex + 1);
-    }
-  };
-
-  const goToPreviousSlide = () => {
-    if (currentSlideIndex > 0) {
-      setCurrentSlideIndex(currentSlideIndex - 1);
-    }
-  };
-
-  const goToSlide = (index: number) => {
-    if (index >= 0 && index < slidesUrls.length) {
-      setCurrentSlideIndex(index);
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (!slideContainerRef.current) return;
-    
-    if (!isFullscreen) {
-      if (slideContainerRef.current.requestFullscreen) {
-        slideContainerRef.current.requestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-    setIsFullscreen(!isFullscreen);
-  };
-
-  const refreshSlides = async () => {
-    setCacheTimestamp(Date.now());
-    setStorageError(false);
-    await fetchSlides();
-    toast({
-      title: "Refreshed",
-      description: "Slides have been refreshed.",
-    });
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-        goToNextSlide();
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        goToPreviousSlide();
-      } else if (e.key === 'f' || e.key === 'F') {
-        toggleFullscreen();
-      } else if (e.key === 'r' || e.key === 'R') {
-        refreshSlides();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, [currentSlideIndex, slidesUrls.length]);
 
   if (loading) {
     return (
@@ -433,6 +337,49 @@ const Invest = () => {
       </div>
     </div>
   );
+
+  function goToNextSlide() {
+    if (currentSlideIndex < slidesUrls.length - 1) {
+      setCurrentSlideIndex(currentSlideIndex + 1);
+    }
+  }
+
+  function goToPreviousSlide() {
+    if (currentSlideIndex > 0) {
+      setCurrentSlideIndex(currentSlideIndex - 1);
+    }
+  }
+
+  function goToSlide(index: number) {
+    if (index >= 0 && index < slidesUrls.length) {
+      setCurrentSlideIndex(index);
+    }
+  }
+
+  function toggleFullscreen() {
+    if (!slideContainerRef.current) return;
+    
+    if (!isFullscreen) {
+      if (slideContainerRef.current.requestFullscreen) {
+        slideContainerRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+    setIsFullscreen(!isFullscreen);
+  }
+
+  function refreshSlides() {
+    setCacheTimestamp(Date.now());
+    setStorageError(false);
+    fetchSlides();
+    toast({
+      title: "Refreshed",
+      description: "Slides have been refreshed.",
+    });
+  }
 };
 
 export default Invest;

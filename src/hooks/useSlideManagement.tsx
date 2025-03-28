@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Slide, SLIDES_FOLDER } from '@/types/slideTypes';
+import { Slide, SLIDES_FOLDER, STORAGE_BUCKET } from '@/types/slideTypes';
+import { supabase } from '@/integrations/supabase/client';
 import {
   getSlidesOrder,
   saveSlidesOrder,
@@ -23,7 +24,7 @@ export const useSlideManagement = () => {
       const timestamp = forceTimestamp || Date.now();
       setCacheTimestamp(timestamp);
       
-      // Get slides order from localStorage
+      // Get slides order from localStorage or Supabase
       const slideOrder = await getSlidesOrder();
       console.log('Retrieved slides order:', slideOrder);
       
@@ -56,7 +57,7 @@ export const useSlideManagement = () => {
       // Get current order
       const currentOrder = await getSlidesOrder();
       
-      // Create slides directory if it doesn't exist (client-side only check)
+      // Create slides directory if it doesn't exist
       console.log(`Using slides folder: /${SLIDES_FOLDER}/`);
       
       // Array to store new slide objects
@@ -79,8 +80,26 @@ export const useSlideManagement = () => {
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const newFileName = generateUniqueFileName(fileExtension);
         
-        // Create a URL for the image (create blob URL)
-        const url = URL.createObjectURL(file);
+        // Upload to Supabase storage
+        const { data, error } = await supabase.storage
+          .from(STORAGE_BUCKET)
+          .upload(`${SLIDES_FOLDER}/${newFileName}`, file, {
+            cacheControl: '0',
+            upsert: true
+          });
+        
+        if (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          toast({
+            title: "Upload Error",
+            description: `Failed to upload ${file.name}: ${error.message}`,
+            variant: "destructive",
+          });
+          continue;
+        }
+        
+        // Get public URL
+        const url = getPublicUrl(newFileName, cacheTimestamp);
         
         // Create a slide object 
         const newSlide: Slide = {
@@ -93,8 +112,6 @@ export const useSlideManagement = () => {
         newSlides.push(newSlide);
         currentOrder.push(newFileName);
         
-        // Store the file information in localStorage so we can reference it later
-        localStorage.setItem(`slide_${newFileName}`, url);
         console.log(`Stored slide in /${SLIDES_FOLDER}/${newFileName}`);
       }
       
@@ -132,12 +149,30 @@ export const useSlideManagement = () => {
     setUploadLoading(true);
     
     try {
-      // Get current slides order
-      const currentOrder = await getSlidesOrder();
+      // Get list of files in the slides folder
+      const { data, error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .list(SLIDES_FOLDER);
       
-      // Remove each slide from localStorage
-      for (const slideName of currentOrder) {
-        localStorage.removeItem(`slide_${slideName}`);
+      if (error) {
+        throw error;
+      }
+      
+      // Delete all files except slides_order.json
+      if (data && data.length > 0) {
+        const filesToDelete = data
+          .filter(file => file.name !== 'slides_order.json' && !file.name.endsWith('.folder'))
+          .map(file => `${SLIDES_FOLDER}/${file.name}`);
+          
+        if (filesToDelete.length > 0) {
+          const { error: deleteError } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .remove(filesToDelete);
+            
+          if (deleteError) {
+            console.error('Error deleting slides:', deleteError);
+          }
+        }
       }
       
       // Clear the order
@@ -175,8 +210,14 @@ export const useSlideManagement = () => {
       // Get the slide to delete
       const slideToDelete = currentSlides[slideIndex];
       
-      // Remove the slide from localStorage
-      localStorage.removeItem(`slide_${slideToDelete.name}`);
+      // Delete from Supabase storage
+      const { error } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .remove([`${SLIDES_FOLDER}/${slideToDelete.name}`]);
+        
+      if (error) {
+        throw error;
+      }
       
       // Update the order
       const currentOrder = await getSlidesOrder();

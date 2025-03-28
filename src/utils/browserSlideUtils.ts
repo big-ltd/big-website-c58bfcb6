@@ -1,4 +1,6 @@
-import { Slide, SLIDES_FOLDER } from '@/types/slideTypes';
+
+import { Slide, SLIDES_FOLDER, STORAGE_BUCKET } from '@/types/slideTypes';
+import { supabase } from '@/integrations/supabase/client';
 
 // Store slides order in localStorage
 export const saveSlidesOrder = async (slideNames: string[]): Promise<boolean> => {
@@ -9,7 +11,25 @@ export const saveSlidesOrder = async (slideNames: string[]): Promise<boolean> =>
     };
     
     localStorage.setItem('investor_slides_order', JSON.stringify(orderData));
-    console.log('Saved slides order to localStorage:', orderData);
+    
+    // Also save to Supabase storage for server-side persistence
+    const { error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(`${SLIDES_FOLDER}/slides_order.json`, 
+        JSON.stringify(orderData),
+        { 
+          contentType: 'application/json',
+          upsert: true,
+          cacheControl: '0'
+        }
+      );
+    
+    if (error) {
+      console.error('Error saving order to Supabase:', error);
+      // We still saved to localStorage, so return true
+    }
+    
+    console.log('Saved slides order to localStorage and Supabase:', orderData);
     return true;
   } catch (error) {
     console.error('Error saving slides order:', error);
@@ -17,16 +37,35 @@ export const saveSlidesOrder = async (slideNames: string[]): Promise<boolean> =>
   }
 };
 
-// Get slides order from localStorage
+// Get slides order from localStorage and fallback to Supabase storage
 export const getSlidesOrder = async (): Promise<string[]> => {
   try {
+    // First try localStorage
     const orderData = localStorage.getItem('investor_slides_order');
     if (orderData) {
       const parsed = JSON.parse(orderData);
       console.log('Retrieved slides order from localStorage:', parsed.slides);
       return parsed.slides;
     }
-    return [];
+    
+    // If not in localStorage, try Supabase storage
+    const { data, error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .download(`${SLIDES_FOLDER}/slides_order.json`);
+    
+    if (error || !data) {
+      console.log('No slides order found in Supabase storage');
+      return [];
+    }
+    
+    const text = await data.text();
+    const parsed = JSON.parse(text);
+    console.log('Retrieved slides order from Supabase:', parsed.slides);
+    
+    // Save to localStorage for faster access next time
+    localStorage.setItem('investor_slides_order', text);
+    
+    return parsed.slides;
   } catch (error) {
     console.error('Error getting slides order:', error);
     return [];
@@ -42,13 +81,14 @@ export const getPublicUrl = (filename: string, timestamp: number): string => {
     if (storedUrl.startsWith('blob:')) {
       return storedUrl;
     }
-    
-    // Otherwise ensure the path has the right format
-    return `/${SLIDES_FOLDER}/${filename}?t=${timestamp}`;
   }
   
-  // If not found in localStorage, use a fallback path with correct folder
-  return `/${SLIDES_FOLDER}/${filename}?t=${timestamp}`;
+  // Get from Supabase storage
+  const { data } = supabase.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(`${SLIDES_FOLDER}/${filename}`);
+    
+  return `${data.publicUrl}?t=${timestamp}`;
 };
 
 // Generate a unique filename
