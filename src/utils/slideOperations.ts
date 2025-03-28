@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Slide, STORAGE_BUCKET, SLIDES_FOLDER, SLIDES_ORDER_FILE } from '@/types/slideTypes';
 import { ensureSlidesFolderExists, fetchSlidesOrder, saveSlidesOrder, generateUniqueFileName, getPublicUrl } from './slideUtils';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export const uploadSlideFiles = async (
   files: FileList,
@@ -10,8 +10,6 @@ export const uploadSlideFiles = async (
   onSuccess: () => void,
   onError: (error: any) => void
 ) => {
-  const { toast } = useToast();
-  
   try {
     // Ensure slides folder exists
     const folderExists = await ensureSlidesFolderExists();
@@ -89,9 +87,7 @@ export const clearAllSlides = async (
   onSuccess: () => void,
   onError: (error: any) => void
 ) => {
-  const { toast } = useToast();
-  
-  if (showConfirm && !confirm("Are you sure you want to delete all slides? This action cannot be undone.")) {
+  if (showConfirm && !window.confirm("Are you sure you want to delete all slides? This action cannot be undone.")) {
     return;
   }
 
@@ -157,9 +153,7 @@ export const deleteSlide = async (
   onSuccess: () => void,
   onError: (error: any) => void
 ) => {
-  const { toast } = useToast();
-  
-  if (!confirm(`Are you sure you want to delete slide ${slideIndex + 1}?`)) {
+  if (!window.confirm(`Are you sure you want to delete slide ${slideIndex + 1}?`)) {
     return;
   }
   
@@ -210,8 +204,6 @@ export const moveSlide = async (
   onSuccess: (newSlides: Slide[], timestamp: number) => void,
   onError: (error: any) => void
 ) => {
-  const { toast } = useToast();
-  
   if (sourceIndex === destinationIndex) return;
   
   // Validate indices to prevent errors

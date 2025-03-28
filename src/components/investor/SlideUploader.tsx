@@ -46,16 +46,18 @@ const SlideUploader = ({
           
           <Button 
             variant="destructive"
-            onClick={onClearAllSlides}
+            onClick={() => onClearAllSlides()}
             disabled={uploadLoading || currentSlides.length === 0}
+            type="button"
           >
             <Trash className="h-4 w-4 mr-2" /> Clear All Slides
           </Button>
           
           <Button
             variant="outline"
-            onClick={onRefreshCache}
+            onClick={() => onRefreshCache()}
             disabled={uploadLoading}
+            type="button"
           >
             <RefreshCw className="h-4 w-4 mr-2" /> Refresh Cache
           </Button>

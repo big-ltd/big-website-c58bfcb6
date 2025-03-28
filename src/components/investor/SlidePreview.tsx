@@ -24,7 +24,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
               alt={`Slide ${index + 1}`} 
               className="w-full h-40 object-contain bg-gray-900 rounded-md"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex flex-col items-center justify-center">
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex flex-col items-center justify-center opacity-100 group-hover:opacity-100">
               <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity mb-2">
                 Slide {index + 1}
               </span>
@@ -34,6 +34,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
                   variant="secondary"
                   disabled={index === 0 || uploadLoading}
                   onClick={() => onMoveSlide(index, index - 1)}
+                  type="button"
                 >
                   <ArrowUp className="h-4 w-4" />
                 </Button>
@@ -42,6 +43,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
                   variant="secondary"
                   disabled={index === slides.length - 1 || uploadLoading}
                   onClick={() => onMoveSlide(index, index + 1)}
+                  type="button"
                 >
                   <ArrowDown className="h-4 w-4" />
                 </Button>
@@ -50,6 +52,7 @@ const SlidePreview = ({ slides, uploadLoading, onMoveSlide, onDeleteSlide }: Sli
                   variant="destructive"
                   disabled={uploadLoading}
                   onClick={() => onDeleteSlide(index)}
+                  type="button"
                 >
                   <Trash className="h-4 w-4" />
                 </Button>
