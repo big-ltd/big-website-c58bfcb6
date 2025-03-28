@@ -20,7 +20,6 @@ const InvestHashCodes = () => {
   const {
     currentSlides,
     uploadLoading,
-    storageError,
     checkCurrentSlides,
     handleFileUpload,
     handleClearAllSlides,
@@ -76,7 +75,6 @@ const InvestHashCodes = () => {
                 onFileUpload={handleFileUpload}
                 onClearAllSlides={() => handleClearAllSlides(true)}
                 onRefreshCache={handleRefreshCache}
-                hasError={storageError}
               />
               
               <SlidePreview 

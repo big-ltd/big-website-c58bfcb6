@@ -1,5 +1,6 @@
 
 <?php
+// Always set the content type header for all responses
 header('Content-Type: application/json');
 
 // Constants
@@ -289,6 +290,7 @@ function restructureFiles($files) {
 // Helper function to send a JSON response
 function respond($statusCode, $data) {
     http_response_code($statusCode);
+    header('Content-Type: application/json');
     echo json_encode($data);
     exit;
 }

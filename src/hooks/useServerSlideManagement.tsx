@@ -14,13 +14,11 @@ export const useServerSlideManagement = () => {
   const [currentSlides, setCurrentSlides] = useState<Slide[]>([]);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
-  const [serverError, setServerError] = useState<boolean>(false);
   const { toast } = useToast();
 
   // Function to fetch slides from the server
   const fetchSlides = async (forceTimestamp = null) => {
     try {
-      setServerError(false);
       setUploadLoading(true);
       
       const timestamp = forceTimestamp || Date.now();
@@ -37,7 +35,6 @@ export const useServerSlideManagement = () => {
       setCurrentSlides(slidesWithTimestamp);
     } catch (error) {
       console.error('Error fetching slides:', error);
-      setServerError(true);
       toast({
         title: "Error",
         description: "Failed to fetch slides from the server.",
@@ -73,7 +70,6 @@ export const useServerSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error uploading files:', error);
-      setServerError(true);
       toast({
         title: "Error",
         description: `Failed to upload slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -104,7 +100,6 @@ export const useServerSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error clearing slides:', error);
-      setServerError(true);
       toast({
         title: "Error",
         description: `Failed to clear slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -139,7 +134,6 @@ export const useServerSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error deleting slide:', error);
-      setServerError(true);
       toast({
         title: "Error",
         description: `Failed to delete slide: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -175,7 +169,6 @@ export const useServerSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error moving slide:', error);
-      setServerError(true);
       toast({
         title: "Error",
         description: `Failed to reorder slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -203,7 +196,6 @@ export const useServerSlideManagement = () => {
       });
     } catch (error) {
       console.error('Error refreshing cache:', error);
-      setServerError(true);
       toast({
         title: "Error",
         description: "Failed to refresh slide cache",
@@ -222,7 +214,6 @@ export const useServerSlideManagement = () => {
   return {
     currentSlides,
     uploadLoading,
-    storageError: serverError,
     checkCurrentSlides: fetchSlides,
     handleFileUpload,
     handleClearAllSlides,

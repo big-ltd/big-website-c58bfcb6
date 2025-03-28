@@ -18,11 +18,19 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to upload slides');
+    throw new Error('Failed to upload slides');
   }
   
-  return response.json();
+  // Check content type to handle JSON correctly
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json();
+  } else {
+    // Handle non-JSON responses
+    const text = await response.text();
+    console.log('Non-JSON response:', text);
+    return [];
+  }
 };
 
 // Fetch slides from the server
@@ -33,7 +41,16 @@ export const fetchSlidesFromServer = async (): Promise<Slide[]> => {
     throw new Error('Failed to fetch slides');
   }
   
-  return response.json();
+  // Check content type to handle JSON correctly
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json();
+  } else {
+    // Handle non-JSON responses
+    const text = await response.text();
+    console.log('Non-JSON response:', text);
+    return [];
+  }
 };
 
 // Delete all slides from the server
@@ -43,8 +60,7 @@ export const clearAllSlidesFromServer = async (): Promise<void> => {
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to clear slides');
+    throw new Error('Failed to clear slides');
   }
 };
 
@@ -55,8 +71,7 @@ export const deleteSingleSlideFromServer = async (slideName: string): Promise<vo
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to delete slide');
+    throw new Error('Failed to delete slide');
   }
 };
 
@@ -71,8 +86,7 @@ export const saveSlidesOrderToServer = async (slideNames: string[]): Promise<voi
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to save slide order');
+    throw new Error('Failed to save slide order');
   }
 };
 
@@ -90,9 +104,17 @@ export const moveSlideOnServer = async (
   });
   
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to move slide');
+    throw new Error('Failed to move slide');
   }
   
-  return response.json();
+  // Check content type to handle JSON correctly
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json();
+  } else {
+    // Handle non-JSON responses
+    const text = await response.text();
+    console.log('Non-JSON response:', text);
+    return [];
+  }
 };
