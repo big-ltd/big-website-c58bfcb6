@@ -68,13 +68,13 @@ const SlideUploader = ({
             <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-semibold">Storage Error</p>
-              <p className="text-sm">There was an issue accessing the storage bucket. Please try refreshing or contact support.</p>
+              <p className="text-sm">There was an issue with browser storage. Your changes may not persist between sessions.</p>
             </div>
           </div>
         )}
         
         <p className="text-gray-400 text-sm">
-          Upload JPG or PNG image files. Files will be stored with unique timestamps.
+          Upload JPG or PNG image files. Files will be stored in your browser's local storage.
           You can reorder slides using the up/down arrows after uploading.
         </p>
       </div>

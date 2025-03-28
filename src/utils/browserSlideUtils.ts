@@ -36,7 +36,13 @@ export const getSlidesOrder = async (): Promise<string[]> => {
 
 // Generate a URL for a slide
 export const getPublicUrl = (filename: string, timestamp: number): string => {
-  // For uploaded files, we'll use the actual file paths
+  // First try to get from localStorage
+  const storedUrl = localStorage.getItem(`slide_${filename}`);
+  if (storedUrl) {
+    return storedUrl;
+  }
+  
+  // If not found in localStorage, use a fallback path
   if (filename.includes('://') || filename.startsWith('/')) {
     return `${filename}?t=${timestamp}`;
   }

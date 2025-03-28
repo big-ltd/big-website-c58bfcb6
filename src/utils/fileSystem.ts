@@ -1,3 +1,4 @@
+
 // This is now a browser-compatible mock of file system operations
 // It uses localStorage instead of actual file system
 
@@ -17,6 +18,13 @@ export const generateUniqueFileName = (fileExtension: string): string => {
 
 // Get public URL for a file
 export const getPublicUrl = (filename: string, timestamp: number): string => {
+  // First try to get from localStorage
+  const storedUrl = localStorage.getItem(`slide_${filename}`);
+  if (storedUrl) {
+    return storedUrl;
+  }
+  
+  // If not found in localStorage, use a fallback path
   return `/${SLIDES_FOLDER}/${filename}?t=${timestamp}`;
 };
 
