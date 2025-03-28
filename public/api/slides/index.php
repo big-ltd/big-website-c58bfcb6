@@ -105,50 +105,60 @@ function listSlides() {
 
 // Upload slides
 function uploadSlides() {
+    error_log("Upload function called");
     $response = [];
     $uploadedFiles = [];
     
-    if (isset($_FILES['slides'])) {
-        // Get the current order
-        $order = [];
-        if (file_exists(SLIDES_ORDER_FILE)) {
-            $orderData = json_decode(file_get_contents(SLIDES_ORDER_FILE), true);
-            $order = isset($orderData['slideOrder']) ? $orderData['slideOrder'] : [];
-        }
-        
-        // Handle multiple files
-        $files = restructureFiles($_FILES['slides']);
-        
-        foreach ($files as $file) {
-            if ($file['error'] === UPLOAD_ERR_OK) {
-                // Generate a unique filename
-                $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                $newFileName = generateUniqueFileName($fileExtension);
-                $targetPath = SLIDES_DIR . '/' . $newFileName;
-                
-                // Move the uploaded file
-                if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-                    $order[] = $newFileName;
-                    $uploadedFiles[] = [
-                        'name' => $newFileName,
-                        'url' => '/uploads/slides/' . $newFileName,
-                        'originalName' => $file['name']
-                    ];
-                } else {
-                    error_log("Failed to move uploaded file: " . $file['name']);
-                }
-            } else {
-                error_log("Upload error for file: " . $file['name'] . ", error code: " . $file['error']);
-            }
-        }
-        
-        // Save the updated order
-        saveOrderData($order);
-        
-        respond(200, $uploadedFiles);
-    } else {
+    if (!isset($_FILES['slides'])) {
+        error_log("No files found in upload request");
         respond(400, ['error' => 'No files uploaded']);
+        return;
     }
+    
+    error_log("Files found in request: " . print_r($_FILES['slides'], true));
+    
+    // Get the current order
+    $order = [];
+    if (file_exists(SLIDES_ORDER_FILE)) {
+        $orderData = json_decode(file_get_contents(SLIDES_ORDER_FILE), true);
+        $order = isset($orderData['slideOrder']) ? $orderData['slideOrder'] : [];
+    }
+    
+    // Handle multiple files
+    $files = restructureFiles($_FILES['slides']);
+    error_log("Restructured files: " . count($files));
+    
+    foreach ($files as $file) {
+        if ($file['error'] === UPLOAD_ERR_OK) {
+            // Generate a unique filename
+            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $newFileName = generateUniqueFileName($fileExtension);
+            $targetPath = SLIDES_DIR . '/' . $newFileName;
+            
+            error_log("Moving file to: " . $targetPath);
+            
+            // Move the uploaded file
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $order[] = $newFileName;
+                $uploadedFiles[] = [
+                    'name' => $newFileName,
+                    'url' => '/uploads/slides/' . $newFileName,
+                    'originalName' => $file['name']
+                ];
+                error_log("File moved successfully: " . $newFileName);
+            } else {
+                error_log("Failed to move uploaded file: " . $file['name']);
+            }
+        } else {
+            error_log("Upload error for file: " . $file['name'] . ", error code: " . $file['error']);
+        }
+    }
+    
+    // Save the updated order
+    saveOrderData($order);
+    
+    error_log("Upload complete. Files processed: " . count($uploadedFiles));
+    respond(200, $uploadedFiles);
 }
 
 // Save slide order
@@ -301,6 +311,9 @@ function respond($statusCode, $data) {
     
     // Always set content type to application/json
     header('Content-Type: application/json');
+    
+    // Debug output to log
+    error_log("Sending response [status: $statusCode]: " . json_encode($data));
     
     // Ensure proper JSON encoding with error handling
     $json = json_encode($data);
