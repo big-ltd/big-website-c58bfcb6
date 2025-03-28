@@ -6,8 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
 import { ChevronUp, ChevronDown, Maximize, Minimize, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { getSlidesOrder, getPublicUrl } from '@/utils/browserSlideUtils';
-import { SLIDES_FOLDER } from '@/types/slideTypes';
+import { fetchSlidesFromServer } from '@/services/serverSlideService';
+import { Slide } from '@/types/slideTypes';
 
 const COOKIE_NAME = 'investor_authenticated';
 
@@ -15,11 +15,11 @@ const Invest = () => {
   const [searchParams] = useSearchParams();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const [slidesUrls, setSlidesUrls] = useState<string[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [storageError, setStorageError] = useState(false);
+  const [serverError, setServerError] = useState(false);
   const { toast } = useToast();
   const slideContainerRef = React.useRef<HTMLDivElement>(null);
   const [cacheTimestamp, setCacheTimestamp] = useState<number>(Date.now());
@@ -80,24 +80,28 @@ const Invest = () => {
     };
 
     checkAuthorization();
-  }, [searchParams, toast]);
+  }, [searchParams]);
 
   const fetchSlides = useCallback(async () => {
     try {
       setCacheTimestamp(Date.now());
-      setStorageError(false);
+      setServerError(false);
       
-      // Get slides order from localStorage
-      const slideOrder = await getSlidesOrder();
+      // Fetch slides directly from the server
+      const serverSlides = await fetchSlidesFromServer();
       
-      if (slideOrder && slideOrder.length > 0) {
-        // Generate direct URLs for each slide
-        const urls = slideOrder.map(name => getPublicUrl(name, cacheTimestamp));
-        setSlidesUrls(urls);
-        console.log("Loaded slides from order:", urls);
+      // Add timestamp to prevent caching
+      const slidesWithTimestamp = serverSlides.map(slide => ({
+        ...slide,
+        url: `${slide.url}?t=${cacheTimestamp}`
+      }));
+      
+      if (slidesWithTimestamp.length > 0) {
+        setSlides(slidesWithTimestamp);
+        console.log("Loaded slides from server:", slidesWithTimestamp);
       } else {
-        console.log("No slides order found");
-        setSlidesUrls([]);
+        console.log("No slides found on server");
+        setSlides([]);
         
         toast({
           title: "No Slides Found",
@@ -107,13 +111,13 @@ const Invest = () => {
       }
     } catch (error) {
       console.error('Error fetching slides:', error);
-      setStorageError(true);
+      setServerError(true);
       toast({
         title: "Error",
-        description: "Failed to load presentation slides.",
+        description: "Failed to load presentation slides from the server.",
         variant: "destructive",
       });
-      setSlidesUrls([]);
+      setSlides([]);
     }
   }, [cacheTimestamp, toast]);
 
@@ -136,11 +140,11 @@ const Invest = () => {
         <div className={`w-64 bg-gray-800 transition-all duration-300 ${isSidebarOpen ? 'mr-4' : 'w-0 overflow-hidden'}`}>
           <div className="p-4">
             <div className="p-2 bg-gradient-primary rounded-md mb-4">
-              <h2 className="text-lg font-semibold text-white">Slides ({slidesUrls.length})</h2>
+              <h2 className="text-lg font-semibold text-white">Slides ({slides.length})</h2>
             </div>
             <div className="grid gap-2 mt-2 max-h-[calc(100vh-120px)] overflow-y-auto p-1">
-              {slidesUrls.length > 0 ? (
-                slidesUrls.map((url, index) => (
+              {slides.length > 0 ? (
+                slides.map((slide, index) => (
                   <div 
                     key={index}
                     className={`relative cursor-pointer transition-all duration-200 
@@ -148,7 +152,7 @@ const Invest = () => {
                     onClick={() => goToSlide(index)}
                   >
                     <img 
-                      src={url} 
+                      src={slide.url} 
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-24 object-contain bg-black rounded-md" 
                       onError={(e) => {
@@ -168,11 +172,11 @@ const Invest = () => {
               )}
             </div>
             
-            {storageError && (
+            {serverError && (
               <div className="bg-red-900/30 text-red-200 p-3 rounded flex items-start gap-2 mt-4">
                 <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold">Storage Error</p>
+                  <p className="font-semibold">Server Error</p>
                   <p className="text-sm">There was an issue accessing the slides. Please try refreshing.</p>
                 </div>
               </div>
@@ -216,10 +220,10 @@ const Invest = () => {
             ref={slideContainerRef}
             className="relative w-full h-[calc(100vh-200px)] bg-black flex flex-col items-center justify-center"
           >
-            {slidesUrls.length > 0 ? (
+            {slides.length > 0 ? (
               <>
                 <img 
-                  src={slidesUrls[currentSlideIndex]} 
+                  src={slides[currentSlideIndex].url} 
                   alt={`Slide ${currentSlideIndex + 1}`}
                   className="max-h-full max-w-full object-contain"
                   onError={(e) => {
@@ -227,7 +231,7 @@ const Invest = () => {
                     target.src = "/placeholder.svg";
                     toast({
                       title: "Image Error",
-                      description: `Failed to load slide ${currentSlideIndex + 1}. Make sure the image exists in the /public/slides/ folder.`,
+                      description: `Failed to load slide ${currentSlideIndex + 1}.`,
                       variant: "destructive",
                     });
                   }}
@@ -244,12 +248,12 @@ const Invest = () => {
                   </Button>
                   
                   <span className="text-white bg-gray-800/70 px-3 py-1 rounded-md text-sm">
-                    {currentSlideIndex + 1} / {slidesUrls.length}
+                    {currentSlideIndex + 1} / {slides.length}
                   </span>
                   
                   <Button
                     onClick={goToNextSlide}
-                    disabled={currentSlideIndex === slidesUrls.length - 1}
+                    disabled={currentSlideIndex === slides.length - 1}
                     className="rounded-full p-2 h-10 w-10"
                     variant="secondary"
                   >
@@ -269,7 +273,7 @@ const Invest = () => {
   );
 
   function goToNextSlide() {
-    if (currentSlideIndex < slidesUrls.length - 1) {
+    if (currentSlideIndex < slides.length - 1) {
       setCurrentSlideIndex(currentSlideIndex + 1);
     }
   }
@@ -281,7 +285,7 @@ const Invest = () => {
   }
 
   function goToSlide(index: number) {
-    if (index >= 0 && index < slidesUrls.length) {
+    if (index >= 0 && index < slides.length) {
       setCurrentSlideIndex(index);
     }
   }
@@ -303,7 +307,7 @@ const Invest = () => {
 
   function refreshSlides() {
     setCacheTimestamp(Date.now());
-    setStorageError(false);
+    setServerError(false);
     fetchSlides();
     toast({
       title: "Refreshed",

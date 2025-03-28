@@ -6,7 +6,7 @@ import SlideUploader from '@/components/investor/SlideUploader';
 import SlidePreview from '@/components/investor/SlidePreview';
 import AddInvestorForm from '@/components/investor/AddInvestorForm';
 import InvestorHashTable from '@/components/investor/InvestorHashTable';
-import { useSlideManagement } from '@/hooks/useSlideManagement';
+import { useServerSlideManagement } from '@/hooks/useServerSlideManagement';
 import { useInvestorHashCodes } from '@/hooks/useInvestorHashCodes';
 
 const ADMIN_HASH = "adminSecretHash123";
@@ -27,7 +27,7 @@ const InvestHashCodes = () => {
     handleDeleteSlide,
     handleMoveSlide,
     handleRefreshCache
-  } = useSlideManagement();
+  } = useServerSlideManagement();
 
   const {
     hashCodes,

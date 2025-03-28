@@ -69,17 +69,17 @@ const SlideUploader = ({
           <div className="bg-red-900/30 text-red-200 p-3 rounded flex items-start gap-2 mt-1">
             <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="font-semibold">Storage Error</p>
-              <p className="text-sm">There was an issue with browser storage. Your changes may not persist between sessions.</p>
+              <p className="font-semibold">Upload Error</p>
+              <p className="text-sm">There was an issue uploading files to the server.</p>
             </div>
           </div>
         )}
         
         <div className="text-yellow-300 bg-yellow-900/30 p-3 rounded mt-2">
-          <p className="font-semibold">Slide Storage</p>
+          <p className="font-semibold">Server Storage</p>
           <p className="text-sm">
-            Slides are stored in your browser's local storage. They will be available as long as you use the same browser
-            and don't clear your browser data.
+            Slides are stored directly on the server. They will persist between browser sessions
+            and be available to all users with access.
           </p>
         </div>
       </div>
