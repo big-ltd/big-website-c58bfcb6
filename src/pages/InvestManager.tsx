@@ -26,7 +26,8 @@ const InvestHashCodes = () => {
     handleClearAllSlides,
     handleDeleteSlide,
     handleMoveSlide,
-    handleRefreshCache
+    handleRefreshCache,
+    handleDownloadAllSlides
   } = useSlideManagement();
 
   const {
@@ -76,6 +77,7 @@ const InvestHashCodes = () => {
                 onFileUpload={handleFileUpload}
                 onClearAllSlides={() => handleClearAllSlides(true)}
                 onRefreshCache={handleRefreshCache}
+                onDownloadAllSlides={handleDownloadAllSlides}
                 hasError={storageError}
               />
               

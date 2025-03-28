@@ -1,14 +1,16 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Slide, SLIDES_FOLDER } from '@/types/slideTypes';
+import { Slide } from '@/types/slideTypes';
 import {
   getSlidesOrder,
   saveSlidesOrder,
-  getPublicUrl,
-  generateUniqueFileName,
-  createBlobUrl,
-  saveBlobUrl
+  getSlideUrl,
+  getAllSlidesData,
+  processFileUpload,
+  deleteSlideData,
+  clearAllSlidesData,
+  downloadAllSlides
 } from '@/utils/browserSlideUtils';
 
 export const useSlideManagement = () => {
@@ -29,13 +31,25 @@ export const useSlideManagement = () => {
       const slideOrder = await getSlidesOrder();
       console.log('Retrieved slides order:', slideOrder);
       
+      // Get all slides data
+      const allSlidesData = await getAllSlidesData();
+      
       // Create slide objects from the order
       if (slideOrder && slideOrder.length > 0) {
-        const slideObjects = slideOrder.map(filename => ({
-          name: filename,
-          url: getPublicUrl(filename, timestamp)
-        }));
+        const slidePromises = slideOrder.map(async (filename) => {
+          const slideData = allSlidesData[filename];
+          if (slideData) {
+            return slideData;
+          }
+          
+          // If the slide data isn't in localStorage, create a fallback
+          return {
+            name: filename,
+            url: await getSlideUrl(filename, timestamp)
+          };
+        });
         
+        const slideObjects = await Promise.all(slidePromises);
         setCurrentSlides(slideObjects);
       } else {
         setCurrentSlides([]);
@@ -47,8 +61,7 @@ export const useSlideManagement = () => {
     }
   };
 
-  // Handle file upload - in this version, we'll save URLs to localStorage
-  // and display them directly, assuming they exist in the public/slides folder
+  // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -65,36 +78,18 @@ export const useSlideManagement = () => {
       // Process each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const slide = await processFileUpload(file);
         
-        if (!file.type.startsWith('image/')) {
+        if (slide) {
+          newSlides.push(slide);
+          currentOrder.push(slide.name);
+        } else {
           toast({
             title: "Error",
-            description: `${file.name} is not an image file`,
+            description: `Failed to process ${file.name}`,
             variant: "destructive",
           });
-          continue;
         }
-        
-        // Generate a unique filename
-        const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const newFileName = generateUniqueFileName(fileExtension);
-        
-        // Create a blob URL for preview (this will work in the browser)
-        const blobUrl = createBlobUrl(file);
-        saveBlobUrl(newFileName, blobUrl);
-        
-        // Create a slide object 
-        const newSlide: Slide = {
-          name: newFileName,
-          url: blobUrl,
-          originalName: file.name
-        };
-        
-        // Add to our arrays
-        newSlides.push(newSlide);
-        currentOrder.push(newFileName);
-        
-        console.log(`Created slide preview for ${newFileName}`);
       }
       
       // Update the slides order in localStorage
@@ -105,8 +100,8 @@ export const useSlideManagement = () => {
       
       if (newSlides.length > 0) {
         toast({
-          title: "Note",
-          description: `${newSlides.length} slides added for preview. Please upload these files to your server's /slides/ folder to make them permanently accessible.`,
+          title: "Success",
+          description: `${newSlides.length} slides added. We've initiated downloads to help you save these files.`,
         });
       }
     } catch (error) {
@@ -124,13 +119,16 @@ export const useSlideManagement = () => {
 
   // Clear all slides
   const handleClearAllSlides = async (showConfirm = true) => {
-    if (showConfirm && !window.confirm("Are you sure you want to clear all slides? This will only remove them from the preview. You'll need to delete the actual files from your server.")) {
+    if (showConfirm && !window.confirm("Are you sure you want to clear all slides? This will only remove them from the preview.")) {
       return;
     }
     
     setUploadLoading(true);
     
     try {
+      // Clear all slides data
+      await clearAllSlidesData();
+      
       // Clear the slides order
       await saveSlidesOrder([]);
       
@@ -156,7 +154,7 @@ export const useSlideManagement = () => {
 
   // Delete a single slide
   const handleDeleteSlide = async (slideIndex: number) => {
-    if (!window.confirm(`Are you sure you want to delete slide ${slideIndex + 1}? This will only remove it from the preview. You'll need to delete the actual file from your server.`)) {
+    if (!window.confirm(`Are you sure you want to delete slide ${slideIndex + 1}?`)) {
       return;
     }
     
@@ -165,6 +163,9 @@ export const useSlideManagement = () => {
     try {
       // Get the slide to delete
       const slideToDelete = currentSlides[slideIndex];
+      
+      // Delete the slide data
+      await deleteSlideData(slideToDelete.name);
       
       // Update the order
       const currentOrder = await getSlidesOrder();
@@ -178,7 +179,7 @@ export const useSlideManagement = () => {
       
       toast({
         title: "Success",
-        description: "Slide removed from preview successfully",
+        description: "Slide removed successfully",
       });
     } catch (error) {
       console.error('Error deleting slide:', error);
@@ -257,6 +258,32 @@ export const useSlideManagement = () => {
     }
   };
 
+  // Download all slides as ZIP
+  const handleDownloadAllSlides = async () => {
+    setUploadLoading(true);
+    try {
+      const success = await downloadAllSlides();
+      
+      if (success) {
+        toast({
+          title: "Success",
+          description: "All slides downloaded as ZIP file",
+        });
+      } else {
+        throw new Error("Failed to download slides");
+      }
+    } catch (error) {
+      console.error('Error downloading slides:', error);
+      toast({
+        title: "Error",
+        description: `Failed to download slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   // Initialize slides on component mount
   useEffect(() => {
     checkCurrentSlides();
@@ -271,6 +298,7 @@ export const useSlideManagement = () => {
     handleClearAllSlides,
     handleDeleteSlide,
     handleMoveSlide,
-    handleRefreshCache
+    handleRefreshCache,
+    handleDownloadAllSlides
   };
 };

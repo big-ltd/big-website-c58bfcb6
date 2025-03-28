@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Trash, RefreshCw, AlertCircle } from 'lucide-react';
+import { Loader2, Trash, RefreshCw, Download, AlertCircle } from 'lucide-react';
 import { SLIDES_FOLDER } from '@/types/slideTypes';
+import { useToast } from '@/hooks/use-toast';
 
 interface SlideUploaderProps {
   currentSlides: { url: string, name: string }[];
@@ -11,6 +12,7 @@ interface SlideUploaderProps {
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   onClearAllSlides: () => Promise<void>;
   onRefreshCache: () => Promise<void>;
+  onDownloadAllSlides?: () => Promise<void>;
   hasError?: boolean;
 }
 
@@ -20,8 +22,54 @@ const SlideUploader = ({
   onFileUpload, 
   onClearAllSlides, 
   onRefreshCache,
+  onDownloadAllSlides,
   hasError = false
 }: SlideUploaderProps) => {
+  const { toast } = useToast();
+
+  // Check if JSZip is available
+  const [jsZipAvailable, setJsZipAvailable] = useState(false);
+  
+  useEffect(() => {
+    // Try to load JSZip dynamically for download functionality
+    const loadJSZip = async () => {
+      try {
+        if (!(window as any).JSZip) {
+          await import('jszip').then(module => {
+            (window as any).JSZip = module.default;
+          });
+        }
+        setJsZipAvailable(true);
+      } catch (err) {
+        console.error("Could not load JSZip:", err);
+        setJsZipAvailable(false);
+      }
+    };
+    
+    loadJSZip();
+  }, []);
+  
+  // Install JSZip if not available
+  const installJSZip = async () => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    script.async = true;
+    script.onload = () => {
+      setJsZipAvailable(true);
+      toast({
+        title: "Success",
+        description: "JSZip library loaded successfully"
+      });
+    };
+    script.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Failed to load JSZip library",
+        variant: "destructive"
+      });
+    };
+    document.head.appendChild(script);
+  };
   
   return (
     <div className="bg-gray-700 p-4 rounded-md mb-4">
@@ -29,7 +77,7 @@ const SlideUploader = ({
         <label className="text-white text-sm">
           Current Slides: {currentSlides.length > 0 ? (
             <span className="text-blue-400 ml-2">
-              {currentSlides.length} slides available in /{SLIDES_FOLDER}/
+              {currentSlides.length} slides available
             </span>
           ) : "No slides uploaded yet"}
         </label>
@@ -62,6 +110,28 @@ const SlideUploader = ({
           >
             <RefreshCw className="h-4 w-4 mr-2" /> Refresh Cache
           </Button>
+          
+          {jsZipAvailable && onDownloadAllSlides && currentSlides.length > 0 && (
+            <Button 
+              variant="default"
+              onClick={() => onDownloadAllSlides()}
+              disabled={uploadLoading}
+              type="button"
+            >
+              <Download className="h-4 w-4 mr-2" /> Download All Slides
+            </Button>
+          )}
+          
+          {!jsZipAvailable && currentSlides.length > 0 && (
+            <Button 
+              variant="secondary"
+              onClick={installJSZip}
+              disabled={uploadLoading}
+              type="button"
+            >
+              <Download className="h-4 w-4 mr-2" /> Enable Downloads
+            </Button>
+          )}
         </div>
         
         {hasError && (
@@ -75,17 +145,12 @@ const SlideUploader = ({
         )}
         
         <div className="text-yellow-300 bg-yellow-900/30 p-3 rounded mt-2">
-          <p className="font-semibold">Important: Manual File Upload Required</p>
+          <p className="font-semibold">Automatic File Download</p>
           <p className="text-sm">
-            After selecting files, you must manually upload them to your server's <code>/public/slides/</code> folder 
-            for them to be viewable by investors. The preview uses temporary URLs that will be lost when the page is refreshed.
+            When you upload slides, they will be saved in your browser and also downloaded to your computer.
+            You can use the Download button to get all slides as a ZIP file.
           </p>
         </div>
-        
-        <p className="text-gray-400 text-sm">
-          Upload JPG or PNG image files. Files will be stored in the /{SLIDES_FOLDER}/ folder.
-          You can reorder slides using the up/down arrows after uploading.
-        </p>
       </div>
     </div>
   );
