@@ -1,4 +1,3 @@
-
 import { Slide } from '@/types/slideTypes';
 
 // API endpoint for slide operations
@@ -21,19 +20,34 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     });
     
     if (!response.ok) {
-      const responseText = await response.text();
-      console.error('Server error response:', responseText);
+      const errorText = await response.text();
+      console.error('Server error response:', errorText);
+      
+      let errorMessage = `HTTP error ${response.status}: ${response.statusText}`;
       try {
-        // Try to parse as JSON first
-        const errorData = JSON.parse(responseText);
-        throw new Error(`Failed to upload slides: ${errorData.error || response.status} ${response.statusText}`);
+        // Try to parse as JSON
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorMessage;
       } catch (parseError) {
-        // If parsing fails, use the raw text
-        throw new Error(`Failed to upload slides: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+        // Use text as is if not JSON
+        if (errorText) {
+          errorMessage += ` - ${errorText.substring(0, 100)}`;
+        }
       }
+      
+      throw new Error(`Failed to upload slides: ${errorMessage}`);
     }
     
+    // Check content type to ensure we're getting JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`Warning: Expected JSON response but got ${contentType}`);
+    }
+    
+    // Get the response as text first to debug if needed
     const responseText = await response.text();
+    console.log('Response text:', responseText);
+    
     if (!responseText || responseText.trim() === '') {
       console.warn('Empty response from server');
       return [];
@@ -41,7 +55,7 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     
     try {
       const data = JSON.parse(responseText);
-      console.log('Upload response:', data);
+      console.log('Upload response parsed:', data);
       return data;
     } catch (parseError) {
       console.error('Error parsing JSON response:', parseError, 'Raw response:', responseText);
@@ -61,19 +75,34 @@ export const fetchSlidesFromServer = async (): Promise<Slide[]> => {
     const response = await fetch(`${SLIDES_API_ENDPOINT}/list`);
     
     if (!response.ok) {
-      const responseText = await response.text();
-      console.error('Server error response:', responseText);
+      const errorText = await response.text();
+      console.error('Server error response:', errorText);
+      
+      let errorMessage = `HTTP error ${response.status}: ${response.statusText}`;
       try {
-        // Try to parse as JSON first
-        const errorData = JSON.parse(responseText);
-        throw new Error(`Failed to fetch slides: ${errorData.error || response.status} ${response.statusText}`);
+        // Try to parse as JSON
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorMessage;
       } catch (parseError) {
-        // If parsing fails, use the raw text
-        throw new Error(`Failed to fetch slides: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+        // Use text as is if not JSON
+        if (errorText) {
+          errorMessage += ` - ${errorText.substring(0, 100)}`;
+        }
       }
+      
+      throw new Error(`Failed to fetch slides: ${errorMessage}`);
     }
     
+    // Check content type to ensure we're getting JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`Warning: Expected JSON response but got ${contentType}`);
+    }
+    
+    // Get the response as text first to debug if needed
     const responseText = await response.text();
+    console.log('Response text:', responseText);
+    
     if (!responseText || responseText.trim() === '') {
       console.warn('Empty response from server');
       return [];
@@ -81,7 +110,7 @@ export const fetchSlidesFromServer = async (): Promise<Slide[]> => {
     
     try {
       const data = JSON.parse(responseText);
-      console.log('Fetched slides:', data);
+      console.log('Fetched slides parsed:', data);
       return data;
     } catch (parseError) {
       console.error('Error parsing JSON response:', parseError, 'Raw response:', responseText);

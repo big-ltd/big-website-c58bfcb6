@@ -1,6 +1,6 @@
 
 <?php
-// Always set the content type header for all responses
+// Set default content type to JSON for all responses
 header('Content-Type: application/json');
 
 // Constants
