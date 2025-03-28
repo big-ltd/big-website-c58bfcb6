@@ -21,14 +21,32 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server responded with error:', errorText);
-      throw new Error(`Failed to upload slides: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.error('Server error response:', responseText);
+      try {
+        // Try to parse as JSON first
+        const errorData = JSON.parse(responseText);
+        throw new Error(`Failed to upload slides: ${errorData.error || response.status} ${response.statusText}`);
+      } catch (parseError) {
+        // If parsing fails, use the raw text
+        throw new Error(`Failed to upload slides: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+      }
     }
     
-    const data = await response.json();
-    console.log('Upload response:', data);
-    return data;
+    const responseText = await response.text();
+    if (!responseText || responseText.trim() === '') {
+      console.warn('Empty response from server');
+      return [];
+    }
+    
+    try {
+      const data = JSON.parse(responseText);
+      console.log('Upload response:', data);
+      return data;
+    } catch (parseError) {
+      console.error('Error parsing JSON response:', parseError, 'Raw response:', responseText);
+      throw new Error(`Invalid JSON response from server: ${parseError.message}`);
+    }
   } catch (error) {
     console.error('Error during upload:', error);
     throw error;
@@ -43,14 +61,32 @@ export const fetchSlidesFromServer = async (): Promise<Slide[]> => {
     const response = await fetch(`${SLIDES_API_ENDPOINT}/list`);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server responded with error:', errorText);
-      throw new Error(`Failed to fetch slides: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.error('Server error response:', responseText);
+      try {
+        // Try to parse as JSON first
+        const errorData = JSON.parse(responseText);
+        throw new Error(`Failed to fetch slides: ${errorData.error || response.status} ${response.statusText}`);
+      } catch (parseError) {
+        // If parsing fails, use the raw text
+        throw new Error(`Failed to fetch slides: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+      }
     }
     
-    const data = await response.json();
-    console.log('Fetched slides:', data);
-    return data;
+    const responseText = await response.text();
+    if (!responseText || responseText.trim() === '') {
+      console.warn('Empty response from server');
+      return [];
+    }
+    
+    try {
+      const data = JSON.parse(responseText);
+      console.log('Fetched slides:', data);
+      return data;
+    } catch (parseError) {
+      console.error('Error parsing JSON response:', parseError, 'Raw response:', responseText);
+      throw new Error(`Invalid JSON response from server: ${parseError.message}`);
+    }
   } catch (error) {
     console.error('Error fetching slides:', error);
     throw error;
@@ -67,9 +103,16 @@ export const clearAllSlidesFromServer = async (): Promise<void> => {
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server responded with error:', errorText);
-      throw new Error(`Failed to clear slides: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.error('Server error response:', responseText);
+      try {
+        // Try to parse as JSON first
+        const errorData = JSON.parse(responseText);
+        throw new Error(`Failed to clear slides: ${errorData.error || response.status} ${response.statusText}`);
+      } catch (parseError) {
+        // If parsing fails, use the raw text
+        throw new Error(`Failed to clear slides: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+      }
     }
     
     console.log('All slides cleared successfully');
@@ -89,9 +132,16 @@ export const deleteSingleSlideFromServer = async (slideName: string): Promise<vo
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server responded with error:', errorText);
-      throw new Error(`Failed to delete slide: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.error('Server error response:', responseText);
+      try {
+        // Try to parse as JSON first
+        const errorData = JSON.parse(responseText);
+        throw new Error(`Failed to delete slide: ${errorData.error || response.status} ${response.statusText}`);
+      } catch (parseError) {
+        // If parsing fails, use the raw text
+        throw new Error(`Failed to delete slide: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+      }
     }
     
     console.log('Slide deleted successfully');
@@ -115,9 +165,16 @@ export const saveSlidesOrderToServer = async (slideNames: string[]): Promise<voi
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server responded with error:', errorText);
-      throw new Error(`Failed to save slide order: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.error('Server error response:', responseText);
+      try {
+        // Try to parse as JSON first
+        const errorData = JSON.parse(responseText);
+        throw new Error(`Failed to save slide order: ${errorData.error || response.status} ${response.statusText}`);
+      } catch (parseError) {
+        // If parsing fails, use the raw text
+        throw new Error(`Failed to save slide order: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+      }
     }
     
     console.log('Slide order saved successfully');
@@ -144,14 +201,32 @@ export const moveSlideOnServer = async (
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server responded with error:', errorText);
-      throw new Error(`Failed to move slide: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.error('Server error response:', responseText);
+      try {
+        // Try to parse as JSON first
+        const errorData = JSON.parse(responseText);
+        throw new Error(`Failed to move slide: ${errorData.error || response.status} ${response.statusText}`);
+      } catch (parseError) {
+        // If parsing fails, use the raw text
+        throw new Error(`Failed to move slide: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}`);
+      }
     }
     
-    const data = await response.json();
-    console.log('Slide moved successfully, new order:', data);
-    return data;
+    const responseText = await response.text();
+    if (!responseText || responseText.trim() === '') {
+      console.warn('Empty response from server');
+      return [];
+    }
+    
+    try {
+      const data = JSON.parse(responseText);
+      console.log('Slide moved successfully, new order:', data);
+      return data;
+    } catch (parseError) {
+      console.error('Error parsing JSON response:', parseError, 'Raw response:', responseText);
+      throw new Error(`Invalid JSON response from server: ${parseError.message}`);
+    }
   } catch (error) {
     console.error('Error moving slide:', error);
     throw error;

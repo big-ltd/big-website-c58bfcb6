@@ -298,7 +298,18 @@ function restructureFiles($files) {
 // Helper function to send a JSON response
 function respond($statusCode, $data) {
     http_response_code($statusCode);
+    
+    // Always set content type to application/json
     header('Content-Type: application/json');
-    echo json_encode($data);
+    
+    // Ensure proper JSON encoding with error handling
+    $json = json_encode($data);
+    if ($json === false) {
+        // If JSON encoding fails, send a fallback error
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to encode response: ' . json_last_error_msg()]);
+    } else {
+        echo $json;
+    }
     exit;
 }

@@ -19,6 +19,26 @@ const SlideUploader = ({
   onClearAllSlides, 
   onRefreshCache
 }: SlideUploaderProps) => {
+  // Create a ref for the file input to reset it after upload
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  // Handle file upload with input reset
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      await onFileUpload(e);
+      // Reset the file input after successful upload
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error in file upload:', error);
+      // Reset input even on error
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+  
   return (
     <div className="bg-gray-700 p-4 rounded-md mb-4">
       <div className="flex flex-col gap-3">
@@ -32,9 +52,10 @@ const SlideUploader = ({
         
         <div className="flex gap-3 items-center flex-wrap">
           <Input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
-            onChange={onFileUpload}
+            onChange={handleFileUpload}
             multiple
             className="max-w-md"
             disabled={uploadLoading}
