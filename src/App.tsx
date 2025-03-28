@@ -27,6 +27,8 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/invest" element={<Invest />} />
           <Route path="/investmanager" element={<InvestManager />} />
+          {/* Redirect from old route to new route */}
+          <Route path="/investhashcodes" element={<InvestManager />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
