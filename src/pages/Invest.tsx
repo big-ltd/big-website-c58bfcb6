@@ -12,6 +12,14 @@ const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
 const SLIDES_FOLDER = "slides";
 
+// Define the shape of the slide_order table
+interface SlideOrderRecord {
+  id: string;
+  fileName: string;
+  order: number;
+  created_at: string;
+}
+
 const Invest = () => {
   const [searchParams] = useSearchParams();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
@@ -41,7 +49,7 @@ const Invest = () => {
         }
 
         // Map database entries to public URLs
-        return slideOrderData.map(slide => {
+        return slideOrderData.map((slide: SlideOrderRecord) => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
             .getPublicUrl(`${SLIDES_FOLDER}/${slide.fileName}`);

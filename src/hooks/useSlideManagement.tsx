@@ -16,6 +16,14 @@ export interface Slide {
   url: string;
 }
 
+// Define the shape of the slide_order table
+interface SlideOrderRecord {
+  id: string;
+  fileName: string;
+  order: number;
+  created_at: string;
+}
+
 export const useSlideManagement = () => {
   const [uploadLoading, setUploadLoading] = useState(false);
   const { toast } = useToast();
@@ -86,7 +94,7 @@ export const useSlideManagement = () => {
         }
 
         // Map database entries to slide objects with URLs
-        const slidesWithUrls = slideOrderData.map(slide => {
+        const slidesWithUrls = slideOrderData.map((slide: SlideOrderRecord) => {
           const { data } = supabase.storage
             .from(STORAGE_BUCKET)
             .getPublicUrl(`${SLIDES_FOLDER}/${slide.fileName}`);

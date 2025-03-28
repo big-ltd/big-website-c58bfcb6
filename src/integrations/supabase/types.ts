@@ -33,6 +33,27 @@ export type Database = {
         }
         Relationships: []
       }
+      slide_order: {
+        Row: {
+          created_at: string
+          filename: string
+          id: string
+          order: number
+        }
+        Insert: {
+          created_at?: string
+          filename: string
+          id: string
+          order: number
+        }
+        Update: {
+          created_at?: string
+          filename?: string
+          id?: string
+          order?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
