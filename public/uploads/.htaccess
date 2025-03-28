@@ -9,14 +9,6 @@ RewriteEngine On
     Allow from all
 </FilesMatch>
 
-# Also allow access to JSON files with proper content type
-<FilesMatch ".json$">
-    Order Allow,Deny
-    Allow from all
-    # Ensure proper content type for JSON files
-    Header set Content-Type "application/json"
-</FilesMatch>
-
 # No directory listings
 Options -Indexes
 

@@ -20,49 +20,31 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server error response:', errorText);
-      
-      let errorMessage = `HTTP error ${response.status}: ${response.statusText}`;
-      try {
-        // Try to parse as JSON
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.error || errorMessage;
-      } catch (parseError) {
-        // Use text as is if not JSON
-        if (errorText) {
-          errorMessage += ` - ${errorText.substring(0, 100)}`;
-        }
-      }
-      
-      throw new Error(`Failed to upload slides: ${errorMessage}`);
+      throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
     }
     
-    // Check content type to ensure we're getting JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.warn(`Warning: Expected JSON response but got ${contentType}`);
-    }
-    
-    // Get the response as text first to debug if needed
+    // Get response as text first for debugging
     const responseText = await response.text();
-    console.log('Response text:', responseText);
+    console.log('Raw server response:', responseText);
     
+    // Handle empty response
     if (!responseText || responseText.trim() === '') {
-      console.warn('Empty response from server');
+      console.warn('Warning: Server returned empty response');
       return [];
     }
     
+    // Try to parse the response as JSON
     try {
       const data = JSON.parse(responseText);
-      console.log('Upload response parsed:', data);
+      console.log('Parsed server response:', data);
       return data;
     } catch (parseError) {
-      console.error('Error parsing JSON response:', parseError, 'Raw response:', responseText);
-      throw new Error(`Invalid JSON response from server: ${parseError.message}`);
+      console.error('Failed to parse server response as JSON:', parseError);
+      console.error('Raw response was:', responseText);
+      throw new Error('Server returned invalid JSON. Please try again.');
     }
   } catch (error) {
-    console.error('Error during upload:', error);
+    console.error('Error uploading slides:', error);
     throw error;
   }
 };

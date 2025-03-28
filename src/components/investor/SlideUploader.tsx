@@ -25,13 +25,20 @@ const SlideUploader = ({
   // Handle file upload with input reset
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
+      if (!e.target.files || e.target.files.length === 0) {
+        console.log('No files selected');
+        return;
+      }
+      
+      console.log(`Selected ${e.target.files.length} files for upload`);
       await onFileUpload(e);
-      // Reset the file input after successful upload
+      
+      // Reset the file input after upload attempt (successful or not)
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error) {
-      console.error('Error in file upload:', error);
+      console.error('Error in file upload handler:', error);
       // Reset input even on error
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
