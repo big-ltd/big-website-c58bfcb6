@@ -62,8 +62,9 @@ export const useSlideManagement = () => {
       
       // First, get the slides order file
       const slidesOrder = await fetchSlidesOrder();
+      console.log('Retrieved slides order:', slidesOrder);
       
-      if (!slidesOrder || slidesOrder.slides.length === 0) {
+      if (!slidesOrder || !slidesOrder.slides || slidesOrder.slides.length === 0) {
         // No valid order file exists, create a new one based on all found files
         const slideNames = imageFiles.map(file => file.name);
         
@@ -204,6 +205,7 @@ export const useSlideManagement = () => {
         destinationIndex,
         currentSlides,
         (updatedSlides, timestamp) => {
+          console.log('Slide moved successfully, updated slides:', updatedSlides);
           setCurrentSlides(updatedSlides);
           setCacheTimestamp(timestamp);
         },

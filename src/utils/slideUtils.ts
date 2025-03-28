@@ -49,6 +49,7 @@ export const fetchSlidesOrder = async (): Promise<SlidesOrder | null> => {
     }
     
     const text = await data.text();
+    console.log('Fetched slides order:', text);
     return JSON.parse(text) as SlidesOrder;
   } catch (error) {
     console.error('Error fetching slides order:', error);
@@ -62,6 +63,8 @@ export const saveSlidesOrder = async (slideNames: string[]): Promise<void> => {
       slides: slideNames,
       lastUpdated: Date.now()
     };
+    
+    console.log('Saving slides order:', JSON.stringify(orderData, null, 2));
     
     const { error } = await supabase.storage
       .from(STORAGE_BUCKET)
