@@ -11,33 +11,30 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Invest from "./pages/Invest";
 import InvestManager from "./pages/InvestManager";
-import React from 'react';
 
 // Create QueryClient outside the component to avoid recreation on re-renders
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
         <TooltipProvider>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/invest" element={<Invest />} />
+            <Route path="/investmanager" element={<InvestManager />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/invest" element={<Invest />} />
-              <Route path="/investmanager" element={<InvestManager />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
         </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 
