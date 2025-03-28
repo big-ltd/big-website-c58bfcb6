@@ -3,47 +3,8 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  
-  # Allow direct access to PHP files
-  RewriteRule ^api/slides/(.*)\.php$ api/slides/$1.php [L]
-  
-  # Exclude API and uploads paths from the rewrite
-  RewriteRule ^api/(.*)$ api/$1 [L]
-  RewriteRule ^uploads/(.*)$ uploads/$1 [L]
-  
-  # Rewrite all other URLs to index.html
+  RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
-
-# Set proper MIME types
-<IfModule mod_mime.c>
-  AddType application/javascript .js
-  AddType text/css .css
-  AddType image/svg+xml .svg
-  AddType image/png .png
-  AddType image/jpeg .jpg .jpeg
-  AddType image/gif .gif
-  AddType application/json .json
-  
-  # Ensure PHP files are processed correctly
-  AddType application/x-httpd-php .php
-</IfModule>
-
-# Enable CORS and proper handling of PHP files
-<IfModule mod_headers.c>
-  Header set Access-Control-Allow-Origin "*"
-  Header set Access-Control-Allow-Methods "GET, POST, OPTIONS, DELETE, PUT"
-  Header set Access-Control-Allow-Headers "Content-Type, Authorization"
-  
-  # For image files, ensure the correct content type
-  <FilesMatch ".(jpg|jpeg|png|gif|webp)$">
-    Header set Content-Type "image/%{SUFFIX}"
-  </FilesMatch>
-</IfModule>
-
-# Process PHP files correctly
-<FilesMatch "\.php$">
-  SetHandler application/x-httpd-php
-</FilesMatch>
