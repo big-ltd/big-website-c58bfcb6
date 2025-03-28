@@ -4,8 +4,8 @@
   RewriteEngine On
   RewriteBase /
   
-  # Allow direct access to PHP files in the API folder
-  RewriteRule ^api/(.*)\.php$ api/$1.php [L]
+  # Allow direct access to PHP files
+  RewriteRule ^api/slides/(.*)\.php$ api/slides/$1.php [L]
   
   # Exclude API and uploads paths from the rewrite
   RewriteRule ^api/(.*)$ api/$1 [L]

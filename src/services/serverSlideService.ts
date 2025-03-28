@@ -1,3 +1,4 @@
+
 import { Slide } from '@/types/slideTypes';
 
 // API endpoint for slide operations
@@ -15,15 +16,14 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
   console.log(`Uploading ${files.length} files to server...`);
   
   try {
-    console.log(`Sending POST request to ${SLIDES_API_ENDPOINT}/upload`);
+    console.log(`Sending POST request to ${SLIDES_API_ENDPOINT}/upload.php`);
     
-    const response = await fetch(`${SLIDES_API_ENDPOINT}/upload`, {
+    const response = await fetch(`${SLIDES_API_ENDPOINT}/upload.php`, {
       method: 'POST',
       body: formData,
     });
     
     console.log(`Server responded with status: ${response.status} ${response.statusText}`);
-    console.log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`);
     
     // Get response as text first for debugging
     const responseText = await response.text();
@@ -48,9 +48,6 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
     
     // Try to parse the response as JSON
     try {
-      const contentType = response.headers.get('content-type');
-      console.log(`Response content type: ${contentType}`);
-      
       // Check if response contains HTML (which indicates a server error)
       if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
         console.error('Server returned HTML instead of JSON. Full response:', responseText);
@@ -69,11 +66,6 @@ export const uploadSlidesToServer = async (files: FileList): Promise<Slide[]> =>
         throw new Error('Server returned HTML instead of JSON. This usually indicates a PHP error or incorrect server configuration.');
       }
       
-      // Log more details about the response for better debugging
-      if (responseText.length > 500) {
-        console.error(`Response is too long (${responseText.length} chars). Check server logs.`);
-      }
-      
       throw new Error(`Server returned invalid JSON. Details: ${parseError.message}. Response starts with: ${responseText.substring(0, 100)}`);
     }
   } catch (error) {
@@ -87,7 +79,7 @@ export const fetchSlidesFromServer = async (): Promise<Slide[]> => {
   console.log('Fetching slides from server...');
   
   try {
-    const response = await fetch(`${SLIDES_API_ENDPOINT}/list`);
+    const response = await fetch(`${SLIDES_API_ENDPOINT}/list.php`);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -106,12 +98,6 @@ export const fetchSlidesFromServer = async (): Promise<Slide[]> => {
       }
       
       throw new Error(`Failed to fetch slides: ${errorMessage}`);
-    }
-    
-    // Check content type to ensure we're getting JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.warn(`Warning: Expected JSON response but got ${contentType}`);
     }
     
     // Get the response as text first to debug if needed
@@ -142,7 +128,7 @@ export const clearAllSlidesFromServer = async (): Promise<void> => {
   console.log('Clearing all slides from server...');
   
   try {
-    const response = await fetch(`${SLIDES_API_ENDPOINT}/clear`, {
+    const response = await fetch(`${SLIDES_API_ENDPOINT}/clear.php`, {
       method: 'DELETE',
     });
     
@@ -200,7 +186,7 @@ export const saveSlidesOrderToServer = async (slideNames: string[]): Promise<voi
   console.log('Saving slide order to server:', slideNames);
   
   try {
-    const response = await fetch(`${SLIDES_API_ENDPOINT}/order`, {
+    const response = await fetch(`${SLIDES_API_ENDPOINT}/order.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -236,7 +222,7 @@ export const moveSlideOnServer = async (
   console.log(`Moving slide from index ${sourceIndex} to ${destinationIndex}`);
   
   try {
-    const response = await fetch(`${SLIDES_API_ENDPOINT}/move`, {
+    const response = await fetch(`${SLIDES_API_ENDPOINT}/move.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
