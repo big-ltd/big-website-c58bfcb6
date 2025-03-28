@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
@@ -505,23 +506,29 @@ export const useSlideManagement = () => {
       // Save the new order
       await saveSlidesOrder(newOrder);
       
-      // Update the UI immediately
+      // Update the UI immediately with optimistic update
+      const newSlides = [...currentSlides];
+      const [movedSlide] = newSlides.splice(sourceIndex, 1);
+      newSlides.splice(destinationIndex, 0, movedSlide);
+      
+      // Set the current slides with the optimistic update
+      setCurrentSlides(newSlides);
+      
+      // Update the timestamp to prevent caching issues
       const timestamp = Date.now();
       setCacheTimestamp(timestamp);
       
-      // Generate slide objects in the new order
-      const updatedSlides = newOrder.map(name => {
-        const { data } = supabase.storage
-          .from(STORAGE_BUCKET)
-          .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
-        
+      // Update the URLs with the new timestamp
+      const updatedSlides = newSlides.map(slide => {
+        // Extract the URL without the timestamp
+        const baseUrl = slide.url.split('?')[0];
         return {
-          url: `${data.publicUrl}?t=${timestamp}`,
-          name: name
+          ...slide,
+          url: `${baseUrl}?t=${timestamp}`
         };
       });
       
-      // Update the UI with the new order
+      // Update the UI with the refreshed URLs
       setCurrentSlides(updatedSlides);
       
       toast({
