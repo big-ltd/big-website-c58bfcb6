@@ -6,20 +6,54 @@ import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
 import { ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useQuery } from '@tanstack/react-query';
 
 const COOKIE_NAME = 'investor_authenticated';
 const STORAGE_BUCKET = "investor_docs";
-const SLIDES_PREFIX = "slides/";
+const SLIDES_FOLDER = "slides";
 
 const Invest = () => {
   const [searchParams] = useSearchParams();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const [slidesUrls, setSlidesUrls] = useState<string[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
   const slideContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Fetch slides in correct order from database
+  const { data: slideUrls = [] } = useQuery({
+    queryKey: ['investor-slides'],
+    queryFn: async () => {
+      try {
+        // Get slide order from database
+        const { data: slideOrderData, error: orderError } = await supabase
+          .from('slide_order')
+          .select('*')
+          .order('order', { ascending: true });
+
+        if (orderError) {
+          throw orderError;
+        }
+
+        if (!slideOrderData || slideOrderData.length === 0) {
+          return [];
+        }
+
+        // Map database entries to public URLs
+        return slideOrderData.map(slide => {
+          const { data } = supabase.storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(`${SLIDES_FOLDER}/${slide.fileName}`);
+          return data.publicUrl;
+        });
+      } catch (error) {
+        console.error('Error fetching slides:', error);
+        return [];
+      }
+    },
+    enabled: isAuthorized === true,
+  });
 
   useEffect(() => {
     const checkAuthorization = async () => {
@@ -27,7 +61,6 @@ const Invest = () => {
       const cookie = Cookies.get(COOKIE_NAME);
       if (cookie) {
         setIsAuthorized(true);
-        await fetchSlides();
         setLoading(false);
         return;
       }
@@ -67,7 +100,6 @@ const Invest = () => {
             .update({ redeemed: true })
             .eq('hash_code', hash);
 
-          await fetchSlides();
           setIsAuthorized(true);
           toast({
             title: "Access Granted",
@@ -85,97 +117,8 @@ const Invest = () => {
     checkAuthorization();
   }, [searchParams, toast]);
 
-  const fetchSlides = async () => {
-    try {
-      // List all files in the slides directory
-      const { data, error } = await supabase
-        .storage
-        .from(STORAGE_BUCKET)
-        .list(SLIDES_PREFIX, {
-          sortBy: { column: 'name', order: 'asc' }
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data && data.length > 0) {
-        // Filter for only jpg/jpeg/png files
-        const imageFiles = data.filter(file => 
-          file.name.toLowerCase().endsWith('.jpg') || 
-          file.name.toLowerCase().endsWith('.jpeg') || 
-          file.name.toLowerCase().endsWith('.png')
-        );
-
-        // Sort files by name (assuming they are named with numbers like 01.jpg, 02.jpg, etc.)
-        imageFiles.sort((a, b) => {
-          // Extract numbers from filenames for natural sorting
-          const nameA = a.name;
-          const nameB = b.name;
-          return nameA.localeCompare(nameB, undefined, { numeric: true });
-        });
-
-        // Get public URLs for all slides
-        const urls = imageFiles.map(file => {
-          const { data } = supabase.storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(SLIDES_PREFIX + file.name);
-          return data.publicUrl;
-        });
-
-        setSlidesUrls(urls);
-      } else {
-        // No slides found, try to use static files
-        try {
-          // Check for static slides in public folder
-          const staticUrls = [];
-          let i = 1;
-          const maxStaticSlides = 20; // Limit to checking 20 static slides
-
-          while (i <= maxStaticSlides) {
-            const fileName = `0${i}`.slice(-2) + '.jpg'; // Format as 01.jpg, 02.jpg, etc.
-            const url = `/lovable-uploads/slides/${fileName}`;
-            
-            // Try to check if file exists (this is approximate)
-            const response = await fetch(url, { method: 'HEAD' });
-            if (response.ok) {
-              staticUrls.push(url);
-              i++;
-            } else {
-              break; // Stop when we don't find any more slides
-            }
-          }
-
-          if (staticUrls.length > 0) {
-            setSlidesUrls(staticUrls);
-          } else {
-            toast({
-              title: "No Slides Found",
-              description: "No presentation slides are available.",
-              variant: "destructive",
-            });
-          }
-        } catch (staticError) {
-          console.error('Error loading static slides:', staticError);
-          toast({
-            title: "Error",
-            description: "Failed to load presentation slides.",
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching slides:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load presentation slides.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const goToNextSlide = () => {
-    if (currentSlideIndex < slidesUrls.length - 1) {
+    if (currentSlideIndex < slideUrls.length - 1) {
       setCurrentSlideIndex(currentSlideIndex + 1);
     }
   };
@@ -226,7 +169,7 @@ const Invest = () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [currentSlideIndex, slidesUrls.length]);
+  }, [currentSlideIndex, slideUrls.length]);
 
   if (loading) {
     return (
@@ -261,10 +204,10 @@ const Invest = () => {
             ref={slideContainerRef}
             className="relative w-full h-[calc(100vh-200px)] bg-black flex flex-col items-center justify-center"
           >
-            {slidesUrls.length > 0 ? (
+            {slideUrls.length > 0 ? (
               <>
                 <img 
-                  src={slidesUrls[currentSlideIndex]} 
+                  src={slideUrls[currentSlideIndex]} 
                   alt={`Slide ${currentSlideIndex + 1}`}
                   className="max-h-full max-w-full object-contain"
                 />
@@ -280,12 +223,12 @@ const Invest = () => {
                   </Button>
                   
                   <span className="text-white bg-gray-800/70 px-3 py-1 rounded-md text-sm">
-                    {currentSlideIndex + 1} / {slidesUrls.length}
+                    {currentSlideIndex + 1} / {slideUrls.length}
                   </span>
                   
                   <Button
                     onClick={goToNextSlide}
-                    disabled={currentSlideIndex === slidesUrls.length - 1}
+                    disabled={currentSlideIndex === slideUrls.length - 1}
                     className="rounded-full p-2 h-10 w-10"
                     variant="secondary"
                   >

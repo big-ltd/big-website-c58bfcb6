@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { crypto } from '@/utils/crypto';
 import { Loader2, Plus, Trash } from 'lucide-react';
+import SlidePreview from '@/components/investor/SlidePreview';
+import { useSlideManagement } from '@/hooks/useSlideManagement';
 
 // Hardcoded hash for admin access - in a real app, use a more secure approach
 const ADMIN_HASH = "adminSecretHash123"; // You should change this to your preferred admin hash
-const STORAGE_BUCKET = "investor_docs";
-const SLIDES_FOLDER = "slides";
 
 const InvestHashCodes = () => {
   const [searchParams] = useSearchParams();
@@ -20,16 +20,25 @@ const InvestHashCodes = () => {
   const [hashCodes, setHashCodes] = useState<any[]>([]);
   const [newInvestorName, setNewInvestorName] = useState('');
   const [loading, setLoading] = useState(true);
-  const [uploadLoading, setUploadLoading] = useState(false);
-  const [currentSlides, setCurrentSlides] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Use the slide management hook
+  const { 
+    slides, 
+    slidesLoading, 
+    uploadSlides, 
+    uploadLoading, 
+    deleteSlide, 
+    moveSlideUp, 
+    moveSlideDown, 
+    clearAllSlides 
+  } = useSlideManagement();
 
   useEffect(() => {
     const hash = searchParams.get('hash');
     if (hash === ADMIN_HASH) {
       setIsAuthorized(true);
       fetchHashCodes();
-      checkCurrentSlides();
     } else {
       setIsAuthorized(false);
     }
@@ -55,43 +64,6 @@ const InvestHashCodes = () => {
         description: "Failed to load hash codes",
         variant: "destructive",
       });
-    }
-  };
-
-  const checkCurrentSlides = async () => {
-    try {
-      const { data, error } = await supabase
-        .storage
-        .from(STORAGE_BUCKET)
-        .list(`${SLIDES_FOLDER}/`, {
-          sortBy: { column: 'name', order: 'asc' }
-        });
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (data && data.length > 0) {
-        // Filter for image files
-        const imageFiles = data.filter(file => 
-          file.name.toLowerCase().endsWith('.jpg') || 
-          file.name.toLowerCase().endsWith('.jpeg') || 
-          file.name.toLowerCase().endsWith('.png')
-        );
-        
-        // Get public URLs for all slides
-        const slideUrls = imageFiles.map(file => {
-          const { data } = supabase.storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${file.name}`);
-          return data.publicUrl;
-        });
-        
-        setCurrentSlides(slideUrls);
-      }
-    } catch (error) {
-      console.error('Error checking current slides:', error);
-      // Don't show an error toast as the slides might not exist yet
     }
   };
 
@@ -140,126 +112,10 @@ const InvestHashCodes = () => {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    setUploadLoading(true);
-
-    try {
-      // Process and upload each file
-      const uploadPromises = Array.from(files).map(async (file, index) => {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          toast({
-            title: "Error",
-            description: `${file.name} is not an image file`,
-            variant: "destructive",
-          });
-          return null;
-        }
-
-        // Create a padded file number (e.g., 01.jpg, 02.jpg) for proper ordering
-        const fileNumber = String(index + 1).padStart(2, '0');
-        const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const newFileName = `${fileNumber}.${fileExtension}`;
-
-        const { error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .upload(`${SLIDES_FOLDER}/${newFileName}`, file, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (error) {
-          console.error(`Upload error for ${file.name}:`, error);
-          throw new Error(error.message);
-        }
-
-        // Get the public URL
-        const { data } = supabase
-          .storage
-          .from(STORAGE_BUCKET)
-          .getPublicUrl(`${SLIDES_FOLDER}/${newFileName}`);
-        
-        return data.publicUrl;
-      });
-
-      const results = await Promise.all(uploadPromises);
-      const successfulUploads = results.filter(Boolean);
-      
-      if (successfulUploads.length > 0) {
-        await checkCurrentSlides();
-        toast({
-          title: "Success",
-          description: `${successfulUploads.length} slides uploaded successfully`,
-        });
-      }
-    } catch (error) {
-      console.error('Error uploading files:', error);
-      toast({
-        title: "Error",
-        description: `Failed to upload slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    } finally {
-      setUploadLoading(false);
-    }
-  };
-
-  const handleClearAllSlides = async () => {
-    if (!confirm("Are you sure you want to delete all slides? This action cannot be undone.")) {
-      return;
-    }
-
-    setUploadLoading(true);
-
-    try {
-      // List all files in the slides folder
-      const { data, error } = await supabase
-        .storage
-        .from(STORAGE_BUCKET)
-        .list(SLIDES_FOLDER);
-
-      if (error) {
-        throw error;
-      }
-
-      if (data && data.length > 0) {
-        // Create an array of file paths to delete
-        const filesToDelete = data.map(file => `${SLIDES_FOLDER}/${file.name}`);
-        
-        // Delete all files
-        const { error: deleteError } = await supabase
-          .storage
-          .from(STORAGE_BUCKET)
-          .remove(filesToDelete);
-
-        if (deleteError) {
-          throw deleteError;
-        }
-
-        setCurrentSlides([]);
-        toast({
-          title: "Success",
-          description: "All slides have been deleted",
-        });
-      } else {
-        toast({
-          title: "Info",
-          description: "No slides to delete",
-        });
-      }
-    } catch (error) {
-      console.error('Error deleting slides:', error);
-      toast({
-        title: "Error",
-        description: `Failed to delete slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    } finally {
-      setUploadLoading(false);
-    }
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    uploadSlides(event.target.files);
+    // Reset the input after upload
+    event.target.value = '';
   };
 
   if (loading) {
@@ -288,9 +144,9 @@ const InvestHashCodes = () => {
               <div className="bg-gray-700 p-4 rounded-md mb-4">
                 <div className="flex flex-col gap-3">
                   <label className="text-white text-sm">
-                    Current Slides: {currentSlides.length > 0 ? (
+                    Current Slides: {slides.length > 0 ? (
                       <span className="text-blue-400 ml-2">
-                        {currentSlides.length} slides available
+                        {slides.length} slides available
                       </span>
                     ) : "No slides uploaded yet"}
                   </label>
@@ -308,37 +164,37 @@ const InvestHashCodes = () => {
                     
                     <Button 
                       variant="destructive"
-                      onClick={handleClearAllSlides}
-                      disabled={uploadLoading || currentSlides.length === 0}
+                      onClick={() => clearAllSlides.mutate()}
+                      disabled={uploadLoading || slides.length === 0}
                     >
                       <Trash className="h-4 w-4 mr-2" /> Clear All Slides
                     </Button>
                   </div>
                   
                   <p className="text-gray-400 text-sm">
-                    Upload JPG or PNG image files. Files will be automatically numbered in the order they're selected.
-                    For best results, select files in the order you want them to appear in the presentation.
+                    Upload JPG or PNG image files. Images will be saved with timestamps and displayed in the order you manage below.
                   </p>
                 </div>
               </div>
               
-              {currentSlides.length > 0 && (
+              {slides.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-white text-lg mb-2">Preview Slides</h3>
+                  <h3 className="text-white text-lg mb-2">Manage Slides</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {currentSlides.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img 
-                          src={url} 
-                          alt={`Slide ${index + 1}`} 
-                          className="w-full h-40 object-contain bg-gray-900 rounded-md"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex items-center justify-center">
-                          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                            Slide {index + 1}
-                          </span>
-                        </div>
-                      </div>
+                    {slides.map((slide, index) => (
+                      <SlidePreview
+                        key={slide.id}
+                        slide={slide}
+                        index={index}
+                        totalSlides={slides.length}
+                        onMoveUp={() => moveSlideUp.mutate(slide.id)}
+                        onMoveDown={() => moveSlideDown.mutate(slide.id)}
+                        onDelete={() => {
+                          if (confirm("Are you sure you want to delete this slide?")) {
+                            deleteSlide.mutate(slide.id);
+                          }
+                        }}
+                      />
                     ))}
                   </div>
                 </div>
