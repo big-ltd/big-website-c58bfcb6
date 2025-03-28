@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,7 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import Cookies from 'js-cookie';
 import { ChevronUp, ChevronDown, Maximize, Minimize, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { SLIDES_FOLDER, STORAGE_BUCKET } from '@/types/slideTypes';
+import { getSlidesOrder, getPublicUrl } from '@/utils/browserSlideUtils';
+import { SLIDES_FOLDER } from '@/types/slideTypes';
 
 const COOKIE_NAME = 'investor_authenticated';
 
@@ -24,13 +26,6 @@ const Invest = () => {
 
   useEffect(() => {
     const checkAuthorization = async () => {
-      try {
-        // No need to create bucket, since we're using Supabase storage
-      } catch (err) {
-        console.error('Error ensuring storage:', err);
-        setStorageError(true);
-      }
-
       const cookie = Cookies.get(COOKIE_NAME);
       if (cookie) {
         setIsAuthorized(true);
@@ -92,76 +87,23 @@ const Invest = () => {
       setCacheTimestamp(Date.now());
       setStorageError(false);
       
-      // First try to get the slides_order.json file
-      const { data: orderData, error: orderError } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .download(`${SLIDES_FOLDER}/slides_order.json`);
+      // Get slides order from localStorage
+      const slideOrder = await getSlidesOrder();
       
-      let slideOrder: string[] = [];
-      
-      if (!orderError && orderData) {
-        try {
-          const orderText = await orderData.text();
-          const orderJson = JSON.parse(orderText);
-          slideOrder = orderJson.slides || [];
-          console.log('Using slides order from Supabase:', slideOrder);
-        } catch (parseErr) {
-          console.error('Error parsing slides order:', parseErr);
-        }
-      }
-      
-      if (slideOrder.length > 0) {
-        // Generate URLs for each slide
-        const urls = slideOrder.map(name => {
-          const { data } = supabase.storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(`${SLIDES_FOLDER}/${name}`);
-            
-          return `${data.publicUrl}?t=${cacheTimestamp}`;
-        });
-        
+      if (slideOrder && slideOrder.length > 0) {
+        // Generate direct URLs for each slide
+        const urls = slideOrder.map(name => getPublicUrl(name, cacheTimestamp));
         setSlidesUrls(urls);
+        console.log("Loaded slides from order:", urls);
       } else {
-        // If no order file or it's empty, list all files in the slides folder
-        const { data: files, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .list(SLIDES_FOLDER);
+        console.log("No slides order found");
+        setSlidesUrls([]);
         
-        if (error) {
-          console.error('Error listing slides from storage:', error);
-          setStorageError(true);
-          setSlidesUrls([]);
-          return;
-        }
-        
-        // Get all the image filenames
-        const imageFiles = files
-          ? files.filter(file => 
-              file.name.toLowerCase().endsWith('.jpg') || 
-              file.name.toLowerCase().endsWith('.jpeg') || 
-              file.name.toLowerCase().endsWith('.png'))
-              .map(file => file.name)
-          : [];
-        
-        if (imageFiles.length > 0) {
-          // Generate URLs for each file
-          const urls = imageFiles.map(filename => {
-            const { data } = supabase.storage
-              .from(STORAGE_BUCKET)
-              .getPublicUrl(`${SLIDES_FOLDER}/${filename}`);
-              
-            return `${data.publicUrl}?t=${cacheTimestamp}`;
-          });
-          
-          setSlidesUrls(urls);
-        } else {
-          toast({
-            title: "No Slides Found",
-            description: "No presentation slides are available.",
-            variant: "destructive",
-          });
-          setSlidesUrls([]);
-        }
+        toast({
+          title: "No Slides Found",
+          description: "No presentation slides are available.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error fetching slides:', error);
@@ -209,6 +151,10 @@ const Invest = () => {
                       src={url} 
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-24 object-contain bg-black rounded-md" 
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder.svg";
+                      }}
                     />
                     <div className="absolute bottom-0 right-0 bg-black/70 text-white text-xs px-2 py-1 rounded-tl-md">
                       {index + 1}
@@ -227,7 +173,7 @@ const Invest = () => {
                 <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">Storage Error</p>
-                  <p className="text-sm">There was an issue accessing the slides storage. Please try refreshing.</p>
+                  <p className="text-sm">There was an issue accessing the slides. Please try refreshing.</p>
                 </div>
               </div>
             )}
@@ -240,31 +186,6 @@ const Invest = () => {
               >
                 <RefreshCw className="mr-2 h-4 w-4" /> Refresh Slides
               </Button>
-              
-              {storageError && (
-                <Button 
-                  variant="outline"
-                  className="w-full bg-red-900/20 text-red-200 hover:bg-red-900/30 hover:text-red-100" 
-                  onClick={async () => {
-                    try {
-                      await fetchSlides();
-                      toast({
-                        title: "Storage Check",
-                        description: "Storage connection attempt complete.",
-                      });
-                    } catch (err) {
-                      console.error('Error checking storage:', err);
-                      toast({
-                        title: "Storage Error",
-                        description: "Still having issues with storage connection.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                >
-                  Retry Storage Connection
-                </Button>
-              )}
             </div>
           </div>
         </div>
@@ -301,6 +222,15 @@ const Invest = () => {
                   src={slidesUrls[currentSlideIndex]} 
                   alt={`Slide ${currentSlideIndex + 1}`}
                   className="max-h-full max-w-full object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                    toast({
+                      title: "Image Error",
+                      description: `Failed to load slide ${currentSlideIndex + 1}. Make sure the image exists in the /public/slides/ folder.`,
+                      variant: "destructive",
+                    });
+                  }}
                 />
                 
                 <div className="absolute bottom-4 right-4 flex flex-col justify-center items-center gap-4 bg-gray-800/70 p-2 rounded-md">

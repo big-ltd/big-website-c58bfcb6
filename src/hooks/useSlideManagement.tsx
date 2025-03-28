@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Slide, SLIDES_FOLDER, STORAGE_BUCKET } from '@/types/slideTypes';
-import { supabase } from '@/integrations/supabase/client';
+import { Slide, SLIDES_FOLDER } from '@/types/slideTypes';
 import {
   getSlidesOrder,
   saveSlidesOrder,
   getPublicUrl,
-  generateUniqueFileName
+  generateUniqueFileName,
+  createBlobUrl,
+  saveBlobUrl
 } from '@/utils/browserSlideUtils';
 
 export const useSlideManagement = () => {
@@ -24,7 +25,7 @@ export const useSlideManagement = () => {
       const timestamp = forceTimestamp || Date.now();
       setCacheTimestamp(timestamp);
       
-      // Get slides order from localStorage or Supabase
+      // Get slides order from localStorage
       const slideOrder = await getSlidesOrder();
       console.log('Retrieved slides order:', slideOrder);
       
@@ -46,7 +47,8 @@ export const useSlideManagement = () => {
     }
   };
 
-  // Handle file upload
+  // Handle file upload - in this version, we'll save URLs to localStorage
+  // and display them directly, assuming they exist in the public/slides folder
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -56,9 +58,6 @@ export const useSlideManagement = () => {
     try {
       // Get current order
       const currentOrder = await getSlidesOrder();
-      
-      // Create slides directory if it doesn't exist
-      console.log(`Using slides folder: /${SLIDES_FOLDER}/`);
       
       // Array to store new slide objects
       const newSlides: Slide[] = [];
@@ -80,31 +79,14 @@ export const useSlideManagement = () => {
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const newFileName = generateUniqueFileName(fileExtension);
         
-        // Upload to Supabase storage
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .upload(`${SLIDES_FOLDER}/${newFileName}`, file, {
-            cacheControl: '0',
-            upsert: true
-          });
-        
-        if (error) {
-          console.error(`Error uploading ${file.name}:`, error);
-          toast({
-            title: "Upload Error",
-            description: `Failed to upload ${file.name}: ${error.message}`,
-            variant: "destructive",
-          });
-          continue;
-        }
-        
-        // Get public URL
-        const url = getPublicUrl(newFileName, cacheTimestamp);
+        // Create a blob URL for preview (this will work in the browser)
+        const blobUrl = createBlobUrl(file);
+        saveBlobUrl(newFileName, blobUrl);
         
         // Create a slide object 
         const newSlide: Slide = {
           name: newFileName,
-          url: url,
+          url: blobUrl,
           originalName: file.name
         };
         
@@ -112,10 +94,10 @@ export const useSlideManagement = () => {
         newSlides.push(newSlide);
         currentOrder.push(newFileName);
         
-        console.log(`Stored slide in /${SLIDES_FOLDER}/${newFileName}`);
+        console.log(`Created slide preview for ${newFileName}`);
       }
       
-      // Update the slides order
+      // Update the slides order in localStorage
       await saveSlidesOrder(currentOrder);
       
       // Update state with the new slides
@@ -123,16 +105,16 @@ export const useSlideManagement = () => {
       
       if (newSlides.length > 0) {
         toast({
-          title: "Success",
-          description: `${newSlides.length} slides uploaded successfully to /${SLIDES_FOLDER}/`,
+          title: "Note",
+          description: `${newSlides.length} slides added for preview. Please upload these files to your server's /slides/ folder to make them permanently accessible.`,
         });
       }
     } catch (error) {
-      console.error('Error uploading files:', error);
+      console.error('Error processing files:', error);
       setStorageError(true);
       toast({
         title: "Error",
-        description: `Failed to upload slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: `Failed to process slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
@@ -142,40 +124,14 @@ export const useSlideManagement = () => {
 
   // Clear all slides
   const handleClearAllSlides = async (showConfirm = true) => {
-    if (showConfirm && !window.confirm("Are you sure you want to delete all slides? This action cannot be undone.")) {
+    if (showConfirm && !window.confirm("Are you sure you want to clear all slides? This will only remove them from the preview. You'll need to delete the actual files from your server.")) {
       return;
     }
     
     setUploadLoading(true);
     
     try {
-      // Get list of files in the slides folder
-      const { data, error } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .list(SLIDES_FOLDER);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Delete all files except slides_order.json
-      if (data && data.length > 0) {
-        const filesToDelete = data
-          .filter(file => file.name !== 'slides_order.json' && !file.name.endsWith('.folder'))
-          .map(file => `${SLIDES_FOLDER}/${file.name}`);
-          
-        if (filesToDelete.length > 0) {
-          const { error: deleteError } = await supabase.storage
-            .from(STORAGE_BUCKET)
-            .remove(filesToDelete);
-            
-          if (deleteError) {
-            console.error('Error deleting slides:', deleteError);
-          }
-        }
-      }
-      
-      // Clear the order
+      // Clear the slides order
       await saveSlidesOrder([]);
       
       // Update state
@@ -183,7 +139,7 @@ export const useSlideManagement = () => {
       
       toast({
         title: "Success",
-        description: "All slides have been cleared",
+        description: "All slides have been cleared from the preview.",
       });
     } catch (error) {
       console.error('Error clearing slides:', error);
@@ -200,7 +156,7 @@ export const useSlideManagement = () => {
 
   // Delete a single slide
   const handleDeleteSlide = async (slideIndex: number) => {
-    if (!window.confirm(`Are you sure you want to delete slide ${slideIndex + 1}?`)) {
+    if (!window.confirm(`Are you sure you want to delete slide ${slideIndex + 1}? This will only remove it from the preview. You'll need to delete the actual file from your server.`)) {
       return;
     }
     
@@ -209,15 +165,6 @@ export const useSlideManagement = () => {
     try {
       // Get the slide to delete
       const slideToDelete = currentSlides[slideIndex];
-      
-      // Delete from Supabase storage
-      const { error } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .remove([`${SLIDES_FOLDER}/${slideToDelete.name}`]);
-        
-      if (error) {
-        throw error;
-      }
       
       // Update the order
       const currentOrder = await getSlidesOrder();
@@ -231,7 +178,7 @@ export const useSlideManagement = () => {
       
       toast({
         title: "Success",
-        description: "Slide deleted successfully",
+        description: "Slide removed from preview successfully",
       });
     } catch (error) {
       console.error('Error deleting slide:', error);

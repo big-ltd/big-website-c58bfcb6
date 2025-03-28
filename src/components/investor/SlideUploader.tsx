@@ -74,6 +74,14 @@ const SlideUploader = ({
           </div>
         )}
         
+        <div className="text-yellow-300 bg-yellow-900/30 p-3 rounded mt-2">
+          <p className="font-semibold">Important: Manual File Upload Required</p>
+          <p className="text-sm">
+            After selecting files, you must manually upload them to your server's <code>/public/slides/</code> folder 
+            for them to be viewable by investors. The preview uses temporary URLs that will be lost when the page is refreshed.
+          </p>
+        </div>
+        
         <p className="text-gray-400 text-sm">
           Upload JPG or PNG image files. Files will be stored in the /{SLIDES_FOLDER}/ folder.
           You can reorder slides using the up/down arrows after uploading.
