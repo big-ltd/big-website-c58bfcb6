@@ -136,7 +136,7 @@ export const getPublicUrl = (filename: string, timestamp: number): string => {
 // Get blob URL for a slide if available, otherwise return public URL
 export const getSlideUrl = async (filename: string, timestamp: number): Promise<string> => {
   const slide = await getSlideData(filename);
-  if (slide && slide.url.startsWith('blob:')) {
+  if (slide && slide.url) {
     return slide.url;
   }
   
@@ -151,7 +151,7 @@ export const generateUniqueFileName = (fileExtension: string): string => {
   return `${timestamp}_${randomId}.${fileExtension}`;
 };
 
-// Convert file to blob URL for preview
+// Create blob URL for preview
 export const createBlobUrl = (file: File): string => {
   return URL.createObjectURL(file);
 };
@@ -181,60 +181,9 @@ export const processFileUpload = async (file: File): Promise<Slide | null> => {
     // Save slide data to localStorage
     await saveSlideData(slide);
     
-    // Download functionality to help users save files locally
-    const downloadLink = document.createElement('a');
-    downloadLink.href = blobUrl;
-    downloadLink.download = newFileName;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    
     return slide;
   } catch (error) {
     console.error('Error processing file upload:', error);
     return null;
-  }
-};
-
-// Download all slides as a ZIP file
-export const downloadAllSlides = async (): Promise<boolean> => {
-  try {
-    // For this to work, we need to load the JSZip library
-    const JSZip = (window as any).JSZip || await import('jszip').then(m => m.default);
-    
-    const allSlides = await getAllSlidesData();
-    const zip = new JSZip();
-    
-    // Add all slides to the ZIP file
-    const fetchPromises = Object.values(allSlides).map(async slide => {
-      try {
-        const response = await fetch(slide.url);
-        const blob = await response.blob();
-        zip.file(slide.name, blob);
-      } catch (err) {
-        console.error(`Failed to add ${slide.name} to ZIP:`, err);
-      }
-    });
-    
-    await Promise.all(fetchPromises);
-    
-    // Generate the ZIP file
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    
-    // Create download link
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(zipBlob);
-    downloadLink.download = 'investor_slides.zip';
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    
-    // Clean up
-    URL.revokeObjectURL(downloadLink.href);
-    
-    return true;
-  } catch (error) {
-    console.error('Error downloading all slides:', error);
-    return false;
   }
 };

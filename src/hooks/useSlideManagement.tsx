@@ -9,8 +9,7 @@ import {
   getAllSlidesData,
   processFileUpload,
   deleteSlideData,
-  clearAllSlidesData,
-  downloadAllSlides
+  clearAllSlidesData
 } from '@/utils/browserSlideUtils';
 
 export const useSlideManagement = () => {
@@ -101,7 +100,7 @@ export const useSlideManagement = () => {
       if (newSlides.length > 0) {
         toast({
           title: "Success",
-          description: `${newSlides.length} slides added. We've initiated downloads to help you save these files.`,
+          description: `${newSlides.length} slides added successfully.`,
         });
       }
     } catch (error) {
@@ -258,32 +257,6 @@ export const useSlideManagement = () => {
     }
   };
 
-  // Download all slides as ZIP
-  const handleDownloadAllSlides = async () => {
-    setUploadLoading(true);
-    try {
-      const success = await downloadAllSlides();
-      
-      if (success) {
-        toast({
-          title: "Success",
-          description: "All slides downloaded as ZIP file",
-        });
-      } else {
-        throw new Error("Failed to download slides");
-      }
-    } catch (error) {
-      console.error('Error downloading slides:', error);
-      toast({
-        title: "Error",
-        description: `Failed to download slides: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    } finally {
-      setUploadLoading(false);
-    }
-  };
-
   // Initialize slides on component mount
   useEffect(() => {
     checkCurrentSlides();
@@ -298,7 +271,6 @@ export const useSlideManagement = () => {
     handleClearAllSlides,
     handleDeleteSlide,
     handleMoveSlide,
-    handleRefreshCache,
-    handleDownloadAllSlides
+    handleRefreshCache
   };
 };

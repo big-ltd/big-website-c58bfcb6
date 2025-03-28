@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Trash, RefreshCw, Download, AlertCircle } from 'lucide-react';
-import { SLIDES_FOLDER } from '@/types/slideTypes';
+import { Loader2, Trash, RefreshCw, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SlideUploaderProps {
@@ -22,54 +21,9 @@ const SlideUploader = ({
   onFileUpload, 
   onClearAllSlides, 
   onRefreshCache,
-  onDownloadAllSlides,
   hasError = false
 }: SlideUploaderProps) => {
   const { toast } = useToast();
-
-  // Check if JSZip is available
-  const [jsZipAvailable, setJsZipAvailable] = useState(false);
-  
-  useEffect(() => {
-    // Try to load JSZip dynamically for download functionality
-    const loadJSZip = async () => {
-      try {
-        if (!(window as any).JSZip) {
-          await import('jszip').then(module => {
-            (window as any).JSZip = module.default;
-          });
-        }
-        setJsZipAvailable(true);
-      } catch (err) {
-        console.error("Could not load JSZip:", err);
-        setJsZipAvailable(false);
-      }
-    };
-    
-    loadJSZip();
-  }, []);
-  
-  // Install JSZip if not available
-  const installJSZip = async () => {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-    script.async = true;
-    script.onload = () => {
-      setJsZipAvailable(true);
-      toast({
-        title: "Success",
-        description: "JSZip library loaded successfully"
-      });
-    };
-    script.onerror = () => {
-      toast({
-        title: "Error",
-        description: "Failed to load JSZip library",
-        variant: "destructive"
-      });
-    };
-    document.head.appendChild(script);
-  };
   
   return (
     <div className="bg-gray-700 p-4 rounded-md mb-4">
@@ -110,28 +64,6 @@ const SlideUploader = ({
           >
             <RefreshCw className="h-4 w-4 mr-2" /> Refresh Cache
           </Button>
-          
-          {jsZipAvailable && onDownloadAllSlides && currentSlides.length > 0 && (
-            <Button 
-              variant="default"
-              onClick={() => onDownloadAllSlides()}
-              disabled={uploadLoading}
-              type="button"
-            >
-              <Download className="h-4 w-4 mr-2" /> Download All Slides
-            </Button>
-          )}
-          
-          {!jsZipAvailable && currentSlides.length > 0 && (
-            <Button 
-              variant="secondary"
-              onClick={installJSZip}
-              disabled={uploadLoading}
-              type="button"
-            >
-              <Download className="h-4 w-4 mr-2" /> Enable Downloads
-            </Button>
-          )}
         </div>
         
         {hasError && (
@@ -145,10 +77,10 @@ const SlideUploader = ({
         )}
         
         <div className="text-yellow-300 bg-yellow-900/30 p-3 rounded mt-2">
-          <p className="font-semibold">Automatic File Download</p>
+          <p className="font-semibold">Slide Storage</p>
           <p className="text-sm">
-            When you upload slides, they will be saved in your browser and also downloaded to your computer.
-            You can use the Download button to get all slides as a ZIP file.
+            Slides are stored in your browser's local storage. They will be available as long as you use the same browser
+            and don't clear your browser data.
           </p>
         </div>
       </div>
