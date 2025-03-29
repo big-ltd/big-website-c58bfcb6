@@ -1,10 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { Slide, SlideState } from '@/types/slide';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 
-// Server-side API endpoints (these would be actual API endpoints in a real implementation)
-const API_URL = '/api/slides';
+// API endpoints
+const API_ENDPOINTS = {
+  UPLOAD: '/api/upload-slide.php',
+  UPDATE_ORDER: '/api/update-slides-order.php',
+  GET_SLIDES: '/api/get-slides.php',
+  DELETE_SLIDE: '/api/delete-slide.php'
+};
 
 export function useDeckState(): {
   state: SlideState;
@@ -20,70 +26,217 @@ export function useDeckState(): {
     slides: [],
     currentSlideIndex: 0,
   });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load slides from server on initial render
   useEffect(() => {
-    // For now, we'll keep using localStorage as a fallback
-    // In a real implementation, this would be an API call to fetch slides from the server
-    const savedSlides = localStorage.getItem('deck_slides');
-    if (savedSlides) {
+    const fetchSlides = async () => {
       try {
-        const parsedSlides = JSON.parse(savedSlides);
-        setState(prevState => ({
-          ...prevState,
-          slides: parsedSlides.map((slide: any) => ({
-            ...slide,
-            file: null // Files can't be stored in localStorage
-          }))
-        }));
+        const response = await fetch(API_ENDPOINTS.GET_SLIDES);
+        if (!response.ok) {
+          throw new Error('Failed to fetch slides');
+        }
+        
+        const data = await response.json();
+        
+        if (data.slides && Array.isArray(data.slides)) {
+          setState(prevState => ({
+            ...prevState,
+            slides: data.slides.map((slide: any, index: number) => ({
+              id: slide.id || uuidv4(),
+              imageUrl: slide.serverPath,
+              serverPath: slide.serverPath,
+              file: null,
+              order: slide.order !== undefined ? slide.order : index
+            })).sort((a: Slide, b: Slide) => a.order - b.order)
+          }));
+        }
       } catch (error) {
-        console.error('Failed to parse saved slides:', error);
+        console.error('Error fetching slides:', error);
+        
+        // Fall back to localStorage if server request fails
+        const savedSlides = localStorage.getItem('deck_slides');
+        if (savedSlides) {
+          try {
+            const parsedSlides = JSON.parse(savedSlides);
+            setState(prevState => ({
+              ...prevState,
+              slides: parsedSlides.map((slide: any) => ({
+                ...slide,
+                file: null
+              }))
+            }));
+          } catch (parseError) {
+            console.error('Failed to parse saved slides:', parseError);
+          }
+        }
+      } finally {
+        setIsInitialized(true);
       }
-    }
+    };
+    
+    fetchSlides();
   }, []);
 
-  // Save slides whenever they change
+  // Save slides to server whenever they change
   useEffect(() => {
-    // In a real implementation, we wouldn't need this as data would be saved to the server
-    // This is just for demonstration purposes
-    const slidesToSave = state.slides.map(slide => ({
-      id: slide.id,
-      imageUrl: slide.imageUrl,
-      order: slide.order
-    }));
-    localStorage.setItem('deck_slides', JSON.stringify(slidesToSave));
-  }, [state.slides]);
+    if (!isInitialized) return;
+    
+    const saveSlides = async () => {
+      try {
+        const slidesToSave = state.slides.map(slide => ({
+          id: slide.id,
+          serverPath: slide.serverPath || slide.imageUrl,
+          order: slide.order
+        }));
+        
+        const response = await fetch(API_ENDPOINTS.UPDATE_ORDER, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ slides: slidesToSave }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update slides order');
+        }
+      } catch (error) {
+        console.error('Error saving slides order:', error);
+        
+        // Fall back to localStorage
+        const slidesToSave = state.slides.map(slide => ({
+          id: slide.id,
+          imageUrl: slide.imageUrl,
+          serverPath: slide.serverPath,
+          order: slide.order
+        }));
+        localStorage.setItem('deck_slides', JSON.stringify(slidesToSave));
+      }
+    };
+    
+    saveSlides();
+  }, [state.slides, isInitialized]);
 
   // Add new slides
-  const addSlides = (files: File[]) => {
-    const newSlides = Array.from(files).map((file, index) => {
-      const imageUrl = URL.createObjectURL(file);
+  const addSlides = async (files: File[]) => {
+    // First, create temporary slides with local URLs for immediate display
+    const tempSlides = Array.from(files).map((file, index) => {
+      const localImageUrl = URL.createObjectURL(file);
       return {
         id: uuidv4(),
         file,
-        imageUrl,
+        imageUrl: localImageUrl,
         order: state.slides.length + index
       };
     });
-
-    // In a real implementation, this would upload the files to the server
-    // and then update the state with the server response
-    // For now, we'll just update the local state
     
+    // Update state with temporary slides
     setState(prevState => ({
       ...prevState,
-      slides: [...prevState.slides, ...newSlides].sort((a, b) => a.order - b.order)
+      slides: [...prevState.slides, ...tempSlides].sort((a, b) => a.order - b.order)
     }));
-
-    // Mock successful upload toast
-    toast({
-      title: "Success",
-      description: `${files.length} slides uploaded successfully.`,
+    
+    // Upload each file to the server
+    const uploadPromises = tempSlides.map(async (slide, index) => {
+      if (!slide.file) return null;
+      
+      const formData = new FormData();
+      formData.append('slide', slide.file);
+      
+      try {
+        const response = await fetch(API_ENDPOINTS.UPLOAD, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to upload slide ${index + 1}`);
+        }
+        
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || `Failed to upload slide ${index + 1}`);
+        }
+        
+        return {
+          id: slide.id,
+          serverPath: data.filePath,
+          order: slide.order
+        };
+      } catch (error) {
+        console.error(`Error uploading slide ${index + 1}:`, error);
+        return null;
+      }
     });
+    
+    // Wait for all uploads to complete
+    const results = await Promise.all(uploadPromises);
+    const successfulUploads = results.filter(Boolean);
+    
+    if (successfulUploads.length > 0) {
+      // Update state with server paths
+      setState(prevState => {
+        const updatedSlides = prevState.slides.map(slide => {
+          const uploadResult = successfulUploads.find(result => result?.id === slide.id);
+          if (uploadResult) {
+            return {
+              ...slide,
+              serverPath: uploadResult.serverPath,
+              imageUrl: uploadResult.serverPath // Update imageUrl to use server path
+            };
+          }
+          return slide;
+        });
+        
+        return {
+          ...prevState,
+          slides: updatedSlides
+        };
+      });
+      
+      toast({
+        title: "Success",
+        description: `${successfulUploads.length} of ${files.length} slides uploaded successfully.`,
+      });
+    } else if (files.length > 0) {
+      toast({
+        title: "Error",
+        description: "Failed to upload slides to server. Using local storage as fallback.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Remove a slide
-  const removeSlide = (id: string) => {
+  const removeSlide = async (id: string) => {
+    const slideToRemove = state.slides.find(slide => slide.id === id);
+    
+    if (slideToRemove?.serverPath) {
+      try {
+        // Delete from server first
+        const response = await fetch(API_ENDPOINTS.DELETE_SLIDE, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filePath: slideToRemove.serverPath }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to delete slide from server');
+        }
+      } catch (error) {
+        console.error('Error deleting slide:', error);
+        toast({
+          title: "Warning",
+          description: "Could not delete slide from server, but removed from local display.",
+          variant: "destructive"
+        });
+      }
+    }
+    
+    // Remove from state regardless of server success
     setState(prevState => {
       const filteredSlides = prevState.slides.filter(slide => slide.id !== id);
       // Reorder the remaining slides
