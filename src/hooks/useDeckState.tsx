@@ -34,10 +34,14 @@ export function useDeckState(): {
       try {
         const response = await fetch(API_ENDPOINTS.GET_SLIDES);
         if (!response.ok) {
-          throw new Error('Failed to fetch slides');
+          throw new Error(`Failed to fetch slides: HTTP ${response.status} - ${response.statusText}`);
         }
         
         const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(`Server error: ${data.error}${data.details ? ` - ${JSON.stringify(data.details)}` : ''}`);
+        }
         
         if (data.slides && Array.isArray(data.slides)) {
           setState(prevState => ({
@@ -53,6 +57,11 @@ export function useDeckState(): {
         }
       } catch (error) {
         console.error('Error fetching slides:', error);
+        toast({
+          title: "Error fetching slides",
+          description: `${error instanceof Error ? error.message : 'Unknown error'}\nFalling back to localStorage.`,
+          variant: "destructive"
+        });
         
         // Fall back to localStorage if server request fails
         const savedSlides = localStorage.getItem('deck_slides');
@@ -68,6 +77,11 @@ export function useDeckState(): {
             }));
           } catch (parseError) {
             console.error('Failed to parse saved slides:', parseError);
+            toast({
+              title: "Failed to load slides",
+              description: `Error parsing saved slides: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+              variant: "destructive"
+            });
           }
         }
       } finally {
@@ -99,10 +113,21 @@ export function useDeckState(): {
         });
         
         if (!response.ok) {
-          throw new Error('Failed to update slides order');
+          throw new Error(`Failed to update slides order: HTTP ${response.status} - ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(`Server error: ${data.error}${data.details ? ` - ${JSON.stringify(data.details)}` : ''}`);
         }
       } catch (error) {
         console.error('Error saving slides order:', error);
+        toast({
+          title: "Failed to save slide order",
+          description: `${error instanceof Error ? error.message : 'Unknown error'}\nFalling back to localStorage.`,
+          variant: "destructive"
+        });
         
         // Fall back to localStorage
         const slidesToSave = state.slides.map(slide => ({
@@ -151,12 +176,16 @@ export function useDeckState(): {
         });
         
         if (!response.ok) {
-          throw new Error(`Failed to upload slide ${index + 1}`);
+          throw new Error(`Failed to upload slide ${index + 1}: HTTP ${response.status} - ${response.statusText}`);
         }
         
         const data = await response.json();
+        if (data.error) {
+          throw new Error(`Server error on slide ${index + 1}: ${data.error}${data.details ? ` - ${JSON.stringify(data.details)}` : ''}`);
+        }
+        
         if (!data.success) {
-          throw new Error(data.error || `Failed to upload slide ${index + 1}`);
+          throw new Error(`Failed to upload slide ${index + 1}: ${data.error || 'Unknown server error'}`);
         }
         
         return {
@@ -166,6 +195,11 @@ export function useDeckState(): {
         };
       } catch (error) {
         console.error(`Error uploading slide ${index + 1}:`, error);
+        toast({
+          title: `Error uploading slide ${index + 1}`,
+          description: `${error instanceof Error ? error.message : 'Unknown error'}`,
+          variant: "destructive"
+        });
         return null;
       }
     });
@@ -173,6 +207,7 @@ export function useDeckState(): {
     // Wait for all uploads to complete
     const results = await Promise.all(uploadPromises);
     const successfulUploads = results.filter(Boolean);
+    const failedUploads = files.length - successfulUploads.length;
     
     if (successfulUploads.length > 0) {
       // Update state with server paths
@@ -195,14 +230,22 @@ export function useDeckState(): {
         };
       });
       
-      toast({
-        title: "Success",
-        description: `${successfulUploads.length} of ${files.length} slides uploaded successfully.`,
-      });
+      if (failedUploads > 0) {
+        toast({
+          title: "Partial upload success",
+          description: `${successfulUploads.length} of ${files.length} slides uploaded successfully. ${failedUploads} failed.`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `${successfulUploads.length} slides uploaded successfully.`,
+        });
+      }
     } else if (files.length > 0) {
       toast({
-        title: "Error",
-        description: "Failed to upload slides to server. Using local storage as fallback.",
+        title: "Upload failed",
+        description: "Failed to upload slides to server. Using local storage as fallback. Check console for details.",
         variant: "destructive"
       });
     }
@@ -224,13 +267,19 @@ export function useDeckState(): {
         });
         
         if (!response.ok) {
-          throw new Error('Failed to delete slide from server');
+          throw new Error(`Failed to delete slide from server: HTTP ${response.status} - ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(`Server error deleting slide: ${data.error}${data.details ? ` - ${JSON.stringify(data.details)}` : ''}`);
         }
       } catch (error) {
         console.error('Error deleting slide:', error);
         toast({
           title: "Warning",
-          description: "Could not delete slide from server, but removed from local display.",
+          description: `Could not delete slide from server: ${error instanceof Error ? error.message : 'Unknown error'}\nSlide was removed from local display only.`,
           variant: "destructive"
         });
       }
