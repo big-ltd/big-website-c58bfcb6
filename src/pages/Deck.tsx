@@ -81,8 +81,10 @@ export default function Deck() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
   
-  // Touch gesture handlers for mobile
+  // Touch gesture handlers
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isMobile) return; // Disable touch gestures on mobile since we're showing all slides
+    
     const touch = e.touches[0];
     setTouchStart({
       x: touch.clientX,
@@ -91,7 +93,7 @@ export default function Deck() {
   };
   
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+    if (isMobile || !touchStart) return; // Disable touch gestures on mobile
     
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - touchStart.x;
@@ -143,62 +145,34 @@ export default function Deck() {
   // Current slide to display
   const currentSlide = state.slides[state.currentSlideIndex] || null;
   
-  // Mobile view
+  // Mobile view - show all slides stacked vertically
   if (isMobile) {
     return (
-      <div 
-        ref={deckContainerRef}
-        className="w-full h-screen bg-black flex flex-col items-center justify-center overflow-hidden relative"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-          <FullscreenButton isFullscreen={isFullscreen} onClick={toggleFullscreen} />
+      <div className="w-full min-h-screen bg-black overflow-y-auto">
+        <div className="pb-12">
+          {state.slides.length === 0 ? (
+            <div className="text-white text-center p-4">
+              <p>No slides available.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-6 py-6">
+              {state.slides.map((slide, index) => (
+                <div key={slide.id} className="w-full max-w-[90vw]">
+                  <div className="relative">
+                    <img 
+                      src={slide.imageUrl} 
+                      alt={`Slide ${slide.order + 1}`}
+                      className="w-full object-contain"
+                    />
+                    <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+                      {slide.order + 1}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        
-        {state.slides.length === 0 ? (
-          <div className="text-white text-center p-4">
-            <p>No slides available.</p>
-          </div>
-        ) : (
-          <>
-            <div className="flex-1 flex items-center justify-center w-full">
-              {currentSlide && (
-                <img 
-                  src={currentSlide.imageUrl} 
-                  alt={`Slide ${currentSlide.order + 1}`}
-                  className="max-w-full max-h-full object-contain"
-                />
-              )}
-            </div>
-            
-            <div className="p-4 w-full flex justify-center items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={goToPrevSlide}
-                disabled={state.currentSlideIndex === 0}
-                className="bg-black/50 text-white border-white/20 hover:bg-black/70"
-                size="sm"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-              
-              <div className="text-white bg-black/50 px-3 py-2 rounded-md">
-                {state.currentSlideIndex + 1} / {state.slides.length}
-              </div>
-              
-              <Button
-                variant="outline"
-                onClick={goToNextSlide}
-                disabled={state.currentSlideIndex === state.slides.length - 1}
-                className="bg-black/50 text-white border-white/20 hover:bg-black/70"
-                size="sm"
-              >
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </>
-        )}
       </div>
     );
   }
@@ -209,9 +183,9 @@ export default function Deck() {
       <FullscreenAwareSidebar isFullscreen={isFullscreen}>
         <div className="flex w-full min-h-screen" ref={deckContainerRef}>
           <Sidebar>
-            <SidebarContent>
+            <SidebarContent className="bg-black">
               <div className="p-4">
-                <h2 className="text-lg font-semibold mb-4">Slides</h2>
+                <h2 className="text-lg font-semibold mb-4 text-white">Slides</h2>
                 <ScrollArea className="h-[calc(100vh-100px)]">
                   <div className="space-y-2 pr-2">
                     {state.slides.map((slide, index) => (
@@ -300,10 +274,12 @@ export default function Deck() {
 function FullscreenAwareSidebar({ children, isFullscreen }) {
   const { setOpen } = useSidebar();
   
-  // Close sidebar when entering fullscreen
+  // Close sidebar when entering fullscreen, open when exiting
   useEffect(() => {
     if (isFullscreen) {
       setOpen(false);
+    } else {
+      setOpen(true);
     }
   }, [isFullscreen, setOpen]);
   
