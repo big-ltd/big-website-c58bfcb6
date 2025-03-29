@@ -4,12 +4,12 @@ import { Slide, SlideState } from '@/types/slide';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 
-// API endpoints with hardcoded domain
+// API endpoints - use relative paths for cross-environment compatibility
 const API_ENDPOINTS = {
-  UPLOAD: 'https://big-ltd.com/api/upload-slide.php',
-  UPDATE_ORDER: 'https://big-ltd.com/api/update-slides-order.php',
-  GET_SLIDES: 'https://big-ltd.com/api/get-slides.php',
-  DELETE_SLIDE: 'https://big-ltd.com/api/delete-slide.php'
+  UPLOAD: '/api/upload-slide.php',
+  UPDATE_ORDER: '/api/update-slides-order.php',
+  GET_SLIDES: '/api/get-slides.php',
+  DELETE_SLIDE: '/api/delete-slide.php'
 };
 
 export function useDeckState(): {
