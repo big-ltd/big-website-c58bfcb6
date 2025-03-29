@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ChevronsLeft, ChevronsRight, Maximize, Minimize } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 // Helper to detect iOS
 function isIOS() {
@@ -54,6 +56,9 @@ export default function Deck() {
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const deckContainerRef = useRef<HTMLDivElement>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   
   // Apply body class for black background
   useEffect(() => {
@@ -63,6 +68,61 @@ export default function Deck() {
       document.body.classList.remove('deck-page');
     };
   }, []);
+  
+  // Verify hash code access
+  useEffect(() => {
+    const verifyAccess = async () => {
+      // Parse the hash from the URL
+      const params = new URLSearchParams(location.search);
+      const hash = params.get('hash');
+      
+      if (!hash) {
+        setIsAuthorized(false);
+        return;
+      }
+      
+      try {
+        // Check if user has a cookie for this hash already
+        const accessCookieName = `deck_access_${hash}`;
+        const hasAccessCookie = document.cookie.includes(accessCookieName);
+        
+        // Verify the hash with the server
+        const response = await fetch(`/api/verify-hash.php?hash=${hash}`);
+        const data = await response.json();
+        
+        if (data.valid) {
+          setIsAuthorized(true);
+          
+          // If this is a new visit (no cookie), record the view
+          if (!hasAccessCookie) {
+            // Record the viewing device
+            await fetch('/api/record-view.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                hash,
+                userAgent: navigator.userAgent,
+              }),
+            });
+            
+            // Set a cookie to mark this device as having accessed this hash
+            const expiryDate = new Date();
+            expiryDate.setMonth(expiryDate.getMonth() + 6); // 6 months expiry
+            document.cookie = `${accessCookieName}=true; expires=${expiryDate.toUTCString()}; path=/`;
+          }
+        } else {
+          setIsAuthorized(false);
+        }
+      } catch (error) {
+        console.error('Error verifying hash:', error);
+        setIsAuthorized(false);
+      }
+    };
+    
+    verifyAccess();
+  }, [location.search]);
   
   // Handle keyboard navigation
   useEffect(() => {
@@ -150,6 +210,35 @@ export default function Deck() {
       enterFullscreen();
     }
   };
+  
+  // Show loading state
+  if (isAuthorized === null) {
+    return (
+      <div className="w-full min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center p-4">
+          <p>Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show unauthorized message
+  if (isAuthorized === false) {
+    return (
+      <div className="w-full min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center p-4">
+          <h2 className="text-xl font-bold mb-4">Access Denied</h2>
+          <p className="mb-4">You do not have permission to view this deck.</p>
+          <Button 
+            onClick={() => navigate('/')}
+            className="bg-white text-black hover:bg-gray-200"
+          >
+            Return to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
   
   // Current slide to display
   const currentSlide = state.slides[state.currentSlideIndex] || null;
