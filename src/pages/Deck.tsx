@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDeckState } from '@/hooks/useDeckState';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,12 +12,14 @@ import {
   SidebarInset
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, Maximize, Minimize } from 'lucide-react';
 
 export default function Deck() {
   const { state, goToNextSlide, goToPrevSlide, goToSlide } = useDeckState();
   const isMobile = useIsMobile();
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const deckContainerRef = useRef<HTMLDivElement>(null);
   
   // Handle keyboard navigation
   useEffect(() => {
@@ -26,12 +28,24 @@ export default function Deck() {
         goToNextSlide();
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         goToPrevSlide();
+      } else if (e.key === 'Escape' && isFullscreen) {
+        exitFullscreen();
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goToNextSlide, goToPrevSlide]);
+  }, [goToNextSlide, goToPrevSlide, isFullscreen]);
+  
+  // Fullscreen change event listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
   
   // Touch gesture handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -69,6 +83,29 @@ export default function Deck() {
     setTouchStart(null);
   };
   
+  // Fullscreen toggle functions
+  const enterFullscreen = () => {
+    if (deckContainerRef.current) {
+      if (deckContainerRef.current.requestFullscreen) {
+        deckContainerRef.current.requestFullscreen();
+      }
+    }
+  };
+  
+  const exitFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  };
+  
+  const toggleFullscreen = () => {
+    if (isFullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  };
+  
   // Current slide to display
   const currentSlide = state.slides[state.currentSlideIndex] || null;
   
@@ -76,23 +113,43 @@ export default function Deck() {
   if (isMobile) {
     return (
       <div 
-        className="w-full h-screen bg-black flex items-center justify-center overflow-hidden"
+        ref={deckContainerRef}
+        className="w-full h-screen bg-black flex flex-col items-center justify-center overflow-hidden relative"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleFullscreen}
+            className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+          >
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          </Button>
+        </div>
+        
         {state.slides.length === 0 ? (
           <div className="text-white text-center p-4">
             <p>No slides available.</p>
           </div>
         ) : (
           <>
-            {currentSlide && (
-              <img 
-                src={currentSlide.imageUrl} 
-                alt={`Slide ${currentSlide.order + 1}`}
-                className="max-w-full max-h-full object-contain"
-              />
-            )}
+            <div className="flex-1 flex items-center justify-center w-full">
+              {currentSlide && (
+                <img 
+                  src={currentSlide.imageUrl} 
+                  alt={`Slide ${currentSlide.order + 1}`}
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+            
+            <div className="p-4 w-full flex justify-center items-center">
+              <div className="text-white bg-black/50 px-3 py-2 rounded-md">
+                {state.currentSlideIndex + 1} / {state.slides.length}
+              </div>
+            </div>
           </>
         )}
       </div>
@@ -102,7 +159,7 @@ export default function Deck() {
   // Desktop view with sidebar
   return (
     <SidebarProvider>
-      <div className="flex w-full min-h-screen">
+      <div className="flex w-full min-h-screen" ref={deckContainerRef}>
         <Sidebar>
           <SidebarContent>
             <div className="p-4">
@@ -139,6 +196,17 @@ export default function Deck() {
         <SidebarInset className="bg-black relative">
           <div className="absolute top-2 left-2 z-10">
             <SidebarTrigger />
+          </div>
+          
+          <div className="absolute top-2 right-2 z-10">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleFullscreen}
+              className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+            >
+              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            </Button>
           </div>
           
           <div className="flex items-center justify-center h-full w-full relative">
