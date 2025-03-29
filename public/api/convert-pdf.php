@@ -6,6 +6,11 @@ header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header('Content-Type: application/json');
 
+// Increase PHP execution time limit for larger PDF files
+set_time_limit(300); // 5 minutes timeout
+ini_set('max_execution_time', 300);
+ini_set('memory_limit', '256M'); // Increase memory limit
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
@@ -120,8 +125,13 @@ try {
     $totalPages = $imagick->getNumberImages();
     $slidesPaths = [];
     
-    // Write each page as a separate JPG
+    // For large PDFs, process pages individually to prevent memory issues
     for ($i = 0; $i < $totalPages; $i++) {
+        // Periodically reset time limit for very large PDFs
+        if ($i % 5 === 0) {
+            set_time_limit(300); // Reset timeout every 5 pages
+        }
+        
         $imagick->setIteratorIndex($i);
         $currentPage = $imagick->getImage();
         $pagePath = sprintf($outputPattern, $i + 1);
