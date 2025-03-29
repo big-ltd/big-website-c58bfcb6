@@ -36,6 +36,40 @@ function getClientIP() {
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 }
 
+// Function to get IP location data
+function getIPLocation($ip) {
+    if ($ip === '0.0.0.0' || $ip === '127.0.0.1' || $ip === 'localhost') {
+        return [
+            'city' => 'Local',
+            'country' => 'Development',
+            'status' => 'success'
+        ];
+    }
+    
+    // Call ip-api.com API
+    $response = @file_get_contents("http://ip-api.com/json/{$ip}");
+    
+    if ($response === false) {
+        return [
+            'city' => 'Unknown',
+            'country' => 'Unknown',
+            'status' => 'error'
+        ];
+    }
+    
+    $locationData = json_decode($response, true);
+    
+    if (!$locationData || $locationData['status'] !== 'success') {
+        return [
+            'city' => 'Unknown',
+            'country' => 'Unknown',
+            'status' => 'error'
+        ];
+    }
+    
+    return $locationData;
+}
+
 // File to store hash codes
 $hashCodesFile = 'data/hash-codes.json';
 
@@ -65,11 +99,17 @@ if ($hashIndex === -1) {
     exit;
 }
 
+// Get IP and location
+$ipAddress = getClientIP();
+$locationData = getIPLocation($ipAddress);
+
 // Create a new device entry
 $deviceId = uniqid();
 $newDevice = [
     'id' => $deviceId,
-    'ipAddress' => getClientIP(),
+    'ipAddress' => $ipAddress,
+    'city' => $locationData['city'] ?? 'Unknown',
+    'country' => $locationData['country'] ?? 'Unknown',
     'userAgent' => $data['userAgent'] ?? $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
     'timestamp' => date('Y-m-d\TH:i:s\Z')
 ];

@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface ViewingDevice {
   id: string;
   ipAddress: string;
+  city?: string;
+  country?: string;
   userAgent: string;
   timestamp: string;
 }
@@ -376,6 +378,7 @@ export default function DeckUpload() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead>Location</TableHead>
                             <TableHead>IP Address</TableHead>
                             <TableHead>Device</TableHead>
                             <TableHead>Date/Time</TableHead>
@@ -384,6 +387,11 @@ export default function DeckUpload() {
                         <TableBody>
                           {hashCode.devices.map((device) => (
                             <TableRow key={device.id}>
+                              <TableCell className="whitespace-nowrap">
+                                {device.city && device.country 
+                                  ? `${device.city}, ${device.country}` 
+                                  : 'Unknown location'}
+                              </TableCell>
                               <TableCell>{device.ipAddress}</TableCell>
                               <TableCell className="max-w-xs truncate">
                                 {device.userAgent}
