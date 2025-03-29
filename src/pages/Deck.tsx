@@ -13,7 +13,7 @@ import {
   useSidebar
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { ChevronsLeft, ChevronsRight, Maximize, Minimize } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, Maximize, Minimize, ZoomIn, ZoomOut } from 'lucide-react';
 
 // Helper to detect iOS
 function isIOS() {
@@ -53,7 +53,19 @@ export default function Deck() {
   const isMobile = useIsMobile();
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const deckContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Handle screen orientation changes
+  useEffect(() => {
+    const handleResize = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Handle keyboard navigation
   useEffect(() => {
@@ -91,7 +103,7 @@ export default function Deck() {
   };
   
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+    if (!touchStart || isPortrait) return;
     
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - touchStart.x;
@@ -115,6 +127,15 @@ export default function Deck() {
     }
     
     setTouchStart(null);
+  };
+  
+  // Zoom controls
+  const increaseZoom = () => {
+    setZoomLevel(prev => Math.min(prev + 0.2, 3));
+  };
+  
+  const decreaseZoom = () => {
+    setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
   };
   
   // Fullscreen toggle functions
@@ -143,7 +164,73 @@ export default function Deck() {
   // Current slide to display
   const currentSlide = state.slides[state.currentSlideIndex] || null;
   
-  // Mobile view
+  // Mobile view with portrait orientation - vertical view of all slides
+  if (isMobile && isPortrait) {
+    return (
+      <div 
+        ref={deckContainerRef}
+        className="w-full min-h-screen bg-black flex flex-col items-center overflow-hidden relative"
+      >
+        <div className="sticky top-0 left-0 right-0 z-10 p-3 flex justify-between items-center bg-black/70 backdrop-blur-sm">
+          <div className="text-white text-sm">
+            {state.slides.length} Slides
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={decreaseZoom}
+              className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={increaseZoom}
+              className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <ScrollArea className="w-full h-[calc(100vh-56px)]">
+          <div className="flex flex-col items-center gap-6 p-4">
+            {state.slides.length === 0 ? (
+              <div className="text-white text-center p-4">
+                <p>No slides available.</p>
+              </div>
+            ) : (
+              state.slides.map((slide, index) => (
+                <div key={slide.id} className="flex flex-col items-center w-full">
+                  <div className="text-white mb-2 text-center">
+                    Slide {index + 1} / {state.slides.length}
+                  </div>
+                  <div 
+                    className="w-full bg-black border border-gray-800 rounded-lg overflow-hidden"
+                    style={{
+                      transform: `scale(${zoomLevel})`,
+                      transformOrigin: 'top center',
+                      marginBottom: `${(zoomLevel - 1) * 100}px` // Add extra margin based on zoom
+                    }}
+                  >
+                    <img 
+                      src={slide.imageUrl} 
+                      alt={`Slide ${slide.order + 1}`}
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  }
+  
+  // Mobile view with landscape orientation - regular slide by slide
   if (isMobile) {
     return (
       <div 
