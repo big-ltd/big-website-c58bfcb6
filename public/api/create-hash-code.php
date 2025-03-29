@@ -20,6 +20,14 @@ if (!isset($data['name']) || empty(trim($data['name']))) {
     exit;
 }
 
+// Get the max devices count (default to 1 if not provided)
+$maxDevices = isset($data['maxDevices']) && is_numeric($data['maxDevices']) ? (int)$data['maxDevices'] : 1;
+
+// Ensure maxDevices is at least 1
+if ($maxDevices < 1) {
+    $maxDevices = 1;
+}
+
 // File to store hash codes
 $hashCodesFile = 'data/hash-codes.json';
 
@@ -46,6 +54,7 @@ $newHashCode = [
     'id' => $id,
     'name' => trim($data['name']),
     'hash' => $hash,
+    'maxDevices' => $maxDevices,
     'devices' => [],
     'createdAt' => date('Y-m-d\TH:i:s\Z')
 ];

@@ -26,15 +26,29 @@ $hashCodes = $hashCodesData['hashCodes'] ?? [];
 
 // Check if the hash exists
 $validHash = false;
+$atDeviceLimit = false;
+$maxDevices = 1; // Default
+
 foreach ($hashCodes as $hashCode) {
     if ($hashCode['hash'] === $hash) {
         $validHash = true;
+        
+        // Check device limit
+        $maxDevices = $hashCode['maxDevices'] ?? 1;
+        $deviceCount = count($hashCode['devices'] ?? []);
+        
+        // If the number of devices exceeds the limit, deny access
+        if ($deviceCount >= $maxDevices) {
+            $atDeviceLimit = true;
+        }
+        
         break;
     }
 }
 
 // Return the validation result
 echo json_encode([
-    'valid' => $validHash
+    'valid' => $validHash && !$atDeviceLimit,
+    'message' => $atDeviceLimit ? 'Device limit reached for this access link' : null
 ]);
 ?>

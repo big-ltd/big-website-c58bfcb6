@@ -3,11 +3,26 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useDeckState } from '@/hooks/useDeckState';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, Trash2, Upload, Copy, Plus, RefreshCw } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Upload, Copy, Plus, RefreshCw, Edit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel 
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 // Types for the hash access management
 interface ViewingDevice {
@@ -23,6 +38,7 @@ interface HashCode {
   id: string;
   name: string;
   hash: string;
+  maxDevices: number;
   devices: ViewingDevice[];
   createdAt: string;
 }
@@ -32,7 +48,10 @@ export default function DeckUpload() {
   const { state, addSlides, removeSlide, moveSlideUp, moveSlideDown } = useDeckState();
   const [hashCodes, setHashCodes] = useState<HashCode[]>([]);
   const [newHashName, setNewHashName] = useState('');
+  const [newMaxDevices, setNewMaxDevices] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
+  const [editingHashId, setEditingHashId] = useState<string | null>(null);
+  const [editMaxDevices, setEditMaxDevices] = useState('1');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -111,6 +130,7 @@ export default function DeckUpload() {
         },
         body: JSON.stringify({
           name: newHashName.trim(),
+          maxDevices: parseInt(newMaxDevices, 10)
         }),
       });
       
@@ -122,6 +142,7 @@ export default function DeckUpload() {
           description: "New hash code created successfully.",
         });
         setNewHashName('');
+        setNewMaxDevices('1');
         fetchHashCodes();
       } else {
         toast({
@@ -135,6 +156,46 @@ export default function DeckUpload() {
       toast({
         title: "Error",
         description: "Failed to create hash code.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Update the max devices for a hash code
+  const updateMaxDevices = async (id: string, maxDevices: number) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/update-hash-code.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, maxDevices }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Device limit updated successfully.",
+        });
+        fetchHashCodes();
+        setEditingHashId(null);
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to update device limit.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error updating hash code:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update device limit.",
         variant: "destructive"
       });
     } finally {
@@ -204,6 +265,18 @@ export default function DeckUpload() {
           variant: "destructive"
         });
       });
+  };
+
+  // Start editing the max devices limit
+  const startEditMaxDevices = (hashCode: HashCode) => {
+    setEditingHashId(hashCode.id);
+    setEditMaxDevices(hashCode.maxDevices.toString());
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingHashId(null);
+    setEditMaxDevices('1');
   };
 
   return (
@@ -292,7 +365,7 @@ export default function DeckUpload() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm p-6 border">
               <h2 className="text-xl font-semibold mb-4">Create Access Link</h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-col sm:flex-row">
                 <div className="flex-1">
                   <Input
                     placeholder="Enter name or organization"
@@ -300,12 +373,32 @@ export default function DeckUpload() {
                     onChange={(e) => setNewHashName(e.target.value)}
                   />
                 </div>
+                <div className="w-full sm:w-40">
+                  <Select 
+                    value={newMaxDevices} 
+                    onValueChange={setNewMaxDevices}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Max Devices" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Device</SelectItem>
+                      <SelectItem value="2">2 Devices</SelectItem>
+                      <SelectItem value="3">3 Devices</SelectItem>
+                      <SelectItem value="5">5 Devices</SelectItem>
+                      <SelectItem value="10">10 Devices</SelectItem>
+                      <SelectItem value="25">25 Devices</SelectItem>
+                      <SelectItem value="50">50 Devices</SelectItem>
+                      <SelectItem value="100">100 Devices</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button onClick={createHashCode} disabled={isLoading || !newHashName.trim()}>
                   <Plus className="h-4 w-4 mr-2" /> Create
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Create a unique access link for a person or organization to view the deck.
+                Create a unique access link with device limit for a person or organization to view the deck.
               </p>
             </div>
             
@@ -330,6 +423,7 @@ export default function DeckUpload() {
                       <TableHead>Name</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead>Views</TableHead>
+                      <TableHead>Device Limit</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -343,6 +437,58 @@ export default function DeckUpload() {
                           {new Date(hashCode.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>{hashCode.devices.length}</TableCell>
+                        <TableCell>
+                          {editingHashId === hashCode.id ? (
+                            <div className="flex gap-2 items-center">
+                              <Select 
+                                value={editMaxDevices} 
+                                onValueChange={setEditMaxDevices}
+                              >
+                                <SelectTrigger className="w-24">
+                                  <SelectValue placeholder="Limit" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">1</SelectItem>
+                                  <SelectItem value="2">2</SelectItem>
+                                  <SelectItem value="3">3</SelectItem>
+                                  <SelectItem value="5">5</SelectItem>
+                                  <SelectItem value="10">10</SelectItem>
+                                  <SelectItem value="25">25</SelectItem>
+                                  <SelectItem value="50">50</SelectItem>
+                                  <SelectItem value="100">100</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => updateMaxDevices(hashCode.id, parseInt(editMaxDevices, 10))}
+                                >
+                                  Save
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={cancelEdit}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <span className="mr-2">{hashCode.maxDevices || 1}</span>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 w-6 p-0"
+                                onClick={() => startEditMaxDevices(hashCode)}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button 
