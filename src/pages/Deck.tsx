@@ -55,6 +55,15 @@ export default function Deck() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const deckContainerRef = useRef<HTMLDivElement>(null);
   
+  // Apply body class for black background
+  useEffect(() => {
+    document.body.classList.add('deck-page');
+    
+    return () => {
+      document.body.classList.remove('deck-page');
+    };
+  }, []);
+  
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,7 +164,7 @@ export default function Deck() {
               <p>No slides available.</p>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-6 py-6">
+            <div className="flex flex-col items-center gap-[3px] py-6">
               {state.slides.map((slide, index) => (
                 <div key={slide.id} className="w-full max-w-[90vw]">
                   <div className="relative">
@@ -164,9 +173,6 @@ export default function Deck() {
                       alt={`Slide ${slide.order + 1}`}
                       className="w-full object-contain"
                     />
-                    <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
-                      {slide.order + 1}
-                    </div>
                   </div>
                 </div>
               ))}
