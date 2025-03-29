@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useDeckState } from '@/hooks/useDeckState';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, Trash2, Upload, Copy, Plus, RefreshCw, Edit } from 'lucide-react';
+import { ArrowUp, ArrowDown, Trash2, Upload, Copy, Plus, RefreshCw, Edit, FileType } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -45,11 +45,13 @@ interface HashCode {
 
 export default function DeckUpload() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   const { state, addSlides, removeSlide, moveSlideUp, moveSlideDown } = useDeckState();
   const [hashCodes, setHashCodes] = useState<HashCode[]>([]);
   const [newHashName, setNewHashName] = useState('');
   const [newMaxDevices, setNewMaxDevices] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [editingHashId, setEditingHashId] = useState<string | null>(null);
   const [editMaxDevices, setEditMaxDevices] = useState('1');
 
@@ -82,8 +84,89 @@ export default function DeckUpload() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handlePdfChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const pdfFile = files[0];
+    
+    // Check if the file is a PDF
+    if (pdfFile.type !== 'application/pdf') {
+      toast({
+        title: "Error",
+        description: "Only PDF files are allowed for conversion.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsPdfLoading(true);
+    
+    try {
+      // Create FormData to send the file
+      const formData = new FormData();
+      formData.append('file', pdfFile);
+      
+      // Upload the PDF for conversion
+      const response = await fetch('/api/convert-pdf.php', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error + (data.details ? `: ${data.details}` : ''));
+      }
+      
+      if (data.success && data.slides && data.slides.length > 0) {
+        // Create file objects for each converted slide
+        const slideFiles = data.slides.map((path: string, index: number) => {
+          // Create a custom File-like object
+          return {
+            name: `pdf-slide-${index + 1}.jpg`,
+            // We'll use a trick here - since we can't create a real File object from a server path,
+            // we'll create an empty blob but store the server path separately
+            blob: new Blob([], { type: 'image/jpeg' }),
+            serverPath: path
+          };
+        });
+        
+        // Add slides with server paths
+        addSlides(slideFiles);
+        
+        toast({
+          title: "Success",
+          description: `PDF converted to ${data.totalSlides} slides successfully.`
+        });
+      } else {
+        throw new Error("No slides were generated from the PDF");
+      }
+    } catch (error) {
+      console.error('PDF conversion error:', error);
+      toast({
+        title: "PDF Conversion Failed",
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setIsPdfLoading(false);
+      
+      // Reset the input
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+    }
+  };
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+  
+  const handlePdfUploadClick = () => {
+    pdfInputRef.current?.click();
   };
   
   // Fetch hash codes from the server
@@ -299,18 +382,37 @@ export default function DeckUpload() {
               onChange={handleFileChange}
               className="hidden"
             />
-            <Button onClick={handleUploadClick} className="mb-4">
-              <Upload className="mr-2 h-4 w-4" /> Upload JPG Slides
-            </Button>
+            <input
+              type="file"
+              ref={pdfInputRef}
+              accept=".pdf"
+              onChange={handlePdfChange}
+              className="hidden"
+            />
+            
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <Button onClick={handleUploadClick} className="flex-1">
+                <Upload className="mr-2 h-4 w-4" /> Upload JPG Slides
+              </Button>
+              <Button 
+                onClick={handlePdfUploadClick} 
+                variant="outline" 
+                className="flex-1"
+                disabled={isPdfLoading}
+              >
+                <FileType className="mr-2 h-4 w-4" /> 
+                {isPdfLoading ? "Converting PDF..." : "Convert PDF to Slides"}
+              </Button>
+            </div>
             
             <p className="text-sm text-muted-foreground mb-4">
-              Upload JPG files to create slides. Drag and reorder them as needed.
+              Upload JPG files or a PDF document to create slides. Drag and reorder them as needed.
             </p>
           </div>
 
           {state.slides.length === 0 ? (
             <div className="text-center p-12 border border-dashed rounded-lg">
-              <p className="text-muted-foreground">No slides uploaded yet. Upload some JPG files to get started.</p>
+              <p className="text-muted-foreground">No slides uploaded yet. Upload some JPG files or a PDF to get started.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

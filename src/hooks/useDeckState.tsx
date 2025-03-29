@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Slide, SlideState } from '@/types/slide';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,12 +8,13 @@ const API_ENDPOINTS = {
   UPLOAD: '/api/upload-slide.php',
   UPDATE_ORDER: '/api/update-slides-order.php',
   GET_SLIDES: '/api/get-slides.php',
-  DELETE_SLIDE: '/api/delete-slide.php'
+  DELETE_SLIDE: '/api/delete-slide.php',
+  CONVERT_PDF: '/api/convert-pdf.php'
 };
 
 export function useDeckState(): {
   state: SlideState;
-  addSlides: (files: File[]) => void;
+  addSlides: (files: File[] | any[]) => void;
   removeSlide: (id: string) => void;
   moveSlideUp: (id: string) => void;
   moveSlideDown: (id: string) => void;
@@ -144,9 +144,21 @@ export function useDeckState(): {
   }, [state.slides, isInitialized]);
 
   // Add new slides
-  const addSlides = async (files: File[]) => {
+  const addSlides = async (files: File[] | any[]) => {
     // First, create temporary slides with local URLs for immediate display
     const tempSlides = Array.from(files).map((file, index) => {
+      // Check if this is a pre-converted slide with serverPath
+      if (file.serverPath) {
+        return {
+          id: uuidv4(),
+          file: null,
+          imageUrl: file.serverPath,
+          serverPath: file.serverPath,
+          order: state.slides.length + index
+        };
+      }
+      
+      // Otherwise, process as a regular file
       const localImageUrl = URL.createObjectURL(file);
       return {
         id: uuidv4(),
@@ -162,8 +174,16 @@ export function useDeckState(): {
       slides: [...prevState.slides, ...tempSlides].sort((a, b) => a.order - b.order)
     }));
     
+    // Filter out slides that already have server paths (e.g., from PDF conversion)
+    const slidesToUpload = tempSlides.filter(slide => !slide.serverPath && slide.file);
+    
+    if (slidesToUpload.length === 0) {
+      // If all slides already have server paths, we're done
+      return;
+    }
+    
     // Upload each file to the server
-    const uploadPromises = tempSlides.map(async (slide, index) => {
+    const uploadPromises = slidesToUpload.map(async (slide, index) => {
       if (!slide.file) return null;
       
       const formData = new FormData();
@@ -207,7 +227,7 @@ export function useDeckState(): {
     // Wait for all uploads to complete
     const results = await Promise.all(uploadPromises);
     const successfulUploads = results.filter(Boolean);
-    const failedUploads = files.length - successfulUploads.length;
+    const failedUploads = slidesToUpload.length - successfulUploads.length;
     
     if (successfulUploads.length > 0) {
       // Update state with server paths
@@ -233,16 +253,16 @@ export function useDeckState(): {
       if (failedUploads > 0) {
         toast({
           title: "Partial upload success",
-          description: `${successfulUploads.length} of ${files.length} slides uploaded successfully. ${failedUploads} failed.`,
+          description: `${successfulUploads.length} of ${slidesToUpload.length} slides uploaded successfully. ${failedUploads} failed.`,
           variant: "destructive"
         });
-      } else {
+      } else if (slidesToUpload.length > 0) {
         toast({
           title: "Success",
           description: `${successfulUploads.length} slides uploaded successfully.`,
         });
       }
-    } else if (files.length > 0) {
+    } else if (slidesToUpload.length > 0) {
       toast({
         title: "Upload failed",
         description: "Failed to upload slides to server. Using local storage as fallback. Check console for details.",
