@@ -9,10 +9,44 @@ import {
   Sidebar, 
   SidebarContent, 
   SidebarTrigger,
-  SidebarInset
+  SidebarInset,
+  useSidebar
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ChevronsLeft, ChevronsRight, Maximize, Minimize } from 'lucide-react';
+
+// Helper to detect iOS
+function isIOS() {
+  return [
+    'iPad Simulator',
+    'iPhone Simulator',
+    'iPod Simulator',
+    'iPad',
+    'iPhone',
+    'iPod'
+  ].includes(navigator.platform)
+  // iPad on iOS 13 detection
+  || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+}
+
+// Component for fullscreen button that only shows on non-iOS devices
+function FullscreenButton({ onClick, isFullscreen }) {
+  // Don't render on iOS
+  if (isIOS()) {
+    return null;
+  }
+  
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={onClick}
+      className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+    >
+      {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+    </Button>
+  );
+}
 
 export default function Deck() {
   const { state, goToNextSlide, goToPrevSlide, goToSlide } = useDeckState();
@@ -119,14 +153,7 @@ export default function Deck() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleFullscreen}
-            className="bg-black/50 text-white border-white/20 hover:bg-black/70"
-          >
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-          </Button>
+          <FullscreenButton isFullscreen={isFullscreen} onClick={toggleFullscreen} />
         </div>
         
         {state.slides.length === 0 ? (
@@ -145,10 +172,30 @@ export default function Deck() {
               )}
             </div>
             
-            <div className="p-4 w-full flex justify-center items-center">
+            <div className="p-4 w-full flex justify-center items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={goToPrevSlide}
+                disabled={state.currentSlideIndex === 0}
+                className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+                size="sm"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              
               <div className="text-white bg-black/50 px-3 py-2 rounded-md">
                 {state.currentSlideIndex + 1} / {state.slides.length}
               </div>
+              
+              <Button
+                variant="outline"
+                onClick={goToNextSlide}
+                disabled={state.currentSlideIndex === state.slides.length - 1}
+                className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+                size="sm"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
             </div>
           </>
         )}
@@ -156,100 +203,109 @@ export default function Deck() {
     );
   }
   
-  // Desktop view with sidebar
+  // Desktop view with sidebar and fullscreen handling
   return (
     <SidebarProvider>
-      <div className="flex w-full min-h-screen" ref={deckContainerRef}>
-        <Sidebar>
-          <SidebarContent>
-            <div className="p-4">
-              <h2 className="text-lg font-semibold mb-4">Slides</h2>
-              <ScrollArea className="h-[calc(100vh-100px)]">
-                <div className="space-y-2 pr-2">
-                  {state.slides.map((slide, index) => (
-                    <Card 
-                      key={slide.id}
-                      className={`
-                        overflow-hidden cursor-pointer transition-all
-                        ${index === state.currentSlideIndex ? 'ring-2 ring-primary' : ''}
-                      `}
-                      onClick={() => goToSlide(index)}
-                    >
-                      <div className="relative aspect-video">
-                        <img
-                          src={slide.imageUrl}
-                          alt={`Slide ${slide.order + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
-                          {slide.order + 1}
+      <FullscreenAwareSidebar isFullscreen={isFullscreen}>
+        <div className="flex w-full min-h-screen" ref={deckContainerRef}>
+          <Sidebar>
+            <SidebarContent>
+              <div className="p-4">
+                <h2 className="text-lg font-semibold mb-4">Slides</h2>
+                <ScrollArea className="h-[calc(100vh-100px)]">
+                  <div className="space-y-2 pr-2">
+                    {state.slides.map((slide, index) => (
+                      <Card 
+                        key={slide.id}
+                        className={`
+                          overflow-hidden cursor-pointer transition-all
+                          ${index === state.currentSlideIndex ? 'ring-2 ring-primary' : ''}
+                        `}
+                        onClick={() => goToSlide(index)}
+                      >
+                        <div className="relative aspect-video">
+                          <img
+                            src={slide.imageUrl}
+                            alt={`Slide ${slide.order + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+                            {slide.order + 1}
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
-          </SidebarContent>
-        </Sidebar>
-        
-        <SidebarInset className="bg-black relative">
-          <div className="absolute top-2 left-2 z-10">
-            <SidebarTrigger />
-          </div>
-          
-          <div className="absolute top-2 right-2 z-10">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleFullscreen}
-              className="bg-black/50 text-white border-white/20 hover:bg-black/70"
-            >
-              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-            </Button>
-          </div>
-          
-          <div className="flex items-center justify-center h-full w-full relative">
-            {state.slides.length === 0 ? (
-              <div className="text-white text-center p-4">
-                <p>No slides available.</p>
-              </div>
-            ) : (
-              <>
-                {currentSlide && (
-                  <img 
-                    src={currentSlide.imageUrl} 
-                    alt={`Slide ${currentSlide.order + 1}`}
-                    className="max-w-full max-h-[90vh] object-contain"
-                  />
-                )}
-                
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center space-x-4">
-                  <Button
-                    variant="outline"
-                    onClick={goToPrevSlide}
-                    disabled={state.currentSlideIndex === 0}
-                    className="bg-black/50 text-white border-white/20 hover:bg-black/70"
-                  >
-                    <ChevronsLeft className="h-4 w-4 mr-1" /> Previous
-                  </Button>
-                  <div className="text-white bg-black/50 px-3 py-2 rounded-md">
-                    {state.currentSlideIndex + 1} / {state.slides.length}
+                      </Card>
+                    ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={goToNextSlide}
-                    disabled={state.currentSlideIndex === state.slides.length - 1}
-                    className="bg-black/50 text-white border-white/20 hover:bg-black/70"
-                  >
-                    Next <ChevronsRight className="h-4 w-4 ml-1" />
-                  </Button>
+                </ScrollArea>
+              </div>
+            </SidebarContent>
+          </Sidebar>
+          
+          <SidebarInset className="bg-black relative">
+            <div className="absolute top-2 left-2 z-10">
+              <SidebarTrigger />
+            </div>
+            
+            <div className="absolute top-2 right-2 z-10">
+              <FullscreenButton isFullscreen={isFullscreen} onClick={toggleFullscreen} />
+            </div>
+            
+            <div className="flex items-center justify-center h-full w-full relative">
+              {state.slides.length === 0 ? (
+                <div className="text-white text-center p-4">
+                  <p>No slides available.</p>
                 </div>
-              </>
-            )}
-          </div>
-        </SidebarInset>
-      </div>
+              ) : (
+                <>
+                  {currentSlide && (
+                    <img 
+                      src={currentSlide.imageUrl} 
+                      alt={`Slide ${currentSlide.order + 1}`}
+                      className="max-w-full max-h-[90vh] object-contain"
+                    />
+                  )}
+                  
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center space-x-4">
+                    <Button
+                      variant="outline"
+                      onClick={goToPrevSlide}
+                      disabled={state.currentSlideIndex === 0}
+                      className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+                    >
+                      <ChevronsLeft className="h-4 w-4 mr-1" /> Previous
+                    </Button>
+                    <div className="text-white bg-black/50 px-3 py-2 rounded-md">
+                      {state.currentSlideIndex + 1} / {state.slides.length}
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={goToNextSlide}
+                      disabled={state.currentSlideIndex === state.slides.length - 1}
+                      className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+                    >
+                      Next <ChevronsRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </SidebarInset>
+        </div>
+      </FullscreenAwareSidebar>
     </SidebarProvider>
   );
+}
+
+// Component to handle sidebar state based on fullscreen status
+function FullscreenAwareSidebar({ children, isFullscreen }) {
+  const { setOpen } = useSidebar();
+  
+  // Close sidebar when entering fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      setOpen(false);
+    }
+  }, [isFullscreen, setOpen]);
+  
+  return <>{children}</>;
 }
