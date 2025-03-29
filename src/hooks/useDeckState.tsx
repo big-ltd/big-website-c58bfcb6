@@ -4,7 +4,7 @@ import { Slide, SlideState } from '@/types/slide';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 
-// API endpoints - use relative paths for cross-environment compatibility
+// API endpoints
 const API_ENDPOINTS = {
   UPLOAD: '/api/upload-slide.php',
   UPDATE_ORDER: '/api/update-slides-order.php',
