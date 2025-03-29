@@ -50,6 +50,19 @@ function FullscreenButton({ onClick, isFullscreen }) {
   );
 }
 
+// Component to display the hash watermark
+function HashWatermark({ hash }) {
+  if (!hash) return null;
+  
+  return (
+    <div className="absolute top-4 left-0 right-0 flex justify-center z-10 pointer-events-none">
+      <div className="text-white opacity-50 text-[0.4rem]">
+        {hash}
+      </div>
+    </div>
+  );
+}
+
 export default function Deck() {
   const { state, goToNextSlide, goToPrevSlide, goToSlide } = useDeckState();
   const isMobile = useIsMobile();
@@ -57,6 +70,7 @@ export default function Deck() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const deckContainerRef = useRef<HTMLDivElement>(null);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [currentHash, setCurrentHash] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -80,6 +94,8 @@ export default function Deck() {
         setIsAuthorized(false);
         return;
       }
+      
+      setCurrentHash(hash);
       
       try {
         // Check if user has a cookie for this hash already
@@ -246,7 +262,10 @@ export default function Deck() {
   // Mobile view - show all slides stacked vertically
   if (isMobile) {
     return (
-      <div className="w-full min-h-screen bg-black overflow-y-auto">
+      <div className="w-full min-h-screen bg-black overflow-y-auto relative">
+        {/* Hash watermark at the top of the page */}
+        <HashWatermark hash={currentHash} />
+        
         <div className="pb-12">
           {state.slides.length === 0 ? (
             <div className="text-white text-center p-4">
@@ -318,6 +337,9 @@ export default function Deck() {
             <div className="absolute top-2 right-2 z-10">
               <FullscreenButton isFullscreen={isFullscreen} onClick={toggleFullscreen} />
             </div>
+            
+            {/* Hash watermark in the desktop view */}
+            <HashWatermark hash={currentHash} />
             
             <div className="flex items-center justify-center h-full w-full relative">
               {state.slides.length === 0 ? (
