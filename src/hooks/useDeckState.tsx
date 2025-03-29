@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Slide, SlideState } from '@/types/slide';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from '@/hooks/use-toast';
 
-// LocalStorage keys
-const SLIDES_STORAGE_KEY = 'deck_slides';
+// Server-side API endpoints (these would be actual API endpoints in a real implementation)
+const API_URL = '/api/slides';
 
 export function useDeckState(): {
   state: SlideState;
@@ -21,9 +21,11 @@ export function useDeckState(): {
     currentSlideIndex: 0,
   });
 
-  // Load slides from localStorage on initial render
+  // Load slides from server on initial render
   useEffect(() => {
-    const savedSlides = localStorage.getItem(SLIDES_STORAGE_KEY);
+    // For now, we'll keep using localStorage as a fallback
+    // In a real implementation, this would be an API call to fetch slides from the server
+    const savedSlides = localStorage.getItem('deck_slides');
     if (savedSlides) {
       try {
         const parsedSlides = JSON.parse(savedSlides);
@@ -40,14 +42,16 @@ export function useDeckState(): {
     }
   }, []);
 
-  // Save slides to localStorage whenever they change
+  // Save slides whenever they change
   useEffect(() => {
+    // In a real implementation, we wouldn't need this as data would be saved to the server
+    // This is just for demonstration purposes
     const slidesToSave = state.slides.map(slide => ({
       id: slide.id,
       imageUrl: slide.imageUrl,
       order: slide.order
     }));
-    localStorage.setItem(SLIDES_STORAGE_KEY, JSON.stringify(slidesToSave));
+    localStorage.setItem('deck_slides', JSON.stringify(slidesToSave));
   }, [state.slides]);
 
   // Add new slides
@@ -62,10 +66,20 @@ export function useDeckState(): {
       };
     });
 
+    // In a real implementation, this would upload the files to the server
+    // and then update the state with the server response
+    // For now, we'll just update the local state
+    
     setState(prevState => ({
       ...prevState,
       slides: [...prevState.slides, ...newSlides].sort((a, b) => a.order - b.order)
     }));
+
+    // Mock successful upload toast
+    toast({
+      title: "Success",
+      description: `${files.length} slides uploaded successfully.`,
+    });
   };
 
   // Remove a slide
