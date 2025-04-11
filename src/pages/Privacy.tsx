@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ const Privacy = () => {
         
         <div className="prose prose-invert max-w-none">
           <p className="text-gray-300 mb-4">
-            B.I.G Berry Interactive Games Ltd. and/or its group companies, (collectively referred to as "BIG") has adopted this privacy policy ("Privacy Policy") to explain how BIG collects, stores, and uses the information collected in connection with BIG's products and services.
+            Big Ltd and/or its group companies, (collectively referred to as "BIG") has adopted this privacy policy ("Privacy Policy") to explain how BIG collects, stores, and uses the information collected in connection with BIG's products and services.
           </p>
           
           <p className="text-gray-300 mb-4">BIG's services include</p>

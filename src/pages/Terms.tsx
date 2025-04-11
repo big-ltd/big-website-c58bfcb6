@@ -23,7 +23,7 @@ const Terms = () => {
         <div className="prose prose-invert max-w-none">
           <p className="text-gray-300">Last updated: January 01, 2021</p>
           <p className="text-gray-300 mt-6">
-            These Terms of Service ("Terms", "Terms of Service", "Terms and Conditions") govern your relationship with Match Story, our mobile application (the "Service") operated by B.I.G BERRY INTERACTIVE GAMES LTD. ("BIG", "us", "we", or "our").
+            These Terms of Service ("Terms", "Terms of Service", "Terms and Conditions") govern your relationship with Match Story, our mobile application (the "Service") operated by Big Ltd ("BIG", "us", "we", or "our").
           </p>
           <p className="text-gray-300 mt-4">
             Please read these Terms and Conditions carefully before using any of our mobile applications.
