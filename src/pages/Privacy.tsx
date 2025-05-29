@@ -27,7 +27,7 @@ const Privacy = () => {
           
           <p className="text-gray-300 mb-4">BIG's services include</p>
           <ul className="list-disc pl-6 mb-4 text-gray-300">
-            <li>Company website (https://www.big-ltd.com);</li>
+            <li>Company website (https://www.big.com.cy);</li>
             <li>Match Story mobile application on iOS and Android.</li>
           </ul>
           
@@ -135,7 +135,7 @@ const Privacy = () => {
           
           <h2 className="text-2xl font-bold mb-4">How to Reach Us</h2>
           <p className="text-gray-300 mb-8">
-            If you have a question about this Privacy Policy, or you would like to contact us about any of the rights mentioned in the Your Rights section above, please contact us by sending an email to support@big-ltd.com
+            If you have a question about this Privacy Policy, or you would like to contact us about any of the rights mentioned in the Your Rights section above, please contact us by sending an email to support@big.com.cy
           </p>
           
           <h2 className="text-2xl font-bold mb-4">Transferring Information</h2>

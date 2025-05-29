@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -123,7 +124,7 @@ const Terms = () => {
 
           <h2 className="text-2xl font-bold mt-10 mb-4">Contact Us</h2>
           <p className="text-gray-300">
-            If you have any questions about these Terms, please contact us at <a href="mailto:contact@big-ltd.com" className="text-primary hover:underline">contact@big-ltd.com</a>.
+            If you have any questions about these Terms, please contact us at <a href="mailto:contact@big.com.cy" className="text-primary hover:underline">contact@big.com.cy</a>.
           </p>
         </div>
       </div>
