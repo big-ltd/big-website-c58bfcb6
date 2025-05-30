@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -35,7 +34,7 @@ const Footer = () => {
             <div className="mb-5">
               <img 
                 src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
-                alt="BIG Logo" 
+                alt="big Logo" 
                 className="h-16" 
               />
             </div>
@@ -82,7 +81,7 @@ const Footer = () => {
         <div className="border-t border-gray-800 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} Big Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} big Ltd. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">

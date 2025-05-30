@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowRight, Zap, Clock, Lock, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,7 +50,7 @@ const FeaturesSection = () => {
           
           <div className="w-full lg:w-1/2 order-1 lg:order-2">
             <h2 className="title-text mb-6">
-              Why Choose <span className="gradient-text">BIG LTD</span>
+              Why Choose <span className="gradient-text">big ltd</span>
             </h2>
             <p className="subtitle-text mb-6">
               With years of experience in the digital industry, we've helped hundreds of businesses transform their digital presence. Our team of experts is committed to delivering exceptional results.
