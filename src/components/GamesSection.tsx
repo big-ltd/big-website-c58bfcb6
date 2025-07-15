@@ -24,7 +24,7 @@ const GamesSection = () => {
                   Match Story
                 </h3>
                 <p className="text-gray-700 mb-6 text-xl md:text-2xl">
-                  Come play Match Story, a free match-3 puzzle adventure - where every tap brings a new scene to life!
+                  Miss Victoria needs your help to match tiles and solve dramas!
                 </p>
                 <div className="flex flex-wrap items-center gap-4 mt-4">
                   <a 
