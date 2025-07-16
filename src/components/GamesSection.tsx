@@ -21,9 +21,11 @@ const GamesSection = () => {
                     alt="Match Tiles" 
                     className="h-24 w-24 md:h-32 md:w-32 lg:h-40 lg:w-40 rounded-[20%] mb-3" 
                   />
-                  <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-center">
-                    Match Story
-                  </h3>
+                  <div className="max-w-[5.4rem] md:max-w-[7.2rem] lg:max-w-[9rem]">
+                    <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-center">
+                      Match Story
+                    </h3>
+                  </div>
                 </div>
                 <p className="text-gray-700 mb-6 text-xl md:text-2xl">
                   Miss Victoria needs your help to match tiles and solve dramas!
