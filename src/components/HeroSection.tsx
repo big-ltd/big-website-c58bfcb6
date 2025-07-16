@@ -9,9 +9,6 @@ const HeroSection = () => {
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 tracking-tight">
           Moments of joy
         </h1>
-        <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          big is a mobile gaming company. Our mission is to deliver joy and inspire fandom.
-        </p>
       </div>
       
       {/* Container with max height and anchored to top */}
