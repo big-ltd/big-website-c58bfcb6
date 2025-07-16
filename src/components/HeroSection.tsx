@@ -9,7 +9,7 @@ const HeroSection = () => {
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 tracking-tight">
           MOMENTS OF JOY
         </h1>
-        <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed bg-gray-50/90 dark:bg-gray-900/90 px-6 py-4 rounded-lg">
           We make fun games that stay with you.
         </p>
       </div>
