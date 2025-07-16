@@ -7,8 +7,11 @@ const HeroSection = () => {
       {/* Text content */}
       <div className="text-center px-4 py-12 md:py-16">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 tracking-tight">
-          Moments of joy
+          MOMENTS OF JOY
         </h1>
+        <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          We make games players come back to — original, character-rich, and built to last.
+        </p>
       </div>
       
       {/* Container with max height and anchored to top */}

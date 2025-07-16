@@ -24,7 +24,11 @@ const NavBar = () => {
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    scrollToSection(id);
+    if (id === 'about') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      scrollToSection(id);
+    }
     if (isOpen) setIsOpen(false);
   };
 
