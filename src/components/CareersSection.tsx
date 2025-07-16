@@ -5,10 +5,8 @@ const CareersSection = () => {
   return (
     <section id="careers" className="bg-gray-50 pt-10 md:pt-14 pb-4">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-2">
-          <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
-            <span className="text-primary font-medium">Careers</span>
-          </div>
+        <div className="text-center mb-8 mt-12">
+          <h2 className="text-2xl md:text-3xl font-bold">CAREERS</h2>
         </div>
         
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 bg-white rounded-xl p-6 shadow-sm">
