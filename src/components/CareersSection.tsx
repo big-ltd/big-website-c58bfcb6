@@ -5,7 +5,7 @@ const CareersSection = () => {
   return (
     <section id="careers" className="bg-gray-50 pt-10 md:pt-14 pb-4">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8 mt-12">
+        <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold">CAREERS</h2>
         </div>
         
