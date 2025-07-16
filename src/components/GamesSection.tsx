@@ -19,7 +19,7 @@ const GamesSection = () => {
                   <img 
                     src="/lovable-uploads/998529a0-5470-4fba-afbc-918f75b9961e.png" 
                     alt="Match Tiles" 
-                    className="mr-4 h-24 w-24" 
+                    className="mr-4 h-24 w-24 rounded-[20%]" 
                   />
                   Match Story
                 </h3>
