@@ -10,7 +10,7 @@ const HeroSection = () => {
           MOMENTS OF JOY
         </h1>
         <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          We make games players come back to — original, character-rich, and built to last.
+          We make fun games that stay with you.
         </p>
       </div>
       
