@@ -5,10 +5,8 @@ const GamesSection = () => {
   return (
     <section id="games" className="bg-gray-50 dark:bg-gray-900 pt-[-8px] pb-0">
       <div className="container px-4 mx-auto">
-        <div className="text-center mb-2">
-          <div className="inline-block mb-3 px-4 py-1 bg-primary/10 rounded-full">
-            <span className="text-primary font-medium">Our Games</span>
-          </div>
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold">Our Games</h2>
         </div>
         
         <div className="game-content max-w-4xl mx-auto">
