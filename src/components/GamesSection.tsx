@@ -21,8 +21,8 @@ const GamesSection = () => {
                     alt="Match Tiles" 
                     className="h-24 w-24 md:h-32 md:w-32 lg:h-40 lg:w-40 rounded-[20%] mb-3" 
                   />
-                  <div className="max-w-[5.4rem] md:max-w-[8.5rem] lg:max-w-[10.5rem]">
-                    <h3 className="text-sm md:text-lg lg:text-xl font-bold text-center whitespace-nowrap">
+                  <div className="max-w-[5.4rem] md:max-w-[7.2rem] lg:max-w-[9rem]">
+                    <h3 className="text-sm md:text-base lg:text-lg font-bold text-center whitespace-nowrap">
                       Match Story
                     </h3>
                   </div>
