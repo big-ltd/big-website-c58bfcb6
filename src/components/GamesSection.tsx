@@ -15,14 +15,16 @@ const GamesSection = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-2">
             <div className="w-full md:w-1/2 order-2 md:order-1 mt-8 md:mt-0">
               <div className="md:pr-0">
-                <h3 className="text-2xl font-bold mb-4 flex items-center">
+                <div className="flex flex-col items-center mb-4">
                   <img 
                     src="/lovable-uploads/998529a0-5470-4fba-afbc-918f75b9961e.png" 
                     alt="Match Tiles" 
-                    className="mr-4 h-24 w-24 rounded-[20%]" 
+                    className="h-24 w-24 md:h-32 md:w-32 lg:h-40 lg:w-40 rounded-[20%] mb-3" 
                   />
-                  Match Story
-                </h3>
+                  <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-center">
+                    Match Story
+                  </h3>
+                </div>
                 <p className="text-gray-700 mb-6 text-xl md:text-2xl">
                   Miss Victoria needs your help to match tiles and solve dramas!
                 </p>
