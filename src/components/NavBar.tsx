@@ -69,13 +69,6 @@ const NavBar = () => {
             >
               Careers
             </a>
-            <a 
-              href="#contact" 
-              className="text-white/80 hover:text-white transition-colors text-lg"
-              onClick={(e) => handleNavClick(e, 'contact')}
-            >
-              Contact
-            </a>
           </nav>
 
           <button 
@@ -112,13 +105,6 @@ const NavBar = () => {
             onClick={(e) => handleNavClick(e, 'careers')}
           >
             Careers
-          </a>
-          <a 
-            href="#contact" 
-            className="py-2 text-white/80 hover:text-white text-lg" 
-            onClick={(e) => handleNavClick(e, 'contact')}
-          >
-            Contact
           </a>
         </div>
       </div>
