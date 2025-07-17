@@ -31,7 +31,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gray-900 text-white mt-2.5">
+    <footer className="bg-white text-foreground mt-2.5">
       <div className="container mx-auto px-4 pt-12 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div>
@@ -42,58 +42,61 @@ const Footer = () => {
                 className="h-10" 
               />
             </div>
-            <div className="text-lg text-gray-300 border-l-4 border-primary/60 pl-4 py-2 font-arial">
+            <div className="text-xs text-foreground/80 border-l-4 border-primary/60 pl-4 py-2 font-arial">
               <div dangerouslySetInnerHTML={{ __html: quote }} />
             </div>
           </div>
           
           <div>
-            <h4 className="font-bold text-lg mb-5">Company</h4>
             <ul className="space-y-3">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                <a href="#about" className="text-foreground/60 hover:text-foreground transition-colors flex items-center"
                    onClick={(e) => handleNavClick(e, 'about')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   About
                 </a>
               </li>
               <li>
-                <a href="#games" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                <a href="#games" className="text-foreground/60 hover:text-foreground transition-colors flex items-center"
                    onClick={(e) => handleNavClick(e, 'games')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Games
                 </a>
               </li>
               <li>
-                <a href="#careers" className="text-gray-400 hover:text-white transition-colors flex items-center"
+                <a href="#careers" className="text-foreground/60 hover:text-foreground transition-colors flex items-center"
                    onClick={(e) => handleNavClick(e, 'careers')}>
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Careers
                 </a>
               </li>
               <li>
-                <a href="mailto:contact@big.com.cy" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="mailto:contact@big.com.cy" className="text-foreground/60 hover:text-foreground transition-colors flex items-center">
                   <ChevronRight className="h-4 w-4 mr-1" />
                   Contact
                 </a>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-foreground/60 hover:text-foreground transition-colors flex items-center">
+                  <ChevronRight className="h-4 w-4 mr-1" />
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-foreground/60 hover:text-foreground transition-colors flex items-center">
+                  <ChevronRight className="h-4 w-4 mr-1" />
+                  Terms of Service
+                </Link>
               </li>
             </ul>
           </div>
         </div>
         
-        <div className="border-t border-gray-800 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} big Ltd. All rights reserved.
+        <div className="border-t border-foreground/20 pt-6">
+          <div className="flex justify-center">
+            <p className="text-foreground/60 text-sm">
+              &copy; 2025 big
             </p>
-            <div className="flex space-x-6">
-              <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Privacy Policy
-              </Link>
-              <Link to="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Terms of Service
-              </Link>
-            </div>
           </div>
         </div>
       </div>
