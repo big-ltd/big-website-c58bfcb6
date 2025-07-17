@@ -92,8 +92,7 @@ const CharacterCards = () => {
               <img 
                 src={character.image} 
                 alt={`Character ${index + 1}`}
-                className="w-full h-64 object-cover"
-                style={{ aspectRatio: '1/1' }}
+                className="w-full object-contain"
               />
             </div>
             
