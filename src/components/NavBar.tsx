@@ -8,19 +8,43 @@ import { scrollToSection } from '@/utils/scrollUtils';
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
+      const currentScrollY = window.scrollY;
+      const scrollDiff = Math.abs(currentScrollY - lastScrollY);
+      const scrollSpeed = scrollDiff;
+      
+      // Only apply hide/show logic after scrolling past initial area
+      if (currentScrollY > 100) {
+        // Hide when scrolling down with sufficient speed
+        if (currentScrollY > lastScrollY && scrollSpeed > 5) {
+          setIsVisible(false);
+        }
+        // Show when scrolling up with sufficient speed
+        else if (currentScrollY < lastScrollY && scrollSpeed > 5) {
+          setIsVisible(true);
+        }
+      } else {
+        // Always show navbar when at top
+        setIsVisible(true);
+      }
+
+      // Update scrolled state for styling
+      if (currentScrollY > 10) {
         setScrolled(true);
       } else {
         setScrolled(false);
       }
+
+      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -37,7 +61,10 @@ const NavBar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white">
+    <header className={cn(
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white",
+      isVisible ? "translate-y-0" : "-translate-y-full"
+    )}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Invisible placeholder for mobile to balance hamburger menu */}
