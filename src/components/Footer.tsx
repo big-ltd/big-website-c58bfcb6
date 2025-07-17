@@ -37,7 +37,7 @@ const Footer = () => {
           <div>
             <div className="mb-5">
               <img 
-                src="/lovable-uploads/2cf42ed0-f6e4-4dfe-86bf-e7063fa5e246.png" 
+                src="/lovable-uploads/942a296a-371c-447d-9a57-f8394e6ff791.png" 
                 alt="big Logo" 
                 className="h-10" 
               />
