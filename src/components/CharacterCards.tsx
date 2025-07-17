@@ -12,7 +12,7 @@ const characters = [
     text: "King Cedric now rules with heart, not just a crown."
   },
   {
-    image: "/lovable-uploads/14d9c404-357a-4e03-acf3-12ee3af8378f.png",
+    image: "/lovable-uploads/36251085-fce7-4d1e-8d9b-0f4e874255ca.png",
     text: "Baker Florence bakes with kindness—and enchanted yeast."
   },
   {
