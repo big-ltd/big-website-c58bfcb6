@@ -16,7 +16,7 @@ const characters = [
     text: "Baker Florence bakes with kindness—and enchanted yeast."
   },
   {
-    image: "/lovable-uploads/2847db9a-5eb4-4f9a-8f71-a350263b82f0.png",
+    image: "/lovable-uploads/dc715bbb-a793-4f51-9a14-8d8260e75867.png",
     text: "Innkeeper Jasper makes every guest feel right at home."
   },
   {
