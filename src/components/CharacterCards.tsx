@@ -50,14 +50,14 @@ const CharacterCards = () => {
         {characters.map((character, index) => (
           <div 
             key={index}
-            className="character-card flex-shrink-0 snap-start bg-white rounded-[20%] p-6 shadow-lg"
+            className="character-card flex-shrink-0 snap-start bg-white rounded-[20%] overflow-hidden"
             style={{ 
               width: 'min(300px, 80vw)',
               scrollSnapAlign: 'start'
             }}
           >
             {/* Character image */}
-            <div className="relative mb-4 rounded-[20%] overflow-hidden bg-gray-100">
+            <div className="relative bg-gray-100">
               <img 
                 src={character.image} 
                 alt={`Character ${index + 1}`}
@@ -67,9 +67,11 @@ const CharacterCards = () => {
             </div>
             
             {/* Character text */}
-            <p className="text-sm text-gray-700 leading-relaxed text-center">
-              {character.text}
-            </p>
+            <div className="p-6">
+              <p className="text-sm text-gray-700 leading-relaxed text-center">
+                {character.text}
+              </p>
+            </div>
           </div>
         ))}
       </div>
