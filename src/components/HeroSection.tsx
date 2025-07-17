@@ -10,7 +10,7 @@ const HeroSection = () => {
         <h1 className="text-2xl md:text-[5rem] font-extrabold text-foreground mt-8 mb-[1.8rem] tracking-tight">
           Moments of Joy
         </h1>
-        <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-6 py-4">
+        <p className="text-[1.2rem] text-foreground max-w-3xl mx-auto leading-relaxed px-6 py-4 mb-20">
           We make fun games that stay with you. We believe joy is found in small details — the timing of a tap, the surprise in a level, the charm in a character.
         </p>
       </div>
