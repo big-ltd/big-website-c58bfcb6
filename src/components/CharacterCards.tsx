@@ -8,7 +8,7 @@ const characters = [
     text: "Miss Victoria keeps the mansion alive with purpose."
   },
   {
-    image: "/lovable-uploads/dd79e4ac-d4e1-4919-9d6c-21a5d0c8488f.png",
+    image: "/lovable-uploads/1cf629a9-3c05-4f81-8dc8-f7a11f4a64b0.png",
     text: "King Cedric now rules with heart, not just a crown."
   },
   {
