@@ -3,7 +3,7 @@ import React from 'react';
 
 const GamesSection = () => {
   return (
-    <section id="games" className="bg-gray-50 dark:bg-gray-900 pt-[-8px] pb-0">
+    <section id="games" className="pt-[-8px] pb-0" style={{backgroundColor: '#ffffff'}}>
       <div className="container px-4 mx-auto">
         <div className="game-content max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-center gap-2">
