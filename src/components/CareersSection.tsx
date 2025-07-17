@@ -5,7 +5,7 @@ const CareersSection = () => {
   return (
     <section id="careers" className="pt-10 md:pt-14 pb-4" style={{backgroundColor: '#ffffff'}}>
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-xl p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
           <div className="md:w-1/3 flex justify-center">
             <img 
               src="/lovable-uploads/37bf31f6-7130-4c68-a753-8f706c64fa90.png" 
