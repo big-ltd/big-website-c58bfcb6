@@ -48,7 +48,7 @@ const GamesSection = () => {
               </div>
             </div>
             
-            <div className="w-full md:w-1/2 order-2 md:order-2 flex justify-center mb-4 md:mb-0 mt-4 md:mt-0">
+            <div className="w-full md:w-1/2 order-2 md:order-2 flex justify-center mb-4 md:mb-0 mt-8 md:mt-0">
               <div className="relative rounded-[2rem] overflow-hidden max-w-[300px]">
                 <img 
                   src="/lovable-uploads/1c616fde-d3fb-4821-b4e1-121e579c982a.png" 
