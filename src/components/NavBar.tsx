@@ -43,32 +43,32 @@ const NavBar = () => {
     )}>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <a href="#" className="flex items-center space-x-2">
+          <a href="#" className="flex items-center space-x-2 ml-4">
             <img 
-              src="/lovable-uploads/8693fdf1-7771-482f-8510-05893d8802a2.png" 
+              src="/lovable-uploads/2cf42ed0-f6e4-4dfe-86bf-e7063fa5e246.png" 
               alt="big Logo" 
-              className="h-16 md:h-20" 
+              className="h-12 md:h-16" 
             />
           </a>
 
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-8 mr-4">
             <a 
               href="#about" 
-              className="text-white/80 hover:text-white transition-colors text-lg"
+              className="text-white/80 hover:text-white transition-colors text-lg font-light"
               onClick={(e) => handleNavClick(e, 'about')}
             >
               About
             </a>
             <a 
               href="#games" 
-              className="text-white/80 hover:text-white transition-colors text-lg"
+              className="text-white/80 hover:text-white transition-colors text-lg font-light"
               onClick={(e) => handleNavClick(e, 'games')}
             >
               Games
             </a>
             <a 
               href="#careers" 
-              className="text-white/80 hover:text-white transition-colors text-lg"
+              className="text-white/80 hover:text-white transition-colors text-lg font-light"
               onClick={(e) => handleNavClick(e, 'careers')}
             >
               Careers
@@ -91,21 +91,21 @@ const NavBar = () => {
         <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
           <a 
             href="#about" 
-            className="py-2 text-white/80 hover:text-white text-lg" 
+            className="py-2 text-white/80 hover:text-white text-lg font-light" 
             onClick={(e) => handleNavClick(e, 'about')}
           >
             About
           </a>
           <a 
             href="#games" 
-            className="py-2 text-white/80 hover:text-white text-lg" 
+            className="py-2 text-white/80 hover:text-white text-lg font-light" 
             onClick={(e) => handleNavClick(e, 'games')}
           >
             Games
           </a>
           <a 
             href="#careers" 
-            className="py-2 text-white/80 hover:text-white text-lg" 
+            className="py-2 text-white/80 hover:text-white text-lg font-light" 
             onClick={(e) => handleNavClick(e, 'careers')}
           >
             Careers
