@@ -37,10 +37,10 @@ const NavBar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <a href="#" className="flex items-center space-x-2 ml-4">
+          <a href="#" className="flex items-center space-x-2 ml-20">
             <img 
               src="/lovable-uploads/942a296a-371c-447d-9a57-f8394e6ff791.png" 
               alt="big Logo" 
@@ -48,7 +48,7 @@ const NavBar = () => {
             />
           </a>
 
-          <nav className="hidden md:flex items-center space-x-8 mr-4">
+          <nav className="hidden md:flex items-center space-x-8 mr-20">
             <a 
               href="#about" 
               className="text-gray-800 hover:text-primary transition-colors text-lg font-light"
