@@ -72,7 +72,7 @@ const NavBar = () => {
           
           <a href="#" className="flex items-center space-x-2 md:ml-20">
             <img 
-              src="/lovable-uploads/942a296a-371c-447d-9a57-f8394e6ff791.png" 
+              src="/lovable-uploads/21789d8b-831c-4bdb-a3ca-69c4f3dd892e.png" 
               alt="big Logo" 
               className="h-10" 
             />
