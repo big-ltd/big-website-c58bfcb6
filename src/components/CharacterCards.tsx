@@ -94,7 +94,7 @@ const CharacterCards = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative mb-12">
       {/* Scrollable container */}
       <div 
         ref={scrollRef}
