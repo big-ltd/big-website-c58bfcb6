@@ -80,7 +80,7 @@ const CharacterCards = () => {
         {characters.map((character, index) => (
           <div 
             key={index}
-            className="character-card flex-shrink-0 snap-start rounded-4xl overflow-hidden"
+            className="character-card flex-shrink-0 snap-start rounded-[2rem] overflow-hidden"
             style={{ 
               backgroundColor: '#f4f9f5',
               width: 'min(300px, 80vw)',
