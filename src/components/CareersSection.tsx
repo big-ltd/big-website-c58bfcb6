@@ -5,11 +5,7 @@ const CareersSection = () => {
   return (
     <section id="careers" className="bg-gray-50 pt-10 md:pt-14 pb-4">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold">CAREERS</h2>
-        </div>
-        
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 bg-white rounded-xl p-6 shadow-sm">
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-xl p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
           <div className="md:w-1/3 flex justify-center">
             <img 
               src="/lovable-uploads/37bf31f6-7130-4c68-a753-8f706c64fa90.png" 

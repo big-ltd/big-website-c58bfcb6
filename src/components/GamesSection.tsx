@@ -5,10 +5,6 @@ const GamesSection = () => {
   return (
     <section id="games" className="bg-gray-50 dark:bg-gray-900 pt-[-8px] pb-0">
       <div className="container px-4 mx-auto">
-        <div className="text-center mb-8 mt-12">
-          <h2 className="text-2xl md:text-3xl font-bold">OUR GAMES</h2>
-        </div>
-        
         <div className="game-content max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-center gap-2">
             <div className="w-full md:w-1/2 order-2 md:order-1 mt-8 md:mt-0">
