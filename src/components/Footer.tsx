@@ -44,7 +44,7 @@ const Footer = () => {
           </div>
           
           {/* Quote */}
-          <div className="text-xs text-foreground/80 py-2 font-arial max-w-md">
+          <div className="text-xs text-foreground/80 py-2 font-arial max-w-2xl">
             <div dangerouslySetInnerHTML={{ __html: quote }} />
           </div>
           
