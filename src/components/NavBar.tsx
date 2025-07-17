@@ -47,7 +47,7 @@ const NavBar = () => {
             <img 
               src="/lovable-uploads/2cf42ed0-f6e4-4dfe-86bf-e7063fa5e246.png" 
               alt="big Logo" 
-              className="h-12 md:h-16" 
+              className="h-10" 
             />
           </a>
 
