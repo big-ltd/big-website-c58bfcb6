@@ -8,15 +8,15 @@ const CareersSection = () => {
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
           <div className="md:w-1/3 flex justify-center">
             <img 
-              src="/lovable-uploads/37bf31f6-7130-4c68-a753-8f706c64fa90.png" 
+              src="/lovable-uploads/2314ddd8-80f3-4da7-bd5f-decd889478d0.png" 
               alt="Cartoon rabbit character" 
               className="w-48 h-auto object-contain"
             />
           </div>
           
           <div className="md:w-2/3">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Join the fun</h2>
-            <p className="text-xl md:text-2xl mb-3">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Careers</h2>
+            <p className="mb-3" style={{fontWeight: 400, fontSize: '1.2rem'}}>
               Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
             </p>
             
