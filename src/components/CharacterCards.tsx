@@ -4,24 +4,24 @@ import { Button } from '@/components/ui/button';
 
 const characters = [
   {
-    image: "/lovable-uploads/82ea3905-771b-477e-89a5-6338946a114a.png",
-    text: "From pampered heiress to heartful host, Miss Victoria now plans every party with purpose and care."
+    image: "/lovable-uploads/6d95e63c-7bd4-450d-9f28-4c36211d13f0.png",
+    text: "Miss Victoria keeps the mansion alive with purpose."
   },
   {
-    image: "/lovable-uploads/cbf2477f-3299-4e95-a5c8-0817812ac8cf.png",
-    text: "Once carefree and full of jests, King Cedric now rules with a heart shaped by the dreams of his people."
+    image: "/lovable-uploads/dd79e4ac-d4e1-4919-9d6c-21a5d0c8488f.png",
+    text: "King Cedric now rules with heart, not just a crown."
   },
   {
-    image: "/lovable-uploads/8703a2e7-09c7-478a-9cc5-d05139fa6351.png",
-    text: "Baker Florence bakes with magic and love, believing a warm loaf can spark hope and heal hearts."
+    image: "/lovable-uploads/14d9c404-357a-4e03-acf3-12ee3af8378f.png",
+    text: "Baker Florence bakes with kindness—and enchanted yeast."
   },
   {
-    image: "/lovable-uploads/20c101b9-efea-404e-af76-683ab30d9054.png",
-    text: "Fisher Fred, keeper of lake lore and legendary catches, lives for the big fish and the bigger stories."
+    image: "/lovable-uploads/2847db9a-5eb4-4f9a-8f71-a350263b82f0.png",
+    text: "Innkeeper Jasper makes every guest feel right at home."
   },
   {
-    image: "/lovable-uploads/31aaeec6-71f5-49cb-995e-f4b144122306.png",
-    text: "Jasper runs his inn like a second home—where every guest leaves full, warm, and with a tale to tell."
+    image: "/lovable-uploads/047a961f-0b9e-47e8-8860-5f2a020ecae7.png",
+    text: "Fisher Fred lives for calm lakes, big fish, and tall tales."
   }
 ];
 
