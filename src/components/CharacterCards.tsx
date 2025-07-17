@@ -99,14 +99,14 @@ const CharacterCards = () => {
             {/* Character text */}
             <div className="p-6">
               <p 
-                className="text-sm text-gray-700 leading-relaxed text-center"
+                className="text-base font-semibold text-gray-700 leading-relaxed text-center"
                 dangerouslySetInnerHTML={{ 
                   __html: character.text
-                    .replace(/Miss Victoria/g, '<strong>Miss Victoria</strong>')
-                    .replace(/King Cedric/g, '<strong>King Cedric</strong>')
-                    .replace(/Baker Florence/g, '<strong>Baker Florence</strong>')
-                    .replace(/Innkeeper Jasper/g, '<strong>Innkeeper Jasper</strong>')
-                    .replace(/Fisher Fred/g, '<strong>Fisher Fred</strong>')
+                    .replace(/Miss Victoria/g, '<span style="color: goldenrod;">Miss Victoria</span>')
+                    .replace(/King Cedric/g, '<span style="color: goldenrod;">King Cedric</span>')
+                    .replace(/Baker Florence/g, '<span style="color: goldenrod;">Baker Florence</span>')
+                    .replace(/Innkeeper Jasper/g, '<span style="color: goldenrod;">Innkeeper Jasper</span>')
+                    .replace(/Fisher Fred/g, '<span style="color: goldenrod;">Fisher Fred</span>')
                 }}
               />
             </div>
