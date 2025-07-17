@@ -13,7 +13,7 @@ const HeroSection = () => {
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
             color: 'transparent',
-            filter: 'drop-shadow(0px 5px 1px #c0461f)'
+            filter: 'drop-shadow(0 0.1em 0.02em #c0461f)'
           }}>Joy</span>
         </h1>
         <p className="text-[1.2rem] text-foreground font-light max-w-3xl mx-auto leading-relaxed px-6 py-4 mb-20">
