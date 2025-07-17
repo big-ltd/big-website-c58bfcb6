@@ -98,7 +98,7 @@ const CharacterCards = () => {
             
             {/* Character text */}
             <div className="p-6">
-              <p className="text-base font-semibold text-gray-700 leading-relaxed text-center">
+              <p className="text-base font-normal text-indigo-600 leading-relaxed text-center">
                 {character.text}
               </p>
             </div>
