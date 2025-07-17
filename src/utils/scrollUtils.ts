@@ -14,8 +14,6 @@ export const scrollToSection = (id: string) => {
       headerOffset = 100;
     } else if (id === 'games') {
       headerOffset = 60; // Adjusted for games section negative padding
-    } else if (id === 'careers') {
-      headerOffset = 184; // Adjusted for careers section 6.5rem top padding (104px) + navbar (80px)
     }
     
     const elementPosition = element.getBoundingClientRect().top;

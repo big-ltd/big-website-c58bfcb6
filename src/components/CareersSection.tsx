@@ -3,7 +3,7 @@ import React from 'react';
 
 const CareersSection = () => {
   return (
-    <section id="careers" className="pb-4" style={{backgroundColor: '#ffffff', paddingTop: '6.5rem'}}>
+    <section id="careers" className="pb-4" style={{backgroundColor: '#ffffff', marginTop: '6.5rem'}}>
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
           <div className="md:w-1/3 flex justify-center">
