@@ -39,8 +39,8 @@ const NavBar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <a href="#" className="flex items-center space-x-2 ml-20 md:ml-20 mx-auto md:mx-0">
+        <div className="flex items-center justify-center md:justify-between">
+          <a href="#" className="flex items-center space-x-2 md:ml-20">
             <img 
               src="/lovable-uploads/942a296a-371c-447d-9a57-f8394e6ff791.png" 
               alt="big Logo" 
