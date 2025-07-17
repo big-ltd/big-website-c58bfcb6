@@ -20,7 +20,7 @@ const characters = [
     text: "Innkeeper Jasper makes every guest feel right at home."
   },
   {
-    image: "/lovable-uploads/047a961f-0b9e-47e8-8860-5f2a020ecae7.png",
+    image: "/lovable-uploads/175bc047-7ad8-4640-a900-ab15422ce2f6.png",
     text: "Fisher Fred lives for calm lakes, big fish, and tall tales."
   }
 ];
