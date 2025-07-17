@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const characters = [
@@ -27,6 +27,25 @@ const characters = [
 
 const CharacterCards = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollability = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollability();
+    const scrollContainer = scrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', checkScrollability);
+      return () => scrollContainer.removeEventListener('scroll', checkScrollability);
+    }
+  }, []);
 
   const scrollToNext = () => {
     if (scrollRef.current) {
@@ -34,6 +53,17 @@ const CharacterCards = () => {
       const gap = 16; // gap-4 = 16px
       scrollRef.current.scrollBy({
         left: cardWidth + gap,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollToPrevious = () => {
+    if (scrollRef.current) {
+      const cardWidth = scrollRef.current.querySelector('.character-card')?.clientWidth || 0;
+      const gap = 16; // gap-4 = 16px
+      scrollRef.current.scrollBy({
+        left: -(cardWidth + gap),
         behavior: 'smooth'
       });
     }
@@ -76,15 +106,28 @@ const CharacterCards = () => {
         ))}
       </div>
 
-      {/* Navigation arrow */}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={scrollToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg border-gray-200"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+      {/* Navigation arrows */}
+      {canScrollLeft && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={scrollToPrevious}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg border-gray-200"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {canScrollRight && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={scrollToNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg border-gray-200"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      )}
 
       {/* Hide scrollbar styles */}
       <style>{`
