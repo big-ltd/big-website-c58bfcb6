@@ -5,7 +5,7 @@ const CareersSection = () => {
   return (
     <section id="careers" className="pt-10 md:pt-14 pb-4" style={{backgroundColor: '#ffffff'}}>
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm" style={{backgroundColor: '#f4f9f5'}}>
           <div className="md:w-1/3 flex justify-center">
             <img 
               src="/lovable-uploads/2314ddd8-80f3-4da7-bd5f-decd889478d0.png" 
@@ -19,10 +19,6 @@ const CareersSection = () => {
             <p className="mb-3" style={{fontWeight: 400, fontSize: '1.2rem'}}>
               Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
             </p>
-            
-            <div className="text-sm text-gray-500">
-              <span>If you have the talent and experience don't hesitate to contact us.</span>
-            </div>
           </div>
         </div>
       </div>
