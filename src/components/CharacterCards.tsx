@@ -102,11 +102,11 @@ const CharacterCards = () => {
                 className="text-base font-semibold text-gray-700 leading-relaxed text-center"
                 dangerouslySetInnerHTML={{ 
                   __html: character.text
-                    .replace(/Miss Victoria/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.08em 0 #c0461f);">Miss Victoria</span>')
-                    .replace(/King Cedric/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.08em 0 #c0461f);">King Cedric</span>')
-                    .replace(/Baker Florence/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.08em 0 #c0461f);">Baker Florence</span>')
-                    .replace(/Innkeeper Jasper/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.08em 0 #c0461f);">Innkeeper Jasper</span>')
-                    .replace(/Fisher Fred/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.08em 0 #c0461f);">Fisher Fred</span>')
+                    .replace(/Miss Victoria/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.05em 0 #c0461f);">Miss Victoria</span>')
+                    .replace(/King Cedric/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.05em 0 #c0461f);">King Cedric</span>')
+                    .replace(/Baker Florence/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.05em 0 #c0461f);">Baker Florence</span>')
+                    .replace(/Innkeeper Jasper/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.05em 0 #c0461f);">Innkeeper Jasper</span>')
+                    .replace(/Fisher Fred/g, '<span style="background: linear-gradient(to top right, #ffb728, #fff032); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0.05em 0 #c0461f);">Fisher Fred</span>')
                 }}
               />
             </div>
