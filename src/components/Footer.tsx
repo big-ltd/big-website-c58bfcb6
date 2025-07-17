@@ -33,67 +33,48 @@ const Footer = () => {
   return (
     <footer className="bg-white text-foreground mt-2.5">
       <div className="container mx-auto px-4 pt-12 pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="flex flex-col items-center text-center space-y-8">
+          {/* Logo */}
           <div>
-            <div className="mb-5">
-              <img 
-                src="/lovable-uploads/942a296a-371c-447d-9a57-f8394e6ff791.png" 
-                alt="big Logo" 
-                className="h-10" 
-              />
-            </div>
-            <div className="text-xs text-foreground/80 border-l-4 border-primary/60 pl-4 py-2 font-arial">
-              <div dangerouslySetInnerHTML={{ __html: quote }} />
-            </div>
+            <img 
+              src="/lovable-uploads/942a296a-371c-447d-9a57-f8394e6ff791.png" 
+              alt="big Logo" 
+              className="h-10" 
+            />
           </div>
           
-          <div>
-            <ul className="space-y-3">
-              <li>
-                <a href="#about" className="text-foreground/60 hover:text-foreground transition-colors flex items-center"
-                   onClick={(e) => handleNavClick(e, 'about')}>
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#games" className="text-foreground/60 hover:text-foreground transition-colors flex items-center"
-                   onClick={(e) => handleNavClick(e, 'games')}>
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Games
-                </a>
-              </li>
-              <li>
-                <a href="#careers" className="text-foreground/60 hover:text-foreground transition-colors flex items-center"
-                   onClick={(e) => handleNavClick(e, 'careers')}>
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="mailto:contact@big.com.cy" className="text-foreground/60 hover:text-foreground transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Contact
-                </a>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-foreground/60 hover:text-foreground transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-foreground/60 hover:text-foreground transition-colors flex items-center">
-                  <ChevronRight className="h-4 w-4 mr-1" />
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
+          {/* Quote */}
+          <div className="text-xs text-foreground/80 py-2 font-arial max-w-md">
+            <div dangerouslySetInnerHTML={{ __html: quote }} />
           </div>
-        </div>
-        
-        <div className="border-t border-foreground/20 pt-6">
-          <div className="flex justify-center">
+          
+          {/* Menu Links */}
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+            <a href="#about" className="text-foreground/60 hover:text-foreground transition-colors"
+               onClick={(e) => handleNavClick(e, 'about')}>
+              About
+            </a>
+            <a href="#games" className="text-foreground/60 hover:text-foreground transition-colors"
+               onClick={(e) => handleNavClick(e, 'games')}>
+              Games
+            </a>
+            <a href="#careers" className="text-foreground/60 hover:text-foreground transition-colors"
+               onClick={(e) => handleNavClick(e, 'careers')}>
+              Careers
+            </a>
+            <a href="mailto:contact@big.com.cy" className="text-foreground/60 hover:text-foreground transition-colors">
+              Contact
+            </a>
+            <Link to="/privacy" className="text-foreground/60 hover:text-foreground transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="text-foreground/60 hover:text-foreground transition-colors">
+              Terms of Service
+            </Link>
+          </div>
+          
+          {/* Copyright */}
+          <div>
             <p className="text-foreground/60 text-sm">
               &copy; 2025 big
             </p>
