@@ -98,9 +98,16 @@ const CharacterCards = () => {
             
             {/* Character text */}
             <div className="p-6">
-              <p className="text-sm text-gray-700 leading-relaxed text-center">
-                {character.text}
-              </p>
+              <p 
+                className="text-sm text-gray-700 leading-relaxed text-center"
+                dangerouslySetInnerHTML={{ 
+                  __html: character.text
+                    .replace(/Miss Victoria/g, '<strong>Miss Victoria</strong>')
+                    .replace(/King Cedric/g, '<strong>King Cedric</strong>')
+                    .replace(/Baker Florence/g, '<strong>Baker Florence</strong>')
+                    .replace(/Innkeeper Jasper/g, '<strong>Innkeeper Jasper</strong>')
+                }}
+              />
             </div>
           </div>
         ))}
