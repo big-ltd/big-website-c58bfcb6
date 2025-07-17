@@ -7,7 +7,7 @@ const HeroSection = () => {
     <section className="relative overflow-hidden pt-24 md:pt-28">
       {/* Text content */}
       <div className="text-center px-4 pt-12 md:pt-16 pb-2 md:pb-0 md:relative md:z-10 md:mb-[-2rem]">
-        <h1 className="text-2xl md:text-[4rem] font-extrabold text-foreground mb-0 tracking-tight">
+        <h1 className="text-2xl md:text-[5rem] font-extrabold text-foreground mt-8 mb-[1.8rem] tracking-tight">
           Moments of Joy
         </h1>
         <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-6 py-4">
