@@ -106,6 +106,7 @@ const CharacterCards = () => {
                     .replace(/King Cedric/g, '<strong>King Cedric</strong>')
                     .replace(/Baker Florence/g, '<strong>Baker Florence</strong>')
                     .replace(/Innkeeper Jasper/g, '<strong>Innkeeper Jasper</strong>')
+                    .replace(/Fisher Fred/g, '<strong>Fisher Fred</strong>')
                 }}
               />
             </div>
