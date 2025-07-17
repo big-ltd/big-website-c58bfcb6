@@ -11,7 +11,7 @@ const HeroSection = () => {
           MOMENTS OF JOY
         </h1>
         <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-6 py-4">
-          We make fun games that stay with you.
+          We make fun games that stay with you. We believe joy is found in small details — the timing of a tap, the surprise in a level, the charm in a character.
         </p>
       </div>
       
