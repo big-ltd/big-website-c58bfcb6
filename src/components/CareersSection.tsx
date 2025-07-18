@@ -29,6 +29,7 @@ const CareersSection = () => {
   return (
     <section id="careers" className="pb-4" style={{backgroundColor: '#ffffff', marginTop: '6.5rem'}}>
       <div className="container mx-auto px-4">
+        {/* Careers Header Panel */}
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f4f9f5'}}>
           <div className="md:w-1/3 flex justify-center">
             <img 
@@ -46,11 +47,11 @@ const CareersSection = () => {
           </div>
         </div>
 
-        {/* Job Board */}
+        {/* Job Board - Positioned below the header panel */}
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {jobs.map((job, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem]">
+              <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
                 <CardContent className="p-6">
                   <h4 className="font-normal mb-2" style={{fontSize: '1.2rem'}}>{job.title}</h4>
                   <div className="flex items-center gap-2 text-base text-muted-foreground mb-3">
@@ -72,8 +73,8 @@ const CareersSection = () => {
               </Card>
             ))}
             
-            {/* More Positions Card */}
-            <Card className="hover:shadow-md transition-shadow rounded-[2rem]">
+            {/* More Positions Card - Takes only 1 column to make it narrower */}
+            <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
               <CardContent className="p-6 flex flex-col items-center justify-center h-full">
                 <div className="text-2xl mb-2">...</div>
                 <h4 className="font-normal mb-2" style={{fontSize: '1.2rem'}}>More Positions</h4>
