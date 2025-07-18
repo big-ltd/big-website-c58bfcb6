@@ -29,26 +29,26 @@ const CareersSection = () => {
   return (
     <section id="careers" className="pb-4" style={{backgroundColor: '#ffffff', marginTop: '6.5rem'}}>
       <div className="container mx-auto px-4">
-        {/* Careers Header Panel */}
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6 rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f4f9f5'}}>
-          <div className="md:w-1/3 flex justify-center">
-            <img 
-              src="/lovable-uploads/2314ddd8-80f3-4da7-bd5f-decd889478d0.png" 
-              alt="Cartoon rabbit character" 
-              className="w-48 h-auto object-contain"
-            />
+        {/* Careers Header Panel with Job Board Inside */}
+        <div className="max-w-4xl mx-auto rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f4f9f5'}}>
+          <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
+            <div className="md:w-1/3 flex justify-center">
+              <img 
+                src="/lovable-uploads/2314ddd8-80f3-4da7-bd5f-decd889478d0.png" 
+                alt="Cartoon rabbit character" 
+                className="w-48 h-auto object-contain"
+              />
+            </div>
+            
+            <div className="md:w-2/3">
+              <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Careers</h2>
+              <p className="mb-3" style={{fontWeight: 400, fontSize: '1.2rem'}}>
+                Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
+              </p>
+            </div>
           </div>
-          
-          <div className="md:w-2/3">
-            <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Careers</h2>
-            <p className="mb-3" style={{fontWeight: 400, fontSize: '1.2rem'}}>
-              Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
-            </p>
-          </div>
-        </div>
 
-        {/* Job Board - Positioned below the header panel */}
-        <div className="max-w-4xl mx-auto">
+          {/* Job Board - Inside the panel, below the text */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {jobs.map((job, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
