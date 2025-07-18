@@ -48,28 +48,29 @@ const CareersSection = () => {
 
               {/* Job Board - Inside the panel, to the right of the image */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {jobs.map((job, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
-                <CardContent className="p-6">
-                  <h4 className="font-normal mb-2" style={{fontSize: '1.2rem'}}>{job.title}</h4>
-                  <div className="flex items-center gap-2 text-base text-muted-foreground mb-3">
-                    <MapPin size={14} />
-                    <span className="font-light">{job.location}</span>
-                    <span>•</span>
-                    <span className="font-normal">{job.type}</span>
-                  </div>
-                  <Button 
-                    onClick={() => handleJobApply(job.title)}
-                    variant="outline"
-                    className="w-full"
-                    style={{fontSize: '1rem'}}
-                  >
-                    <Mail size={16} className="mr-2" />
-                    Apply
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                {jobs.map((job, index) => (
+                  <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
+                    <CardContent className="p-6">
+                      <h4 className="font-normal mb-3" style={{fontSize: '1.2rem'}}>{job.title}</h4>
+                      <div className="flex items-center gap-2 text-base text-muted-foreground mb-2">
+                        <MapPin size={14} />
+                        <span className="font-light">{job.location}</span>
+                      </div>
+                      <div className="text-base text-muted-foreground mb-4">
+                        <span className="font-normal">{job.type}</span>
+                      </div>
+                      <Button 
+                        onClick={() => handleJobApply(job.title)}
+                        variant="outline"
+                        className="w-full"
+                        style={{fontSize: '1rem'}}
+                      >
+                        <Mail size={16} className="mr-2" />
+                        Apply
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
             
             {/* More Positions Card - Takes only 1 column to make it narrower */}
             <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
