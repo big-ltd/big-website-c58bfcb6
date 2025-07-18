@@ -50,8 +50,8 @@ const CareersSection = () => {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {jobs.map((job, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
+              <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem]">
+                <CardContent className="p-6">
                   <h4 className="font-normal mb-2" style={{fontSize: '1.2rem'}}>{job.title}</h4>
                   <div className="flex items-center gap-2 text-base text-muted-foreground mb-3">
                     <MapPin size={14} />
@@ -63,7 +63,7 @@ const CareersSection = () => {
                     onClick={() => handleJobApply(job.title)}
                     variant="outline"
                     className="w-full"
-                    style={{fontSize: '1.2rem'}}
+                    style={{fontSize: '1rem'}}
                   >
                     <Mail size={16} className="mr-2" />
                     Apply
@@ -73,15 +73,15 @@ const CareersSection = () => {
             ))}
             
             {/* More Positions Card */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 flex flex-col items-center justify-center h-full">
+            <Card className="hover:shadow-md transition-shadow rounded-[2rem]">
+              <CardContent className="p-6 flex flex-col items-center justify-center h-full">
                 <div className="text-2xl mb-2">...</div>
                 <h4 className="font-normal mb-2" style={{fontSize: '1.2rem'}}>More Positions</h4>
                 <Button 
                   onClick={handleMorePositions}
                   variant="outline"
                   className="w-full"
-                  style={{fontSize: '1.2rem'}}
+                  style={{fontSize: '1rem'}}
                 >
                   <Mail size={16} className="mr-2" />
                   Apply
