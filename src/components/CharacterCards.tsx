@@ -106,7 +106,7 @@ const CharacterCards = () => {
             key={index}
             className="character-card flex-shrink-0 snap-start rounded-[2rem] overflow-hidden"
             style={{ 
-              backgroundColor: '#f4f9f5',
+              backgroundColor: '#f5f4f9',
               width: 'min(300px, 80vw)',
               scrollSnapAlign: 'start'
             }}

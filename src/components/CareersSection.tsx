@@ -31,7 +31,7 @@ const CareersSection = () => {
     <section id="careers" className="pb-12" style={{backgroundColor: '#ffffff', marginTop: '3rem'}}>
       <div className="container mx-auto px-4">
         {/* Careers Header Panel with Job Board Inside */}
-        <div className="max-w-4xl mx-auto rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f4f9f5'}}>
+        <div className="max-w-4xl mx-auto rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f5f4f9'}}>
           <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="md:w-1/3 flex justify-center">
               <img 
