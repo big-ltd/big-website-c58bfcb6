@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 
 const CareersSection = () => {
   const jobs = [
@@ -52,22 +52,19 @@ const CareersSection = () => {
                   <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
                     <CardContent className="p-6">
                       <h4 className="font-normal mb-3" style={{fontSize: '1.2rem'}}>{job.title}</h4>
-                      <div className="flex items-center gap-2 text-base text-muted-foreground mb-2">
-                        <MapPin size={14} />
-                        <span className="font-light">{job.location}</span>
-                      </div>
                       <div className="text-base text-muted-foreground mb-4">
-                        <span className="font-normal">{job.type}</span>
+                        <span className="font-light">{job.location}, {job.type}</span>
                       </div>
-                      <Button 
-                        onClick={() => handleJobApply(job.title)}
-                        variant="outline"
-                        className="w-full"
-                        style={{fontSize: '1rem'}}
-                      >
-                        <Mail size={16} className="mr-2" />
-                        Apply
-                      </Button>
+                      <div className="flex justify-end">
+                        <button 
+                          onClick={() => handleJobApply(job.title)}
+                          className="flex items-center gap-2 text-primary hover:underline"
+                          style={{fontSize: '1rem'}}
+                        >
+                          <Mail size={16} />
+                          Apply
+                        </button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
