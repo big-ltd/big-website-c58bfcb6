@@ -3,8 +3,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CareersSection = () => {
+  const isMobile = useIsMobile();
   const jobs = [
     {
       title: "Game Developer",
@@ -72,20 +74,33 @@ const CareersSection = () => {
                 {/* More Positions Card - Takes only 1 column to make it narrower */}
                 <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
                   <CardContent style={{padding: '1.2rem'}} className="flex flex-col h-full">
-                    <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>More</h4>
-                    <div className="text-base text-muted-foreground flex-grow mb-4">
-                      <span className="font-light">&nbsp;</span>
-                    </div>
-                    <div className="flex justify-end">
-                      <button 
-                        onClick={handleMorePositions}
-                        className="flex items-center gap-2 text-primary hover:underline"
-                        style={{fontSize: '1rem'}}
-                      >
-                        <Mail size={16} />
-                        Apply
-                      </button>
-                    </div>
+                    {isMobile ? (
+                      // Mobile layout: Move Apply button up, make it smaller
+                      <>
+                        <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>More</h4>
+                        <div className="flex-grow mb-2">
+                          <button 
+                            onClick={handleMorePositions}
+                            className="flex items-center gap-2 text-primary hover:underline"
+                            style={{fontSize: '0.9rem'}}
+                          >
+                            <Mail size={14} />
+                            Apply
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      // Desktop layout: Center "More" above email icon, remove "Apply" text
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <h4 className="font-normal text-center mb-2" style={{fontSize: '1.2rem'}}>More</h4>
+                        <button 
+                          onClick={handleMorePositions}
+                          className="text-primary hover:text-primary/80 transition-colors"
+                        >
+                          <Mail size={16} />
+                        </button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
