@@ -13,7 +13,7 @@ const CareersSection = () => {
     },
     {
       title: "Art Director", 
-      location: "Hybrid",
+      location: "Remote",
       type: "Full-time"
     }
   ];
@@ -48,7 +48,6 @@ const CareersSection = () => {
 
         {/* Job Board */}
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl font-semibold mb-4 text-center">Open Positions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {jobs.map((job, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow">
@@ -63,7 +62,6 @@ const CareersSection = () => {
                   <Button 
                     onClick={() => handleJobApply(job.title)}
                     className="w-full"
-                    style={{backgroundColor: '#22c55e'}}
                   >
                     <Mail size={16} className="mr-2" />
                     Apply Now
@@ -83,7 +81,7 @@ const CareersSection = () => {
                   className="w-full"
                 >
                   <Mail size={16} className="mr-2" />
-                  View All
+                  Apply Now
                 </Button>
               </CardContent>
             </Card>
