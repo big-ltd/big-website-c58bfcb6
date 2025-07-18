@@ -50,9 +50,9 @@ const CareersSection = () => {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {jobs.map((job, index) => (
                   <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
-                    <CardContent className="p-6">
-                      <h4 className="font-normal mb-1" style={{fontSize: '1.2rem'}}>{job.title}</h4>
-                      <div className="text-base text-muted-foreground mb-4">
+                    <CardContent style={{padding: '1.2rem'}} className="flex flex-col h-full">
+                      <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>{job.title}</h4>
+                      <div className="text-base text-muted-foreground flex-grow mb-4">
                         <span className="font-light">{job.location}, {job.type}</span>
                       </div>
                       <div className="flex justify-end">
@@ -71,10 +71,10 @@ const CareersSection = () => {
             
                 {/* More Positions Card - Takes only 1 column to make it narrower */}
                 <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
-                  <CardContent className="p-6">
-                    <h4 className="font-normal mb-1" style={{fontSize: '1.2rem'}}>More</h4>
-                    <div className="text-base text-muted-foreground mb-4">
-                      <span className="font-light"> </span>
+                  <CardContent style={{padding: '1.2rem'}} className="flex flex-col h-full">
+                    <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>More</h4>
+                    <div className="text-base text-muted-foreground flex-grow mb-4">
+                      <span className="font-light">&nbsp;</span>
                     </div>
                     <div className="flex justify-end">
                       <button 
