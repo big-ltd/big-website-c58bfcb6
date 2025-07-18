@@ -39,7 +39,7 @@ const CareersSection = () => {
           </div>
           
           <div className="md:w-2/3">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Careers</h2>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Careers</h2>
             <p className="mb-3" style={{fontWeight: 400, fontSize: '1.2rem'}}>
               Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
             </p>
@@ -52,19 +52,20 @@ const CareersSection = () => {
             {jobs.map((job, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold text-lg mb-2">{job.title}</h4>
+                  <h4 className="font-normal text-lg mb-2">{job.title}</h4>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                     <MapPin size={14} />
-                    <span>{job.location}</span>
+                    <span className="font-light">{job.location}</span>
                     <span>•</span>
-                    <span>{job.type}</span>
+                    <span className="font-normal">{job.type}</span>
                   </div>
                   <Button 
                     onClick={() => handleJobApply(job.title)}
+                    variant="outline"
                     className="w-full"
                   >
                     <Mail size={16} className="mr-2" />
-                    Apply Now
+                    Apply
                   </Button>
                 </CardContent>
               </Card>
@@ -74,14 +75,14 @@ const CareersSection = () => {
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4 flex flex-col items-center justify-center h-full">
                 <div className="text-2xl mb-2">...</div>
-                <h4 className="font-semibold text-lg mb-2">More Positions</h4>
+                <h4 className="font-normal text-lg mb-2">More Positions</h4>
                 <Button 
                   onClick={handleMorePositions}
                   variant="outline"
                   className="w-full"
                 >
                   <Mail size={16} className="mr-2" />
-                  Apply Now
+                  Apply
                 </Button>
               </CardContent>
             </Card>
