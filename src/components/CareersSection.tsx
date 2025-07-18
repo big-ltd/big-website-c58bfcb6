@@ -69,22 +69,25 @@ const CareersSection = () => {
                   </Card>
                 ))}
             
-            {/* More Positions Card - Takes only 1 column to make it narrower */}
-            <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
-              <CardContent className="p-6 flex flex-col items-center justify-center h-full">
-                <div className="text-2xl mb-2">...</div>
-                <h4 className="font-normal mb-2" style={{fontSize: '1.2rem'}}>More Positions</h4>
-                <Button 
-                  onClick={handleMorePositions}
-                  variant="outline"
-                  className="w-full"
-                  style={{fontSize: '1rem'}}
-                >
-                  <Mail size={16} className="mr-2" />
-                  Apply
-                </Button>
-              </CardContent>
-            </Card>
+                {/* More Positions Card - Takes only 1 column to make it narrower */}
+                <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
+                  <CardContent className="p-6 flex flex-col justify-between h-full">
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">...</div>
+                      <h4 className="font-normal mb-4" style={{fontSize: '1.2rem'}}>More</h4>
+                    </div>
+                    <div className="flex justify-end">
+                      <button 
+                        onClick={handleMorePositions}
+                        className="flex items-center gap-2 text-primary hover:underline"
+                        style={{fontSize: '1rem'}}
+                      >
+                        <Mail size={16} />
+                        Apply
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
