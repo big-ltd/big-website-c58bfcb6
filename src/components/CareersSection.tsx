@@ -35,7 +35,7 @@ const CareersSection = () => {
           <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="md:w-1/3 flex justify-center">
               <img 
-                src="/lovable-uploads/2314ddd8-80f3-4da7-bd5f-decd889478d0.png" 
+                src="/lovable-uploads/0d12268c-e54d-4f9e-9464-f80b1ef2cbc5.png" 
                 alt="Cartoon rabbit character" 
                 className="w-48 h-auto object-contain"
               />
