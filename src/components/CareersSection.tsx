@@ -42,8 +42,8 @@ const CareersSection = () => {
             </div>
             
             <div className="md:w-2/3 flex flex-col">
-              <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Careers</h2>
-              <p className="mb-6" style={{fontWeight: 400, fontSize: '1.2rem'}}>
+              <h2 className="text-2xl md:text-3xl font-extrabold mb-3 mt-4">Careers</h2>
+              <p className="mb-8" style={{fontWeight: 400, fontSize: '1.2rem'}}>
                 Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
               </p>
 
