@@ -31,7 +31,7 @@ const CareersSection = () => {
       <div className="container mx-auto px-4">
         {/* Careers Header Panel with Job Board Inside */}
         <div className="max-w-4xl mx-auto rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f4f9f5'}}>
-          <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
+          <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="md:w-1/3 flex justify-center">
               <img 
                 src="/lovable-uploads/2314ddd8-80f3-4da7-bd5f-decd889478d0.png" 
@@ -40,16 +40,14 @@ const CareersSection = () => {
               />
             </div>
             
-            <div className="md:w-2/3">
+            <div className="md:w-2/3 flex flex-col">
               <h2 className="text-2xl md:text-3xl font-extrabold mb-3">Careers</h2>
-              <p className="mb-3" style={{fontWeight: 400, fontSize: '1.2rem'}}>
+              <p className="mb-6" style={{fontWeight: 400, fontSize: '1.2rem'}}>
                 Join us in delivering mobile games that players love - Send your CV to <a href="mailto:careers@big.com.cy" className="text-primary font-medium hover:underline">careers@big.com.cy</a>
               </p>
-            </div>
-          </div>
 
-          {/* Job Board - Inside the panel, below the text */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {/* Job Board - Inside the panel, to the right of the image */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {jobs.map((job, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
                 <CardContent className="p-6">
@@ -89,6 +87,8 @@ const CareersSection = () => {
                 </Button>
               </CardContent>
             </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>
