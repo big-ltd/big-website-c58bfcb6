@@ -19,7 +19,7 @@ const GamesSection = () => {
                 <p className="text-[1.2rem] text-foreground font-light max-w-3xl mx-auto leading-relaxed px-6 py-4 mb-6 text-center">
                   Miss Victoria needs your help to match tiles and solve dramas!
                 </p>
-                <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-4 mt-4">
+                <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-2 md:gap-4 mt-4">
                   <a 
                     href="https://apps.apple.com/cy/app/match-story/id6499223049" 
                     target="_blank" 
@@ -48,7 +48,7 @@ const GamesSection = () => {
               </div>
             </div>
             
-            <div className="w-full md:w-1/2 order-2 md:order-2 flex justify-center mb-4 md:mb-0 mt-8 md:mt-0">
+            <div className="w-full md:w-1/2 order-2 md:order-2 flex justify-center mb-4 md:mb-0 mt-28 md:mt-0">
               <div className="relative rounded-[2rem] overflow-hidden max-w-[300px]">
                 <img 
                   src="/lovable-uploads/1c616fde-d3fb-4821-b4e1-121e579c982a.png" 
