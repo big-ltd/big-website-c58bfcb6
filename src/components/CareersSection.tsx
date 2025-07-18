@@ -51,7 +51,7 @@ const CareersSection = () => {
                 {jobs.map((job, index) => (
                   <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
                     <CardContent className="p-6">
-                      <h4 className="font-normal mb-3" style={{fontSize: '1.2rem'}}>{job.title}</h4>
+                      <h4 className="font-normal mb-1" style={{fontSize: '1.2rem'}}>{job.title}</h4>
                       <div className="text-base text-muted-foreground mb-4">
                         <span className="font-light">{job.location}, {job.type}</span>
                       </div>
@@ -72,7 +72,7 @@ const CareersSection = () => {
                 {/* More Positions Card - Takes only 1 column to make it narrower */}
                 <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
                   <CardContent className="p-6">
-                    <h4 className="font-normal mb-3" style={{fontSize: '1.2rem'}}>More</h4>
+                    <h4 className="font-normal mb-1" style={{fontSize: '1.2rem'}}>More</h4>
                     <div className="text-base text-muted-foreground mb-4">
                       <span className="font-light"> </span>
                     </div>
