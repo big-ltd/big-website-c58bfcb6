@@ -28,7 +28,7 @@ const CareersSection = () => {
   };
 
   return (
-    <section id="careers" className="pb-4" style={{backgroundColor: '#ffffff', marginTop: '6.5rem'}}>
+    <section id="careers" className="pb-12" style={{backgroundColor: '#ffffff', marginTop: '3rem'}}>
       <div className="container mx-auto px-4">
         {/* Careers Header Panel with Job Board Inside */}
         <div className="max-w-4xl mx-auto rounded-[2rem] p-6 shadow-sm mb-8" style={{backgroundColor: '#f4f9f5'}}>
