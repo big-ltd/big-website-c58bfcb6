@@ -8,7 +8,7 @@ const CareersSection = () => {
   const isMobile = useIsMobile();
   const jobs = [
     {
-      title: "Game Developer",
+      title: "BI/AI Engineer",
       location: "Remote",
       type: "Full-time"
     },
