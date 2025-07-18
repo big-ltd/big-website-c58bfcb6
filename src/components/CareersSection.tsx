@@ -80,7 +80,7 @@ const CareersSection = () => {
                       // Mobile layout: Move Apply button up, keep it aligned right with consistent styling
                       <>
                         <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>More</h4>
-                        <div className="flex-grow mb-2 flex justify-end">
+                        <div className="flex-grow mb-0 flex justify-end">
                           <div className="flex items-center gap-2 text-primary" style={{fontSize: '1rem'}}>
                             <Mail size={16} />
                             Apply
