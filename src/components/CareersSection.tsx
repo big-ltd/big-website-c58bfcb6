@@ -71,10 +71,10 @@ const CareersSection = () => {
             
                 {/* More Positions Card - Takes only 1 column to make it narrower */}
                 <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
-                  <CardContent className="p-6 flex flex-col justify-between h-full">
-                    <div className="text-center">
-                      <div className="text-2xl mb-2">...</div>
-                      <h4 className="font-normal mb-4" style={{fontSize: '1.2rem'}}>More</h4>
+                  <CardContent className="p-6">
+                    <h4 className="font-normal mb-3" style={{fontSize: '1.2rem'}}>More</h4>
+                    <div className="text-base text-muted-foreground mb-4">
+                      <span className="font-light"> </span>
                     </div>
                     <div className="flex justify-end">
                       <button 
