@@ -51,54 +51,50 @@ const CareersSection = () => {
               {/* Job Board - Inside the panel, to the right of the image */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {jobs.map((job, index) => (
-                  <Card key={index} className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2">
+                  <Card 
+                    key={index} 
+                    className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-2 cursor-pointer"
+                    onClick={() => handleJobApply(job.title)}
+                  >
                     <CardContent style={{padding: '1.2rem'}} className="flex flex-col h-full">
                       <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>{job.title}</h4>
                       <div className="text-base text-muted-foreground flex-grow mb-4">
                         <span className="font-light">{job.location}, {job.type}</span>
                       </div>
                       <div className="flex justify-end">
-                        <button 
-                          onClick={() => handleJobApply(job.title)}
-                          className="flex items-center gap-2 text-primary hover:underline"
-                          style={{fontSize: '1rem'}}
-                        >
+                        <div className="flex items-center gap-2 text-primary" style={{fontSize: '1rem'}}>
                           <Mail size={16} />
                           Apply
-                        </button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
             
                 {/* More Positions Card - Takes only 1 column to make it narrower */}
-                <Card className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1">
+                <Card 
+                  className="hover:shadow-md transition-shadow rounded-[2rem] md:col-span-1 cursor-pointer"
+                  onClick={handleMorePositions}
+                >
                   <CardContent style={{padding: '1.2rem'}} className="flex flex-col h-full">
                     {isMobile ? (
-                      // Mobile layout: Move Apply button up, make it smaller
+                      // Mobile layout: Move Apply button up, keep it aligned right
                       <>
                         <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>More</h4>
-                        <div className="flex-grow mb-2">
-                          <button 
-                            onClick={handleMorePositions}
-                            className="flex items-center gap-2 text-primary hover:underline"
-                            style={{fontSize: '0.9rem'}}
-                          >
+                        <div className="flex-grow mb-2 flex justify-end">
+                          <div className="flex items-center gap-2 text-primary" style={{fontSize: '0.9rem'}}>
                             <Mail size={14} />
                             Apply
-                          </button>
+                          </div>
                         </div>
                       </>
                     ) : (
                       // Desktop layout: Center "More" above email icon, remove "Apply" text
                       <div className="flex flex-col items-center justify-center h-full">
                         <h4 className="font-normal text-center mb-2" style={{fontSize: '1.2rem'}}>More</h4>
-                        <button 
-                          onClick={handleMorePositions}
-                          className="text-primary hover:text-primary/80 transition-colors"
-                        >
+                        <div className="text-primary">
                           <Mail size={16} />
-                        </button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
