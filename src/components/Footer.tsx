@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -37,7 +38,7 @@ const Footer = () => {
           {/* Logo */}
           <div>
             <img 
-              src="/lovable-uploads/00c104f6-2d2f-40f3-bc7d-743108a5d33c.png" 
+              src="/meta/big_goldenpaw_512.png" 
               alt="big Logo" 
               className="h-10" 
             />
