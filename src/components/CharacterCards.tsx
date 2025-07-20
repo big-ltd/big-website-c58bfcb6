@@ -2,10 +2,12 @@ import React, { useRef, useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useImageInViewport } from '@/hooks/useImageInViewport';
 
 const characters = [
   {
     image: "/lovable-uploads/6d95e63c-7bd4-450d-9f28-4c36211d13f0.png",
+    gif: "/gifs/missvictoria.gif",
     text: "Miss Victoria keeps the mansion alive with purpose."
   },
   {
@@ -31,7 +33,14 @@ const CharacterCards = () => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [allCardsFit, setAllCardsFit] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  
+  // Use the viewport hook for mobile animation (only for Miss Victoria - index 0)
+  const { elementRef: missVictoriaRef, shouldShowAnimation: shouldShowMobileAnimation } = useImageInViewport({
+    threshold: 1.0,
+    delay: 500
+  });
 
   const checkScrollability = () => {
     if (scrollRef.current) {
@@ -93,6 +102,28 @@ const CharacterCards = () => {
     }
   };
 
+  const handleMouseEnter = (index: number) => {
+    if (!isMobile) {
+      setHoveredCard(index);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setHoveredCard(null);
+    }
+  };
+
+  const shouldShowGif = (index: number) => {
+    if (index !== 0) return false; // Only Miss Victoria has a GIF
+    
+    if (isMobile) {
+      return shouldShowMobileAnimation;
+    } else {
+      return hoveredCard === 0;
+    }
+  };
+
   return (
     <div className="relative mb-16">
       {/* Scrollable container */}
@@ -104,19 +135,23 @@ const CharacterCards = () => {
         {characters.map((character, index) => (
           <div 
             key={index}
+            ref={index === 0 ? missVictoriaRef : undefined}
             className="character-card flex-shrink-0 snap-start rounded-[2rem] overflow-hidden"
             style={{ 
               backgroundColor: '#f5f4f9',
               width: 'min(300px, 80vw)',
               scrollSnapAlign: 'start'
             }}
+            onMouseEnter={() => handleMouseEnter(index)}
+            onMouseLeave={handleMouseLeave}
           >
             {/* Character image */}
             <div className="relative bg-gray-100">
               <img 
-                src={character.image} 
+                src={shouldShowGif(index) ? character.gif : character.image}
                 alt={`Character ${index + 1}`}
                 className="w-full object-contain"
+                key={shouldShowGif(index) ? 'gif' : 'static'} // Force re-render when switching
               />
             </div>
             
