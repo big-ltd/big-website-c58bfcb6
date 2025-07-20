@@ -52,7 +52,7 @@ const JobDetail = () => {
                   <h1 className="text-2xl font-bold mb-4">{job.title}</h1>
                   
                   <div className="space-y-4 mb-6">
-                    <div className="text-muted-foreground">
+                    <div className="text-foreground">
                       <span>{job.location}, {job.type}</span>
                     </div>
                   </div>
@@ -85,7 +85,7 @@ const JobDetail = () => {
                         i % 2 === 1 ? <strong key={i}>{part}</strong> : part
                       );
                       return (
-                        <li key={index} className="ml-4 mb-2">
+                        <li key={index} className="ml-4 mb-2 text-foreground">
                           {processedText}
                         </li>
                       );
@@ -97,7 +97,7 @@ const JobDetail = () => {
                         i % 2 === 1 ? <strong key={i}>{part}</strong> : part
                       );
                       return (
-                        <h3 key={index} className="text-lg font-semibold mt-6 mb-3">
+                        <h3 key={index} className="text-lg font-semibold mt-6 mb-3 text-foreground">
                           {processedText}
                         </h3>
                       );
@@ -109,7 +109,7 @@ const JobDetail = () => {
                     );
                     
                     return (
-                      <p key={index} className="mb-4 text-muted-foreground leading-relaxed">
+                      <p key={index} className="mb-4 text-foreground leading-relaxed">
                         {processedText}
                       </p>
                     );
