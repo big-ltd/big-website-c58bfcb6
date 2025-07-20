@@ -160,7 +160,7 @@ const CharacterCards = () => {
                   src={character.gif}
                   alt={`Character ${index + 1} animated`}
                   className="absolute inset-0 w-full h-full object-contain"
-                  style={{ filter: 'brightness(96%)' }}
+                  style={{ filter: 'brightness(96%) contrast(110%)' }}
                 />
               )}
             </div>
