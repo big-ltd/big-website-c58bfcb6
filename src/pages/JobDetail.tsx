@@ -39,7 +39,7 @@ const JobDetail = () => {
             className="inline-flex items-center gap-2 text-primary hover:underline"
           >
             <ArrowLeft size={16} />
-            Back to Careers
+            Back
           </Link>
         </div>
 
