@@ -46,6 +46,9 @@ const Footer = () => {
             <a href="mailto:contact@big.com.cy" className="text-foreground/60 hover:text-foreground transition-colors">
               Contact
             </a>
+            <a href="https://www.linkedin.com/company/big-com-cy/" target="_blank" rel="noopener noreferrer" className="text-foreground/60 hover:text-foreground transition-colors">
+              LinkedIn
+            </a>
             <Link to="/privacy" className="text-foreground/60 hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
