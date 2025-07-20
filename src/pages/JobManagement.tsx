@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { useAllJobs, useCreateJob, useUpdateJob, useDeleteJob } from '@/hooks/useJobs';
 import { useToast } from '@/hooks/use-toast';
@@ -170,11 +171,9 @@ const JobManagement = () => {
                 </div>
                 <div>
                   <Label htmlFor="description">Job Description</Label>
-                  <textarea
-                    id="description"
-                    className="w-full h-32 p-3 border rounded-md resize-none"
+                  <RichTextEditor
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(value) => setFormData({...formData, description: value})}
                     placeholder="Enter detailed job description..."
                   />
                 </div>
@@ -223,14 +222,13 @@ const JobManagement = () => {
                           />
                         </div>
                       </div>
-                      <div>
-                        <Label>Description</Label>
-                        <textarea
-                          className="w-full h-32 p-3 border rounded-md resize-none"
-                          value={formData.description}
-                          onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        />
-                      </div>
+                       <div>
+                         <Label>Description</Label>
+                         <RichTextEditor
+                           value={formData.description}
+                           onChange={(value) => setFormData({...formData, description: value})}
+                         />
+                       </div>
                       <div className="flex gap-2">
                         <Button onClick={() => handleUpdate(job)} disabled={updateJobMutation.isPending}>
                           <Save className="mr-2 h-4 w-4" />

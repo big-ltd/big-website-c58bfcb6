@@ -79,24 +79,38 @@ const JobDetail = () => {
                     if (paragraph.trim() === '') return null;
                     
                     if (paragraph.startsWith('•')) {
+                      const text = paragraph.substring(1).trim();
+                      // Process bold text in bullet points
+                      const processedText = text.split('**').map((part, i) => 
+                        i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+                      );
                       return (
                         <li key={index} className="ml-4 mb-2">
-                          {paragraph.substring(1).trim()}
+                          {processedText}
                         </li>
                       );
                     }
                     
                     if (paragraph.includes(':') && paragraph.length < 100) {
+                      // Process bold text in headings
+                      const processedText = paragraph.split('**').map((part, i) => 
+                        i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+                      );
                       return (
                         <h3 key={index} className="text-lg font-semibold mt-6 mb-3">
-                          {paragraph}
+                          {processedText}
                         </h3>
                       );
                     }
                     
+                    // Process bold text in regular paragraphs
+                    const processedText = paragraph.split('**').map((part, i) => 
+                      i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+                    );
+                    
                     return (
                       <p key={index} className="mb-4 text-muted-foreground leading-relaxed">
-                        {paragraph}
+                        {processedText}
                       </p>
                     );
                   })}
