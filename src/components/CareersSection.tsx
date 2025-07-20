@@ -81,7 +81,7 @@ const CareersSection = () => {
                       {isMobile ? (
                         // Mobile layout: Move Apply button up, keep it aligned right with consistent styling
                         <>
-                          <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>More</h4>
+                          <h4 className="font-normal" style={{fontSize: '1.2rem', marginBottom: '0.2rem'}}>. . .</h4>
                           <div className="flex-grow mb-0 flex justify-end">
                             <div className="flex items-center gap-2 text-primary" style={{fontSize: '1rem'}}>
                               <Mail size={16} />
@@ -92,7 +92,7 @@ const CareersSection = () => {
                       ) : (
                         // Desktop layout: Center "More" above email icon, remove "Apply" text
                         <div className="flex flex-col items-center justify-center h-full">
-                          <h4 className="font-normal text-center mb-2" style={{fontSize: '1.2rem'}}>More</h4>
+                          <h4 className="font-normal text-center mb-2" style={{fontSize: '1.2rem'}}>. . .</h4>
                           <div className="text-primary">
                             <Mail size={16} />
                           </div>
