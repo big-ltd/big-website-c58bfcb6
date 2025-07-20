@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,10 @@ const CareersSection = () => {
 
   const handleMorePositions = () => {
     window.location.href = `mailto:careers@big.com.cy?subject=General Application`;
+  };
+
+  const handlePartnerWithUs = () => {
+    window.location.href = `mailto:contact@big.com.cy?subject=I want to hear more about big`;
   };
 
   return (
@@ -101,6 +106,23 @@ const CareersSection = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Partner with Us Link */}
+        <div className="max-w-4xl mx-auto text-center">
+          <p style={{fontWeight: 400, fontSize: '1.2rem'}}>
+            Want to partner with us? Contact us at{' '}
+            <a 
+              href="#" 
+              onClick={(e) => {
+                e.preventDefault();
+                handlePartnerWithUs();
+              }}
+              className="text-primary font-medium hover:underline"
+            >
+              contact@big.com.cy
+            </a>
+          </p>
         </div>
       </div>
     </section>
