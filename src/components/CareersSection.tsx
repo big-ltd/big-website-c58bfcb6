@@ -107,7 +107,7 @@ const CareersSection = () => {
         </div>
 
         {/* Partner with Us Link */}
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center" style={{marginTop: '3rem'}}>
           <p style={{fontWeight: 400, fontSize: '1.2rem'}}>
             Partner with us - Contact us at{' '}
             <a 
