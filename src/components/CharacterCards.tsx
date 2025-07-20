@@ -147,12 +147,21 @@ const CharacterCards = () => {
           >
             {/* Character image */}
             <div className="relative bg-gray-100">
+              {/* Base image - always rendered */}
               <img 
-                src={shouldShowGif(index) ? character.gif : character.image}
+                src={character.image}
                 alt={`Character ${index + 1}`}
                 className="w-full object-contain"
-                key={shouldShowGif(index) ? 'gif' : 'static'} // Force re-render when switching
               />
+              
+              {/* GIF overlay - only shown when conditions are met */}
+              {shouldShowGif(index) && character.gif && (
+                <img 
+                  src={character.gif}
+                  alt={`Character ${index + 1} animated`}
+                  className="absolute inset-0 w-full h-full object-contain"
+                />
+              )}
             </div>
             
             {/* Character text */}
