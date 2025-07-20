@@ -63,12 +63,11 @@ const CareersSection = () => {
                         <div className="text-base text-muted-foreground flex-grow mb-4">
                           <span className="font-light">{job.location}, {job.type}</span>
                         </div>
-                        <div className="flex justify-end">
-                          <div className="flex items-center gap-2 text-primary" style={{fontSize: '1rem'}}>
-                            <Mail size={16} />
-                            View Details
-                          </div>
-                        </div>
+                         <div className="flex justify-end">
+                           <div className="text-primary" style={{fontSize: '1rem'}}>
+                             View Details
+                           </div>
+                         </div>
                       </CardContent>
                     </Card>
                   ))}
