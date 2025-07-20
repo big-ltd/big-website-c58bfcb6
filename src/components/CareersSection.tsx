@@ -111,7 +111,7 @@ const CareersSection = () => {
         {/* Partner with Us Link */}
         <div className="max-w-4xl mx-auto text-center">
           <p style={{fontWeight: 400, fontSize: '1.2rem'}}>
-            Want to partner with us? Contact us at{' '}
+            Partner with us - Contact us at{' '}
             <a 
               href="#" 
               onClick={(e) => {
