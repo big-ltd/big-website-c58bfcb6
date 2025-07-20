@@ -11,6 +11,8 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import ProtectedDeckUpload from "./components/ProtectedDeckUpload";
 import Deck from "./pages/Deck";
+import JobDetail from "./pages/JobDetail";
+import JobManagement from "./pages/JobManagement";
 import AccountDeletionRedirect from "./components/AccountDeletionRedirect";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/terms" element={<Terms />} />
           <Route path="/deckupload" element={<ProtectedDeckUpload />} />
           <Route path="/deck" element={<Deck />} />
+          <Route path="/careers/:jobId" element={<JobDetail />} />
+          <Route path="/careers/manage" element={<JobManagement />} />
           <Route path="/account-deletion-form" element={<AccountDeletionRedirect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

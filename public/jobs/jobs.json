@@ -1,0 +1,23 @@
+
+{
+  "jobs": [
+    {
+      "id": "bi-ai-engineer",
+      "title": "BI/AI Engineer",
+      "location": "Remote",
+      "type": "Full-time",
+      "description": "We are looking for a talented BI/AI Engineer to join our team and help us build the next generation of data-driven mobile games. You will be responsible for designing and implementing business intelligence solutions, developing AI/ML models for player behavior analysis, and creating data pipelines that power our game analytics.\n\nKey Responsibilities:\n• Design and develop BI dashboards and reports\n• Build and maintain data pipelines for game analytics\n• Develop AI/ML models for player segmentation and behavior prediction\n• Collaborate with game designers to implement data-driven features\n• Optimize data infrastructure for scalability and performance\n\nRequirements:\n• 3+ years of experience in BI/AI development\n• Strong proficiency in Python, SQL, and data visualization tools\n• Experience with machine learning frameworks (TensorFlow, PyTorch)\n• Knowledge of cloud platforms (AWS, GCP, or Azure)\n• Experience with game analytics is a plus\n• Strong analytical and problem-solving skills",
+      "active": true,
+      "createdAt": "2025-01-20T10:00:00Z"
+    },
+    {
+      "id": "art-director",
+      "title": "Art Director",
+      "location": "Remote",
+      "type": "Full-time",
+      "description": "We're seeking a creative Art Director to lead the visual development of our mobile games. You will work closely with our development team to create stunning visuals that captivate players and bring our game worlds to life.\n\nKey Responsibilities:\n• Lead and mentor a team of artists and designers\n• Develop and maintain the visual style and art direction for our games\n• Create concept art, character designs, and environmental assets\n• Collaborate with game designers and developers to ensure artistic vision aligns with gameplay\n• Manage art production pipelines and ensure quality standards\n• Stay up-to-date with industry trends and artistic techniques\n\nRequirements:\n• 5+ years of experience in game art direction or similar role\n• Strong portfolio showcasing diverse artistic styles\n• Proficiency in industry-standard tools (Photoshop, Illustrator, 3D software)\n• Experience with mobile game development\n• Excellent leadership and communication skills\n• Understanding of technical constraints in mobile game development\n• Passion for creating engaging visual experiences",
+      "active": true,
+      "createdAt": "2025-01-20T10:00:00Z"
+    }
+  ]
+}
