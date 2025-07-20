@@ -3,7 +3,7 @@ import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, MapPin, Clock, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 import { useJob } from '@/hooks/useJobs';
 import { Link } from 'react-router-dom';
 
@@ -52,13 +52,8 @@ const JobDetail = () => {
                   <h1 className="text-2xl font-bold mb-4">{job.title}</h1>
                   
                   <div className="space-y-4 mb-6">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin size={16} />
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock size={16} />
-                      <span>{job.type}</span>
+                    <div className="text-muted-foreground">
+                      <span>{job.location}, {job.type}</span>
                     </div>
                   </div>
 
@@ -105,19 +100,6 @@ const JobDetail = () => {
                       </p>
                     );
                   })}
-                </div>
-
-                <div className="mt-8 pt-6 border-t">
-                  <p className="text-muted-foreground mb-4">
-                    Ready to join our team? Click the Apply button to send us your application.
-                  </p>
-                  <Button 
-                    onClick={handleApply}
-                    className="rounded-[2rem] bg-primary hover:bg-primary/90"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Apply for this position
-                  </Button>
                 </div>
               </CardContent>
             </Card>
