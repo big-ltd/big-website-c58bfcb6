@@ -5,23 +5,23 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const characters = [
   {
-    image: "/lovable-uploads/6d95e63c-7bd4-450d-9f28-4c36211d13f0.jpg",
+    image: "/lovable-uploads/MissVictoria.jpg",
     text: "Miss Victoria keeps the mansion alive with purpose."
   },
   {
-    image: "/lovable-uploads/1cf629a9-3c05-4f81-8dc8-f7a11f4a64b0.jpg",
+    image: "/lovable-uploads/KingCedric.jpg",
     text: "King Cedric now rules with heart, not just a crown."
   },
   {
-    image: "/lovable-uploads/36251085-fce7-4d1e-8d9b-0f4e874255ca.jpg",
+    image: "/lovable-uploads/BakerFlorence.jpg",
     text: "Baker Florence bakes with kindness—and enchanted yeast."
   },
   {
-    image: "/lovable-uploads/dc715bbb-a793-4f51-9a14-8d8260e75867.jpg",
+    image: "/lovable-uploads/InnkeeperJasper.jpg",
     text: "Innkeeper Jasper makes every guest feel right at home."
   },
   {
-    image: "/lovable-uploads/175bc047-7ad8-4640-a900-ab15422ce2f6.jpg",
+    image: "/lovable-uploads/FisherFred.jpg",
     text: "Fisher Fred lives for calm lakes, big fish, and tall tales."
   }
 ];
