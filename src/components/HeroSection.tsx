@@ -11,11 +11,6 @@ const HeroSection = () => {
           We make fun games that stay with you. We believe joy is found in small details — the timing of a tap, the surprise in a level, the charm in a character.
         </p>
       </div>
-      
-      {/* Character Cards */}
-      <div className="w-full px-4 mt-8">
-        <CharacterCards />
-      </div>
     </section>
   );
 };
