@@ -14,6 +14,7 @@ import ProtectedJobManagement from "./components/ProtectedJobManagement";
 import Deck from "./pages/Deck";
 import JobDetail from "./pages/JobDetail";
 import AccountDeletionRedirect from "./components/AccountDeletionRedirect";
+import PlayMatchStoryRedirect from "./components/PlayMatchStoryRedirect";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/careers/:jobId" element={<JobDetail />} />
           <Route path="/careers/manage" element={<ProtectedJobManagement />} />
           <Route path="/account-deletion-form" element={<AccountDeletionRedirect />} />
+          <Route path="/play-match-story" element={<PlayMatchStoryRedirect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
