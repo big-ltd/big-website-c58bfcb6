@@ -123,7 +123,7 @@ const Terms = () => {
 
           <h2 className="text-2xl font-bold mt-10 mb-4">Contact Us</h2>
           <p className="text-gray-300">
-            If you have any questions about these Terms, please contact us at <a href="mailto:contact@big.com.cy" className="text-primary hover:underline">contact@big.com.cy</a>.
+            If you have any questions about these Terms, please contact us at <a href="mailto:contact@big.com.cy" className="text-blue-400 hover:text-blue-300 hover:underline">contact@big.com.cy</a>.
           </p>
         </div>
       </div>
